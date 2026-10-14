@@ -1,0 +1,31 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "admin@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Admin Dashboard"
+    timeout: 15000
+- tapOn: "Patients"
+- tapOn: "Add"
+- extendedWaitUntil:
+    visible: "Add Patient"
+    timeout: 10000
+- tapOn: "First Name"
+- inputText: "Test"
+- tapOn: "Last Name"
+- inputText: "Patient"
+- tapOn: "Email"
+- inputText: "test.patient@clinic.com"
+- tapOn: "Date of Birth"
+- inputText: "1990-05-15"
+- tapOn: "Create Patient"
+- extendedWaitUntil:
+    visible: "Test Patient"
+    timeout: 15000

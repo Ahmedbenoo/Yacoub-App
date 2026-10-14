@@ -1,0 +1,93 @@
+{
+  "appName": "Yacoub",
+  "tagline": "نظام إدارة العيادات",
+  "loading": "جاري التحميل...",
+  "retry": "حاول مرة أخرى",
+  "cancel": "إلغاء",
+  "confirm": "تأكيد",
+  "save": "حفظ",
+  "add": "إضافة",
+  "inactive": "غير نشط",
+  "next": "التالي",
+  "back": "رجوع",
+  "skip": "تخطي",
+  "done": "تم",
+  "comingSoon": "قريباً",
+  "comingSoonDescription": "هذه الميزة قيد التطوير وستكون متاحة في إصدار لاحق.",
+  "error": {
+    "title": "خطأ",
+    "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "network": "خطأ في الشبكة. تحقق من اتصالك."
+  },
+  "offline": {
+    "message": "أنت غير متصل. قد لا تتوفر بعض الميزات."
+  },
+  "errorBoundary": {
+    "title": "حدث خطأ ما",
+    "description": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+  },
+  "settings": {
+    "pushNotifications": "الإشعارات",
+    "pushEnabled": "مفعّلة",
+    "pushDisabled": "معطّلة",
+    "pushUnsupported": "غير متاحة على هذا الجهاز",
+    "enablePush": "تفعيل",
+    "enablePushHint": "اضغط للسماح بتنبيهات المواعيد",
+    "pushStatus": "الحالة",
+    "language": "اللغة",
+    "languageEn": "English",
+    "languageAr": "العربية",
+    "theme": "المظهر",
+    "themeLight": "فاتح",
+    "themeDark": "داكن",
+    "themeSystem": "النظام",
+    "notificationCategories": {
+      "title": "فئات الإشعارات",
+      "appointment": {
+        "title": "المواعيد",
+        "description": "تحديثات الحجز والتذكيرات والتأكيدات"
+      },
+      "prescription": {
+        "title": "الوصفات الطبية",
+        "description": "وصفات جديدة وتحديثات الأدوية"
+      },
+      "lab_result": {
+        "title": "نتائج المختبر",
+        "description": "إشعارات نتائج المختبر والأشعة"
+      },
+      "system": {
+        "title": "النظام",
+        "description": "إعلانات العيادة وتنبيهات الحساب"
+      }
+    }
+  },
+  "empty": {
+    "title": "لا يوجد محتوى",
+    "description": "سيظهر المحتوى هنا عند توفره."
+  },
+  "nav": {
+    "notifications": "الإشعارات",
+    "theme": "تبديل المظهر",
+    "profile": "الملف الشخصي"
+  },
+  "patientAgeGender": "{{age}} سنة · {{gender}}",
+  "doctorTitle": "د. {{name}}",
+  "gender": {
+    "male": "ذكر",
+    "female": "أنثى",
+    "other": "آخر"
+  },
+  "select": {
+    "searchPlaceholder": "بحث",
+    "empty": "لا توجد نتائج"
+  },
+  "days": {
+    "sun": "الأحد",
+    "mon": "الإثنين",
+    "tue": "الثلاثاء",
+    "wed": "الأربعاء",
+    "thu": "الخميس",
+    "fri": "الجمعة",
+    "sat": "السبت"
+  }
+}

@@ -1,0 +1,63 @@
+export interface ClinicSpecialty {
+  id: string;
+  nameEn: string;
+}
+
+export const CLINIC_SPECIALTIES: readonly ClinicSpecialty[] = [
+  { id: 'generalMedicine', nameEn: 'General Medicine' },
+  { id: 'familyMedicine', nameEn: 'Family Medicine' },
+  { id: 'internalMedicine', nameEn: 'Internal Medicine' },
+  { id: 'cardiology', nameEn: 'Cardiology' },
+  { id: 'pediatricCardiology', nameEn: 'Pediatric Cardiology' },
+  { id: 'dermatology', nameEn: 'Dermatology' },
+  { id: 'dermatologyCosmetology', nameEn: 'Dermatology and Cosmetology' },
+  { id: 'pediatrics', nameEn: 'Pediatrics' },
+  { id: 'neonatology', nameEn: 'Neonatology' },
+  { id: 'orthopedics', nameEn: 'Orthopedics' },
+  { id: 'obstetricsGynecology', nameEn: 'Obstetrics and Gynecology' },
+  { id: 'fertility', nameEn: 'Fertility' },
+  { id: 'ent', nameEn: 'ENT' },
+  { id: 'ophthalmology', nameEn: 'Ophthalmology' },
+  { id: 'optometry', nameEn: 'Optometry' },
+  { id: 'dentistry', nameEn: 'Dentistry' },
+  { id: 'orthodontics', nameEn: 'Orthodontics' },
+  { id: 'pediatricDentistry', nameEn: 'Pediatric Dentistry' },
+  { id: 'oralSurgery', nameEn: 'Oral and Maxillofacial Surgery' },
+  { id: 'neurology', nameEn: 'Neurology' },
+  { id: 'neurosurgery', nameEn: 'Neurosurgery' },
+  { id: 'psychiatry', nameEn: 'Psychiatry' },
+  { id: 'clinicalPsychology', nameEn: 'Clinical Psychology' },
+  { id: 'urology', nameEn: 'Urology' },
+  { id: 'andrology', nameEn: 'Andrology' },
+  { id: 'gastroenterology', nameEn: 'Gastroenterology' },
+  { id: 'hepatology', nameEn: 'Hepatology' },
+  { id: 'pulmonology', nameEn: 'Pulmonology' },
+  { id: 'endocrinology', nameEn: 'Endocrinology' },
+  { id: 'nephrology', nameEn: 'Nephrology' },
+  { id: 'rheumatology', nameEn: 'Rheumatology' },
+  { id: 'hematology', nameEn: 'Hematology' },
+  { id: 'oncology', nameEn: 'Oncology' },
+  { id: 'allergyImmunology', nameEn: 'Allergy and Immunology' },
+  { id: 'infectiousDiseases', nameEn: 'Infectious Diseases' },
+  { id: 'generalSurgery', nameEn: 'General Surgery' },
+  { id: 'pediatricSurgery', nameEn: 'Pediatric Surgery' },
+  { id: 'plasticSurgery', nameEn: 'Plastic Surgery' },
+  { id: 'vascularSurgery', nameEn: 'Vascular Surgery' },
+  { id: 'cardiothoracicSurgery', nameEn: 'Cardiothoracic Surgery' },
+  { id: 'bariatricSurgery', nameEn: 'Bariatric Surgery' },
+  { id: 'physiotherapy', nameEn: 'Physiotherapy' },
+  { id: 'nutrition', nameEn: 'Clinical Nutrition' },
+  { id: 'radiology', nameEn: 'Radiology' },
+  { id: 'clinicalPathology', nameEn: 'Clinical Pathology' },
+  { id: 'phoniatrics', nameEn: 'Phoniatrics' },
+  { id: 'audiology', nameEn: 'Audiology' },
+  { id: 'painMedicine', nameEn: 'Pain Medicine' },
+  { id: 'sportsMedicine', nameEn: 'Sports Medicine' },
+  { id: 'geriatrics', nameEn: 'Geriatrics' },
+  { id: 'anesthesia', nameEn: 'Anesthesia' },
+  { id: 'emergencyMedicine', nameEn: 'Emergency Medicine' },
+] as const;
+
+export function findClinicSpecialty(value: string): ClinicSpecialty | undefined {
+  return CLINIC_SPECIALTIES.find((specialty) => specialty.id === value || specialty.nameEn === value);
+}

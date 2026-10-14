@@ -1,0 +1,35 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "admin@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Admin Dashboard"
+    timeout: 15000
+- tapOn: "Doctors"
+- tapOn: "Add Doctor"
+- extendedWaitUntil:
+    visible: "Add Doctor"
+    timeout: 10000
+- tapOn: "First Name"
+- inputText: "Test"
+- tapOn: "Last Name"
+- inputText: "Doctor"
+- tapOn: "Email"
+- inputText: "test.doctor@clinic.com"
+- tapOn: "Select specialty"
+- tapOn: "General Medicine"
+- tapOn: "Select branch"
+- tapOn: "Main Clinic"
+- tapOn: "Languages (comma-separated)"
+- inputText: "English, Arabic"
+- tapOn: "Create Doctor"
+- extendedWaitUntil:
+    visible: "Dr. Test Doctor"
+    timeout: 15000

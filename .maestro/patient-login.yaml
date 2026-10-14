@@ -1,0 +1,11 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "patient@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn: "Sign In"
+- assertVisible: "Patient Home"

@@ -1,0 +1,23 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "admin@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Admin Dashboard"
+    timeout: 15000
+- tapOn: "Patients"
+- tapOn: "Sara Mohamed"
+- extendedWaitUntil:
+    visible: "Medical history"
+    timeout: 10000
+- tapOn: "Amlodipine 5mg"
+- extendedWaitUntil:
+    visible: "Prescription"
+    timeout: 10000

@@ -1,0 +1,30 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "admin@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Admin Dashboard"
+    timeout: 15000
+- tapOn: "Doctors"
+- extendedWaitUntil:
+    visible: "Dr. Mona Farid"
+    timeout: 10000
+- tapOn: "Dr. Mona Farid"
+- extendedWaitUntil:
+    visible: "Deactivate Doctor"
+    timeout: 10000
+- tapOn: "Deactivate Doctor"
+- extendedWaitUntil:
+    visible: "Deactivate"
+    timeout: 5000
+- tapOn: "Deactivate"
+- extendedWaitUntil:
+    visible: "Doctors"
+    timeout: 10000

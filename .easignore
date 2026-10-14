@@ -1,0 +1,8 @@
+# Reduce EAS upload size and temp copy pressure on C:
+.expo-tmp-export/
+android/
+ios/
+.expo/
+dist/
+web-build/
+*.log

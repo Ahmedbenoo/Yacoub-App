@@ -1,56 +1,78 @@
-import { useFonts } from 'expo-font';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import '../global.css';
+
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+import {
+  Cairo_400Regular,
+  Cairo_500Medium,
+  Cairo_600SemiBold,
+  Cairo_700Bold,
+} from '@expo-google-fonts/cairo';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { AppProviders } from '@/shared/providers/AppProviders';
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+export { ErrorBoundary } from 'expo-router';
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
+SplashScreen.setOptions({
+  duration: 400,
+  fade: true,
+});
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  const [fontsLoaded, fontError] = useFonts({
+    Inter: Inter_400Regular,
+    Cairo: Cairo_400Regular,
+    'Inter-Regular': Inter_400Regular,
+    'Inter-Medium': Inter_500Medium,
+    'Inter-SemiBold': Inter_600SemiBold,
+    'Inter-Bold': Inter_700Bold,
+    'Cairo-Regular': Cairo_400Regular,
+    'Cairo-Medium': Cairo_500Medium,
+    'Cairo-SemiBold': Cairo_600SemiBold,
+    'Cairo-Bold': Cairo_700Bold,
   });
-
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+  const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    const timeout = setTimeout(() => setTimedOut(true), 2500);
+    return () => clearTimeout(timeout);
+  }, []);
 
-  if (!loaded) {
-    return null;
+  const ready = fontsLoaded || !!fontError || timedOut;
+
+  useEffect(() => {
+    if (!ready) return;
+    SplashScreen.hideAsync().catch(() => undefined);
+  }, [ready]);
+
+  if (!ready) {
+    return <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />;
   }
 
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+    <AppProviders>
+      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(doctor)" />
+        <Stack.Screen name="(patient)" />
+        <Stack.Screen name="(admin)" />
+        <Stack.Screen name="(secretary)" />
+        <Stack.Screen name="(nurse)" />
+        <Stack.Screen name="(nursing-admin)" />
+        <Stack.Screen name="rx/[id]" />
+        <Stack.Screen name="+not-found" />
       </Stack>
-    </ThemeProvider>
+    </AppProviders>
   );
 }

@@ -1,0 +1,196 @@
+{
+  "title": "المواعيد",
+  "detailTitle": "تفاصيل الموعد",
+  "today": "اليوم",
+  "upcoming": "القادمة",
+  "past": "السابقة",
+  "all": "الكل",
+  "empty": {
+    "title": "لا توجد مواعيد",
+    "description": "ستظهر المواعيد هنا عند جدولتها."
+  },
+  "guest": {
+    "title": "مواعيدك",
+    "description": "سجّل برقم الموبايل عند الحجز عشان تشوف مواعيدك هنا."
+  },
+  "error": "فشل تحميل المواعيد",
+  "reason": "السبب",
+  "notes": "ملاحظات",
+  "branch": "الفرع",
+  "duration": "المدة",
+  "minutes": "{{count}} د",
+  "doctor": "الطبيب",
+  "patient": "المريض",
+  "specialty": "التخصص",
+  "dateTime": "التاريخ والوقت",
+  "cancel": "إلغاء الموعد",
+  "confirm": "تأكيد الموعد",
+  "confirmSuccess": "تم تأكيد الموعد",
+  "confirmFailed": "فشل التأكيد",
+  "confirming": "جاري التأكيد...",
+  "cancelSuccess": "تم إلغاء الموعد",
+  "cancelFailed": "فشل الإلغاء",
+  "rescheduleSuccess": "تمت إعادة جدولة الموعد",
+  "rescheduleFailed": "فشلت إعادة الجدولة",
+  "bookSuccess": "تم حجز الموعد",
+  "bookPending": "الحجز اتبعت وبانتظار تأكيد السكرتيرة",
+  "bookFailed": "فشل الحجز",
+  "propose": "اقتراح وقت",
+  "acceptTime": "موافق على الوقت",
+  "waiting": "الحالة",
+  "awaitingSecretary": "بانتظار تأكيد السكرتيرة",
+  "awaitingPatient": "بانتظار موافقة المريض",
+  "noShow": "لم يحضر",
+  "noShowPending": "جاري التسجيل...",
+  "noShowSuccess": "اتسجل إنه لم يحضر",
+  "noShowFailed": "تعذر تسجيل الغياب",
+  "patientLookupFailed": "تعذر تحميل ملف المريض",
+  "reschedule": "إعادة الجدولة",
+  "selectNewTime": "اختر وقتاً جديداً",
+  "confirmCancel": "هل أنت متأكد من إلغاء هذا الموعد؟",
+  "confirmCancelYes": "نعم، إلغاء",
+  "confirmCancelNo": "لا، احتفظ به",
+  "cancelling": "جاري الإلغاء...",
+  "rescheduling": "جاري إعادة الجدولة...",
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات",
+    "viewAll": "عرض كل الإشعارات",
+    "markAllRead": "تعليم الكل كمقروء",
+    "error": "فشل تحميل الإشعارات",
+    "items": {
+      "newAppointment": {
+        "title": "موعد جديد",
+        "body": "{{patientName}} حجز موعداً اليوم الساعة {{time}}"
+      },
+      "reminder": {
+        "title": "تذكير بالموعد",
+        "body": "لديك متابعة مع {{patientName}} الساعة {{time}}"
+      },
+      "appointmentConfirmed": {
+        "title": "تم تأكيد الموعد",
+        "body": "موعدك مع د. {{doctorName}} مؤكد ليوم غد"
+      },
+      "welcome": {
+        "title": "أهلاً بك في Yacoub",
+        "body": "أدِر مواعيدك وسجلك الطبي من مكان واحد"
+      },
+      "weeklyReport": {
+        "title": "تقرير العيادة الأسبوعي جاهز",
+        "body": "ملخص العمليات الأسبوعي متاح في التقارير"
+      },
+      "nursingPriced": {
+        "title": "تم تأكيد طلب التمريض",
+        "body": "الإدارة أكدت الطلب بسعر {{price}} ج.م"
+      },
+      "nursingAccepted": {
+        "title": "الممرض قبل الطلب",
+        "body": "{{nurseName}} قبل زيارة التمريض المنزلى"
+      },
+      "appointmentCancelled": {
+        "title": "الموعد اتلغى",
+        "body": "اتلغى موعد {{patientName}}"
+      },
+      "appointmentNoShow": {
+        "title": "المريض محضرش",
+        "body": "{{patientName}} محضرش الموعد"
+      },
+      "appointmentProposed": {
+        "title": "فيه وقت تاني",
+        "body": "السكرتيرة اقترحت وقت جديد"
+      },
+      "appointmentAwaiting": {
+        "title": "المريض رد على الوقت",
+        "body": "الميعاد رجع للسكرتيرة عشان تأكده"
+      }
+    }
+  },
+  "overview": {
+    "todayTitle": "مواعيد اليوم",
+    "upcomingTitle": "القادمة",
+    "viewAll": "عرض الكل"
+  },
+  "stats": {
+    "today": "مواعيد اليوم",
+    "awaitingConfirmation": "مواعيد بانتظار التأكيد",
+    "pending": "قيد الانتظار",
+    "unread": "غير مقروء"
+  },
+  "status": {
+    "scheduled": "بانتظار التأكيد",
+    "confirmed": "مؤكد",
+    "in_progress": "جاري",
+    "completed": "مكتمل",
+    "cancelled": "ملغى",
+    "no_show": "لم يحضر"
+  },
+  "tabs": {
+    "upcoming": "القادمة",
+    "past": "السابقة",
+    "clinic": "مواعيد الكشوفات",
+    "nursing": "مواعيد التمريض المنزلى",
+    "noShow": "لم يحضر"
+  },
+  "filters": {
+    "all": "الكل"
+  },
+  "review": {
+    "title": "قيّم الكشف",
+    "hint": "تقييمك يظهر على صفحة الدكتور.",
+    "comment": "تعليق",
+    "commentPlaceholder": "اختياري",
+    "submit": "إرسال التقييم",
+    "saved": "التقييم اتسجل",
+    "failed": "تعذر حفظ التقييم",
+    "yours": "تقييمك"
+  },
+  "billing": {
+    "title": "فاتورة الكشف",
+    "issue": "إصدار فاتورة",
+    "dayClose": "تقفيل اليوم",
+    "today": "حساب النهاردة",
+    "collected": "المحصّل {{amount}}",
+    "openAmount": "لسه مفتوح {{amount}}",
+    "doctorsTotal": "نصيب الدكاترة {{amount}}",
+    "clinicTotal": "نصيب العيادة {{amount}}",
+    "doctorShare": "نصيب الدكتور {{percent}}% — {{amount}}",
+    "clinicShare": "نصيب العيادة {{amount}}",
+    "doctorLine": "{{percent}}% للدكتور {{doctor}}، والعيادة {{clinic}}",
+    "open": "الفاتورة مفتوحة",
+    "paid": "الدفع اتسجل",
+    "paidWith": "مدفوعة — {{method}}",
+    "payWith": "دفع {{method}}",
+    "failed": "تعذر حفظ الفاتورة",
+    "methods": {
+      "cash": "كاش",
+      "instapay": "انستاباي",
+      "wallet": "محفظة"
+    }
+  },
+  "whatsapp": {
+    "title": "واتساب",
+    "hint": "رسالتين بس: تأكيد لما السكرتيرة تأكد الموعد، وتذكير قبلها بيوم.",
+    "sent": "اتبعتت",
+    "scheduled": "متجدولة",
+    "kinds": {
+      "confirmation": "تأكيد الموعد",
+      "reminder": "تذكير قبل الموعد"
+    }
+  },
+  "queue": {
+    "screenTitle": "شاشة الانتظار",
+    "screenHint": "الأسماء بس، من غير شكوى أو ملف طبي.",
+    "open": "شاشة الانتظار",
+    "nowServing": "دلوقتي",
+    "now": "دورك دلوقتي",
+    "next": "التالي",
+    "emptyNow": "مفيش حد جوه",
+    "emptyNext": "مفيش حد مستني",
+    "callNext": "استدعاء التالي",
+    "checkIn": "تسجيل وصول",
+    "checkedIn": "المريض اتسجل في الطابور",
+    "yourTurn": "ترتيبك",
+    "position": "{{count}}",
+    "failed": "تعذر تحديث الطابور"
+  }
+}

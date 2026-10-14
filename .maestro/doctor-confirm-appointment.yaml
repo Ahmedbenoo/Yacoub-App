@@ -1,0 +1,26 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "doctor@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Doctor Dashboard"
+    timeout: 15000
+- tapOn: "Appointments"
+- extendedWaitUntil:
+    visible: "Youssef Kamal"
+    timeout: 10000
+- tapOn: "Youssef Kamal"
+- extendedWaitUntil:
+    visible: "Confirm Appointment"
+    timeout: 10000
+- tapOn: "Confirm Appointment"
+- extendedWaitUntil:
+    visible: "Confirmed"
+    timeout: 10000

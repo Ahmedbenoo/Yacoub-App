@@ -1,0 +1,26 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "patient@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Appointment confirmed"
+    timeout: 15000
+- tapOn: "Profile"
+- scrollUntilVisible:
+    element:
+      id: "notification-pref-appointment"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "notification-pref-appointment"
+- tapOn: "Home"
+- extendedWaitUntil:
+    visible: "No notifications yet"
+    timeout: 10000

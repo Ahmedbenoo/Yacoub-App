@@ -1,0 +1,20 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "admin@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Admin Dashboard"
+    timeout: 15000
+- tapOn: "Appointments"
+- extendedWaitUntil:
+    visible: "All"
+    timeout: 10000
+- tapOn: "Scheduled"
+- assertVisible: "Appointments"

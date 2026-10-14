@@ -1,0 +1,93 @@
+{
+  "appName": "Yacoub",
+  "tagline": "Clinic Management System",
+  "loading": "Loading...",
+  "retry": "Try Again",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "save": "Save",
+  "add": "Add",
+  "inactive": "Inactive",
+  "next": "Next",
+  "back": "Back",
+  "skip": "Skip",
+  "done": "Done",
+  "comingSoon": "Coming Soon",
+  "comingSoonDescription": "This feature is under development and will be available in a future release.",
+  "error": {
+    "title": "Error",
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Check your connection."
+  },
+  "offline": {
+    "message": "You are offline. Some features may be unavailable."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again."
+  },
+  "settings": {
+    "pushNotifications": "Push notifications",
+    "pushEnabled": "Enabled",
+    "pushDisabled": "Disabled",
+    "pushUnsupported": "Not available on this device",
+    "enablePush": "Enable",
+    "enablePushHint": "Tap to allow appointment alerts",
+    "pushStatus": "Status",
+    "language": "Language",
+    "languageEn": "English",
+    "languageAr": "Arabic",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "notificationCategories": {
+      "title": "Notification categories",
+      "appointment": {
+        "title": "Appointments",
+        "description": "Booking updates, reminders, and confirmations"
+      },
+      "prescription": {
+        "title": "Prescriptions",
+        "description": "New prescriptions and medication updates"
+      },
+      "lab_result": {
+        "title": "Lab results",
+        "description": "Lab and imaging result notifications"
+      },
+      "system": {
+        "title": "System",
+        "description": "Clinic announcements and account alerts"
+      }
+    }
+  },
+  "empty": {
+    "title": "Nothing here yet",
+    "description": "Content will appear here once available."
+  },
+  "nav": {
+    "notifications": "Notifications",
+    "theme": "Toggle theme",
+    "profile": "Profile"
+  },
+  "patientAgeGender": "{{age}} yrs · {{gender}}",
+  "doctorTitle": "Dr. {{name}}",
+  "gender": {
+    "male": "Male",
+    "female": "Female",
+    "other": "Other"
+  },
+  "select": {
+    "searchPlaceholder": "Search",
+    "empty": "No results"
+  },
+  "days": {
+    "sun": "Sunday",
+    "mon": "Monday",
+    "tue": "Tuesday",
+    "wed": "Wednesday",
+    "thu": "Thursday",
+    "fri": "Friday",
+    "sat": "Saturday"
+  }
+}

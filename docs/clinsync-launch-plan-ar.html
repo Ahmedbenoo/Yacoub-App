@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>Clinsync — دليل المنتج وخطة الإطلاق خلال أسبوعين</title>
+  <style>
+    @page { size: A4; margin: 16mm 14mm 18mm 14mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", "Tahoma", "Arial", sans-serif;
+      color: #12202b;
+      background: #fff;
+      font-size: 12.2px;
+      line-height: 1.65;
+      margin: 0;
+    }
+    h1 { font-size: 26px; margin: 0 0 8px; color: #0b3d42; }
+    h2 {
+      font-size: 16.5px;
+      color: #0e6b70;
+      border-bottom: 2px solid #00a4a6;
+      padding-bottom: 4px;
+      margin: 22px 0 10px;
+      page-break-after: avoid;
+    }
+    h3 { font-size: 13.5px; color: #134e54; margin: 14px 0 6px; page-break-after: avoid; }
+    p { margin: 6px 0; }
+    ul, ol { margin: 6px 0 10px; padding-right: 18px; }
+    li { margin: 3px 0; }
+    .cover {
+      border: 2px solid #00a4a6;
+      padding: 28px 24px;
+      margin-bottom: 18px;
+      page-break-after: always;
+    }
+    .kicker { color: #00a4a6; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .meta { color: #4b6270; font-size: 12px; }
+    .badge {
+      display: inline-block;
+      background: #e6f7f7;
+      color: #0e6b70;
+      border: 1px solid #9ad9db;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+    .warn {
+      background: #fff6e8;
+      border: 1px solid #f0c36d;
+      padding: 10px 12px;
+      margin: 10px 0;
+    }
+    .ok {
+      background: #eef9f2;
+      border: 1px solid #8dcf9f;
+      padding: 10px 12px;
+      margin: 10px 0;
+    }
+    .next {
+      background: #e8f4ff;
+      border: 1px solid #7bb3e8;
+      padding: 10px 12px;
+      margin: 10px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 14px;
+      font-size: 11.5px;
+    }
+    th, td {
+      border: 1px solid #c9d7dd;
+      padding: 6px 8px;
+      text-align: right;
+      vertical-align: top;
+    }
+    th { background: #f2fbfb; color: #0e6b70; }
+    code, .mono {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 11px;
+      background: #f4f7f8;
+      padding: 1px 4px;
+    }
+    pre {
+      background: #f4f7f8;
+      border: 1px solid #d7e2e6;
+      padding: 10px 12px;
+      overflow: hidden;
+      white-space: pre-wrap;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 10.8px;
+      direction: ltr;
+      text-align: left;
+    }
+    .small { font-size: 11px; color: #4b6270; }
+    .grid td { width: 50%; }
+    footer.note { margin-top: 18px; color: #5b6f7a; font-size: 11px; }
+  </style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="kicker">ClinSync / Clinsync — Clinic Management System</div>
+  <h1>دليل المنتج الكامل<br/>وخطة إنهاء التطبيق ورفعه على Google Play و App Store خلال أسبوعين</h1>
+  <p class="meta">
+    تاريخ الإصدار: 11 سبتمبر 2026 &nbsp;|&nbsp; الحالة الحالية: واجهة الموبايل/الويب شبه مكتملة على Mock API &nbsp;|&nbsp; المنصة: Expo SDK 57
+  </p>
+  <p>
+    هذا الملف مرجع واحد للفريق: ما الموجود اليوم في التطبيق (ويب + موبايل)، تفاصيل كل دور وشاشة،
+    وما هي <strong>الخطوة التالية فوراً</strong>، ثم خطة عمل يومية لـ 14 يوماً حتى رفع النسخ على المتاجر.
+  </p>
+  <div class="warn">
+    <strong>الخلاصة بصراحة:</strong>
+    التطبيق كواجهة (UI) متقدم جداً، لكن البيانات حالياً وهمية (Mock).
+    خلال أسبوعين يمكن تجهيز البناء، الحسابات، سياسة الخصوصية، TestFlight، والاختبار المغلق على Google Play.
+    <strong>النشر العام للجمهور على Google Play لحساب شخصي جديد غير مضمون في 14 يوماً</strong>
+    لأن جوجل تطلب 12 مختبراً لمدة 14 يوماً متتالية قبل طلب صلاحية الإنتاج.
+    App Store يعتمد على موافقة مراجعة آبل (عادة 1–7 أيام بعد الرفع).
+  </div>
+</section>
+
+<h2>1) الخطوة التالية فوراً (اعملوها اليوم — يوم 1)</h2>
+<div class="next">
+  <ol>
+    <li><strong>قرروا مصدر البيانات:</strong> هل يوجد Backend حقيقي جاهز؟ إذا نعم: اربطوا التطبيق عليه وأوقفوا الـ Mock. إذا لا: الإطلاق العام غير مناسب، والهدف يصبح نسخة تجريبية داخلية.</li>
+    <li><strong>افتحوا الحسابات القانونية للمتاجر اليوم:</strong> Apple Developer (99 دولار/سنة) + Google Play Console (25 دولار مرة واحدة) + حساب Expo على eas.build.</li>
+    <li><strong>انشروا سياسة خصوصية وشروط استخدام على رابط عام</strong> (صفحة ويب حقيقية، ليست localhost). المتجران يرفضان بدونها.</li>
+    <li><strong>وحّدوا اسم المنتج:</strong> الواجهة تعمل باسم <strong>Clinsync</strong>، والمستندات القديمة باسم Clinify، وPackage أندرويد <span class="mono">com.clinify.app</span>. اختاروا اسماً واحداً قبل الرفع.</li>
+    <li><strong>أضيفوا iOS Bundle Identifier</strong> في <span class="mono">app.json</span> — حالياً غير موجود، وهذا يمنع بناء iOS للستور.</li>
+  </ol>
+</div>
+<p>بدون النقاط الخمس أعلاه، البناء للمتاجر سيكون ناقصاً أو سيُرفض.</p>
+
+<h2>2) ما هو المنتج؟</h2>
+<p>
+  <strong>Clinsync</strong> نظام إدارة عيادات متعدد المستأجرين (Multi-tenant SaaS) يربط أربعة أدوار في تطبيق واحد:
+  مريض، طبيب، سكرتارية استقبال، ومدير عيادة.
+</p>
+<p>
+  هذا <strong>ليس موقعاً منفصلاً</strong>. هو تطبيق موبايل مبني بـ React Native + Expo، ويعمل أيضاً على المتصفح كواجهة ويب من نفس الكود.
+  ما رأيتموه على <span class="mono">http://localhost:8081</span> هو نفس التطبيق، وليس ويبسايت تسويقي مستقل.
+</p>
+<table>
+  <tr><th>البند</th><th>القيمة الحالية</th></tr>
+  <tr><td>اسم العرض</td><td>Clinsync</td></tr>
+  <tr><td>Expo slug</td><td>clinify</td></tr>
+  <tr><td>Android package</td><td>com.clinify.app</td></tr>
+  <tr><td>iOS bundle id</td><td>غير مضبوط بعد — يجب إضافته (مقترح: com.clinify.app)</td></tr>
+  <tr><td>الإصدار</td><td>1.0.0</td></tr>
+  <tr><td>اللغة الافتراضية</td><td>العربية (RTL) مع إنجليزية اختيارية</td></tr>
+  <tr><td>الثيم</td><td>فاتح / داكن / حسب النظام</td></tr>
+  <tr><td>وضع البيانات</td><td>Mock API مفعّل (EXPO_PUBLIC_USE_MOCK_API=true)</td></tr>
+  <tr><td>عنوان الـ API المتوقع</td><td>http://localhost:3000/api/v1</td></tr>
+  <tr><td>EAS projectId</td><td>d4091b32-b7c8-4fcb-91a2-545f955009b1</td></tr>
+  <tr><td>Scheme للروابط العميقة</td><td>doctorsapp</td></tr>
+</table>
+
+<h2>3) كيف يعمل «الويبسايت» حالياً؟</h2>
+<ul>
+  <li><strong>تطوير محلي:</strong> <span class="mono">npm start</span> ثم فتح المتصفح على المنفذ 8081. هذا للتجربة فقط على جهازكم.</li>
+  <li><strong>الموبايل:</strong> Expo Go أو Android Emulator / جهاز حقيقي. هذا هو المنتج الأساسي للمتاجر.</li>
+  <li><strong>الويب العام:</strong> غير منشور على دومين. لو أردتم نسخة ويب للعيادات لاحقاً تحتاج استضافة (EAS Hosting أو أي استضافة static) + HTTPS + نفس الـ Backend.</li>
+</ul>
+<div class="ok">
+  للمتاجر (Google Play / App Store) المطلوب هو تطبيق أصلي: ملف <strong>AAB</strong> لأندرويد وملف <strong>IPA</strong> لآيفون. نسخة الويب لا تُرفع على المتاجر.
+</div>
+
+<h2>4) التقنيات المستخدمة</h2>
+<table>
+  <tr><th>الطبقة</th><th>التقنية</th></tr>
+  <tr><td>واجهة</td><td>React 19 + React Native 0.86 + Expo SDK 57 + Expo Router</td></tr>
+  <tr><td>لغة</td><td>TypeScript (strict)</td></tr>
+  <tr><td>تنسيق</td><td>NativeWind v4 + Tailwind CSS 3</td></tr>
+  <tr><td>حالة العميل</td><td>Zustand (auth, theme, locale, clinic, إشعارات)</td></tr>
+  <tr><td>بيانات السيرفر</td><td>TanStack Query + Axios + persist للكاش أوفلاين</td></tr>
+  <tr><td>نماذج</td><td>React Hook Form + Zod</td></tr>
+  <tr><td>ترجمة</td><td>i18next — عربي/إنجليزي + RTL</td></tr>
+  <tr><td>خطوط</td><td>Cairo للعربية، Inter للإنجليزية</td></tr>
+  <tr><td>تخزين آمن</td><td>SecureStore على الموبايل / AsyncStorage على الويب</td></tr>
+  <tr><td>إشعارات</td><td>expo-notifications</td></tr>
+  <tr><td>اختبارات E2E</td><td>Maestro — 21 سيناريو</td></tr>
+  <tr><td>البناء</td><td>EAS Build (APK للتجربة الداخلية، AAB للإنتاج)</td></tr>
+</table>
+
+<h2>5) المعمارية باختصار</h2>
+<pre>الشاشات (app/ + features/*/screens)
+        ↓
+حالة التطبيق (Zustand: auth / theme / locale / clinic)
+        ↓
+بيانات السيرفر (TanStack Query)
+        ↓
+النماذج والعقود (types + Zod schemas)
+        ↓
+البنية التحتية (Axios, SecureStore, i18n, Mock)</pre>
+<p>
+  مجلد <span class="mono">app/</span> يحتوي المسارات فقط (re-exports). المنطق الحقيقي في <span class="mono">src/features</span>.
+  الحماية بالمسار: زائر يرى شاشات الدخول فقط، وكل دور له مجموعة تبويبات خاصة.
+</p>
+
+<h2>6) الأدوار الأربعة — ماذا يرى كل مستخدم؟</h2>
+
+<h3>أ) المريض (Patient)</h3>
+<p>التبويبات: الرئيسية · البحث · المواعيد · السجلات · الملف الشخصي</p>
+<ul>
+  <li>لوحة منزلية: مواعيد قادمة، إحصائيات، معاينة إشعارات</li>
+  <li>بحث عيادات وأطباء (Clinics | Doctors) مع فلتر التخصص</li>
+  <li>ملف العيادة: بيانات التواصل + أطباء العيادة</li>
+  <li>ملف الطبيب + حجز موعد (اختيار فترة + سبب الزيارة)</li>
+  <li>إلغاء موعد أو إعادة جدولته</li>
+  <li>السجل الطبي: الكل / وصفات / تحاليل / زيارات مع شاشات تفاصيل</li>
+  <li>تعديل الملف، الصورة الشخصية، تغيير كلمة المرور، تفضيلات الإشعارات</li>
+</ul>
+
+<h3>ب) الطبيب (Doctor)</h3>
+<p>التبويبات: لوحة التحكم · المواعيد · المرضى · الملف الشخصي</p>
+<ul>
+  <li>لوحة اليوم: عدد المواعيد، قيد الانتظار، قائمة اليوم، الإشعارات</li>
+  <li>تأكيد / إلغاء موعد، بدء زيارة</li>
+  <li>قائمة مرضى مع بحث</li>
+  <li>ملف المريض: بيانات، حساسية، تاريخ طبي قابل للفتح</li>
+  <li>شاشة الزيارة: شكوى، تشخيص، علامات حيوية، وصفات، طلبات تحاليل، إكمال الزيارة</li>
+  <li>جدول التوفر الأسبوعي (Schedule / Availability)</li>
+</ul>
+
+<h3>ج) السكرتارية (Secretary) — مضاف حديثاً وغير موثّق بالكامل في README</h3>
+<p>التبويبات: المواعيد · المرضى · الملف الشخصي</p>
+<ul>
+  <li>إدارة مواعيد العيادة من الاستقبال</li>
+  <li>تسجيل مريض جديد ثم الحجز مباشرة</li>
+  <li>اختيار الطبيب وتأكيد الحجز بسبب «حجز من الاستقبال»</li>
+  <li>الإشعارات، تعديل الملف، تغيير كلمة المرور</li>
+</ul>
+
+<h3>د) مدير العيادة (Admin)</h3>
+<p>التبويبات: لوحة التحكم · المواعيد · الأطباء · المرضى · المزيد</p>
+<ul>
+  <li>KPIs للعيادة النشطة + معاينة مواعيد وتقارير</li>
+  <li>إنشاء / تعديل / إلغاء تفعيل / إعادة تفعيل طبيب أو مريض</li>
+  <li>عرض غير النشطين (Show inactive)</li>
+  <li>تأكيد وإلغاء المواعيد + فلاتر الحالة</li>
+  <li>التقارير مع شاشة تفاصيل (metrics / highlights)</li>
+  <li>عرض السجلات السريرية للقراءة فقط</li>
+  <li>تبديل العيادة (Multi-clinic) للمستخدمين متعددي العيادات</li>
+</ul>
+
+<h2>7) شاشات المصادقة المشتركة</h2>
+<table>
+  <tr><th>الشاشة</th><th>المسار</th><th>الوظيفة</th></tr>
+  <tr><td>الترحيب</td><td>/(auth)/onboarding</td><td>تعريف المنتج أول مرة</td></tr>
+  <tr><td>تسجيل الدخول</td><td>/(auth)/login</td><td>معرّف (موبايل أو إيميل) + كلمة مرور</td></tr>
+  <tr><td>إنشاء حساب</td><td>/(auth)/register</td><td>تسجيل مريض جديد</td></tr>
+  <tr><td>نسيت كلمة المرور</td><td>/(auth)/forgot-password</td><td>إرسال OTP</td></tr>
+  <tr><td>تحقق OTP</td><td>/(auth)/verify-otp</td><td>في الـ Mock الكود 123456</td></tr>
+  <tr><td>تعيين كلمة مرور</td><td>/(auth)/reset-password</td><td>بعد نجاح OTP</td></tr>
+  <tr><td>اختيار الدور</td><td>/(auth)/role-selection</td><td>للمستخدم متعدد الأدوار</td></tr>
+  <tr><td>اختيار العيادة</td><td>/(auth)/clinic-selection</td><td>للأدمن/متعدد العيادات</td></tr>
+</table>
+
+<h2>8) حسابات التجربة (Mock فقط)</h2>
+<p>كلمة المرور للجميع: <span class="mono">password123</span> — OTP: <span class="mono">123456</span></p>
+<table>
+  <tr><th>الدور</th><th>الإيميل</th><th>موبايل تجريبي</th></tr>
+  <tr><td>طبيب</td><td>doctor@clinic.com</td><td>+201005188116</td></tr>
+  <tr><td>مريض</td><td>patient@clinic.com</td><td>+201092313486</td></tr>
+  <tr><td>أدمن</td><td>admin@clinic.com</td><td>+201000000020</td></tr>
+  <tr><td>سكرتارية</td><td>secretary@clinic.com</td><td>+201000000099</td></tr>
+  <tr><td>طبيب + أدمن</td><td>multi@clinic.com</td><td>+201000000030</td></tr>
+</table>
+<p class="small">هذه الحسابات للاختبار المحلي فقط. لا تُرفع كما هي في نسخة الإنتاج.</p>
+
+<h2>9) واجهات الـ API التي التطبيق يتوقعها</h2>
+<p>التطبيق جاهز للارتباط بسيرفر على المسار <span class="mono">/api/v1</span> مع الهيدر <span class="mono">X-Clinic-Id</span> وتجديد التوكن عند 401.</p>
+<table>
+  <tr><th>المجموعة</th><th>أمثلة المسارات</th></tr>
+  <tr><td>Auth</td><td>/auth/login, register, refresh, me, profile, change-password, forgot/verify/reset OTP, logout</td></tr>
+  <tr><td>مواعيد</td><td>CRUD + cancel / confirm / reschedule</td></tr>
+  <tr><td>مرضى</td><td>list, me, detail, history, وصفات وتحاليل وزيارات المريض</td></tr>
+  <tr><td>زيارات سريرية</td><td>start / update / complete + prescriptions + lab-requests</td></tr>
+  <tr><td>أطباء وعيادات</td><td>list/detail/search + availability</td></tr>
+  <tr><td>إشعارات</td><td>list, mark read, mark all, register device</td></tr>
+  <tr><td>أدمن</td><td>stats, reports, إنشاء/تعديل/تعطيل/تفعيل أطباء ومرضى</td></tr>
+  <tr><td>سجلات طاقم</td><td>/clinical/prescriptions|lab-results|visits/:id</td></tr>
+</table>
+
+<h2>10) ما تم إنجازه حتى اليوم (Phases 1–17 + سكرتارية)</h2>
+<table>
+  <tr><th>المرحلة</th><th>المحتوى</th><th>الحالة</th></tr>
+  <tr><td>1</td><td>الأساس، Design System، i18n، الثيم، الحماية بالمسار</td><td>مكتمل</td></tr>
+  <tr><td>2</td><td>جلسة حقيقية، Refresh Token، نسيت كلمة المرور</td><td>مكتمل</td></tr>
+  <tr><td>3</td><td>المواعيد والإشعارات</td><td>مكتمل</td></tr>
+  <tr><td>4</td><td>وحدة الطبيب (مرضى، زيارة، توفر)</td><td>مكتمل</td></tr>
+  <tr><td>5</td><td>وحدة المريض (بحث، حجز، سجلات)</td><td>مكتمل</td></tr>
+  <tr><td>6</td><td>وحدة الأدمن (KPIs، قوائم، تقارير)</td><td>مكتمل</td></tr>
+  <tr><td>7</td><td>Error Boundary، أوفلاين، Push، Maestro</td><td>مكتمل على المستوى التقني</td></tr>
+  <tr><td>8–9</td><td>تعدد العيادات + كاش أوفلاين + اكتشاف العيادات</td><td>مكتمل</td></tr>
+  <tr><td>10–17</td><td>سجلات تفصيلية، إنشاء موظفين، تعطيل/تفعيل، تفضيلات إشعارات، E2E</td><td>مكتمل</td></tr>
+  <tr><td>سكرتارية</td><td>تسجيل مريض + حجز من الاستقبال</td><td>موجود في الكود، يحتاج اختبار إنتاج</td></tr>
+</table>
+
+<h2>11) ما ينقص قبل اعتبار التطبيق «منتهي للستور»</h2>
+<table>
+  <tr><th>البند</th><th>الأهمية</th><th>لماذا؟</th></tr>
+  <tr><td>Backend حقيقي + إيقاف Mock</td><td>حرج</td><td>بدون سيرفر التطبيق يعرض بيانات وهمية. متاجر التطبيقات وتطبيقات الصحة ترفض أو تسوء سمعتها</td></tr>
+  <tr><td>سياسة خصوصية + شروط استخدام برابط عام</td><td>حرج</td><td>شرط آبل وجوجل، خصوصاً مع بيانات طبية</td></tr>
+  <tr><td>iOS bundleIdentifier + أيقونات 1024 و splash نهائية</td><td>حرج</td><td>لا يُبنى IPA بدون Bundle ID</td></tr>
+  <tr><td>حسابات Apple / Google / Expo</td><td>حرج</td><td>بدونها لا رفع</td></tr>
+  <tr><td>Production env على EAS (API URL الحقيقي، MOCK=false)</td><td>حرج</td><td>حالياً بروفايل preview يضع MOCK=true</td></tr>
+  <tr><td>تشفير iOS (ITSAppUsesNonExemptEncryption) وPrivacy manifests</td><td>عالي</td><td>مطلوب في App Store Connect</td></tr>
+  <tr><td>Data Safety (جوجل) + App Privacy (آبل)</td><td>عالي</td><td>جمع بيانات صحية يجب الإفصاح عنه بدقة</td></tr>
+  <tr><td>لقطات شاشة ستور (عربي + إنجليزي إن لزم)</td><td>عالي</td><td>بدونها لا تكتمل صفحة المنتج</td></tr>
+  <tr><td>إشعارات Push للإنتاج (FCM/APNs + شهادات)</td><td>متوسط-عالي</td><td>الإعداد الحالي للتطوير</td></tr>
+  <tr><td>مراقبة أخطاء (Sentry اختياري موجود في الإعداد)</td><td>متوسط</td><td>مهم بعد الإطلاق</td></tr>
+  <tr><td>اختبار أجهزة حقيقية iOS وAndroid</td><td>عالي</td><td>الويب لا يكفي للمراجعة</td></tr>
+  <tr><td>محتوى الـ Mock الإنجليزي داخل البيانات</td><td>منخفض بعد الربط الحقيقي</td><td>يظهر إن بقيتم على Mock</td></tr>
+</table>
+
+<h2>12) هل أسبوعان كافيان؟</h2>
+<table>
+  <tr><th>الهدف</th><th>واقعي خلال 14 يوم؟</th></tr>
+  <tr><td>إنهاء النواقص التقنية للواجهة وربط API إن كان السيرفر جاهزاً</td><td>نعم إذا السيرفر مستقر</td></tr>
+  <tr><td>بناء AAB و IPA ورفع Internal testing / TestFlight</td><td>نعم</td></tr>
+  <tr><td>إكمال صفحات المتاجر + سياسة الخصوصية + Data Safety</td><td>نعم</td></tr>
+  <tr><td>نشر عام على App Store</td><td>ممكن إذا اكتملت البيانات والمراجعة سريعة (غير مضمون)</td></tr>
+  <tr><td>نشر عام على Google Play لحساب شخصي أُنشئ بعد نوفمبر 2023</td><td><strong>غالباً لا</strong> — يلزم 12 مختبراً لمدة 14 يوماً ثم طلب صلاحية الإنتاج ثم مراجعة جوجل</td></tr>
+  <tr><td>بناء Backend من الصفر خلال نفس الأسبوعين</td><td>غير واقعي بجودة إنتاج لبيانات طبية</td></tr>
+</table>
+<div class="warn">
+  الهدف الصحيح لأسبوعين: <strong>نسخة إنتاج مربوطة بسيرفر + اختبار مغلق على المتجرين</strong>.
+  النشر العام للجمهور هو المرحلة التالية مباشرة بعد انتهاء نافذة الاختبار/المراجعة.
+</div>
+
+<h2>13) خطة الـ 14 يوماً</h2>
+
+<h3>الأيام 1–2: الأساس القانوني والإعداد</h3>
+<ol>
+  <li>تأكيد اسم التطبيق النهائي (Clinsync vs Clinify) والدومين.</li>
+  <li>شراء/تأكيد حساب Apple Developer و Google Play Console.</li>
+  <li>كتابة ونشر سياسة الخصوصية وشروط الاستخدام على HTTPS.</li>
+  <li>إضافة في التطبيق: رابط الخصوصية في الإعدادات + شاشة موافقة عند أول تشغيل إن لزم.</li>
+  <li>ضبط <span class="mono">ios.bundleIdentifier</span> و<span class="mono">ios.buildNumber</span> و<span class="mono">android.versionCode</span>.</li>
+  <li>إنشاء مفاتيح الإنتاج على EAS: <span class="mono">eas credentials</span>.</li>
+  <li>وضع متغيرات الإنتاج على EAS: عنوان الـ API الحقيقي و <span class="mono">EXPO_PUBLIC_USE_MOCK_API=false</span>.</li>
+</ol>
+
+<h3>الأيام 3–6: إنهاء المنتج تقنياً</h3>
+<ol>
+  <li>ربط كل الـ endpoints بالسيرفر الحقيقي وإصلاح أي اختلاف في العقود.</li>
+  <li>اختبار الأدوار الأربعة على جهاز حقيقي: دخول، حجز، زيارة، سكرتارية، أدمن.</li>
+  <li>إخفاء حسابات الديمو من شاشة الدخول.</li>
+  <li>ضبط Push للإنتاج (Firebase لأندرويد + APNs لآبل).</li>
+  <li>مراجعة الأذونات: الصور فقط حالياً — لا تطلبوا صلاحيات زائدة.</li>
+  <li>تشغيل <span class="mono">npm run typecheck</span> وسيناريوهات Maestro الأساسية.</li>
+  <li>لقطات شاشة عربية (وهاتف آيفون 6.7" و 6.5" وأندرويد فون).</li>
+</ol>
+
+<h3>الأيام 7–9: البناء</h3>
+<ol>
+  <li>بناء أندرويد إنتاج: <span class="mono">eas build --platform android --profile production</span> → ملف AAB.</li>
+  <li>بناء iOS إنتاج: <span class="mono">eas build --platform ios --profile production</span> → ملف IPA (يمكن من ويندوز عبر EAS Cloud، لا تحتاج ماك للبناء).</li>
+  <li>تثبيت نسخة داخلية على أجهزة الفريق والتأكد أن الـ Mock مغلق.</li>
+  <li>إصلاح أي كراش فوراً وإعادة البناء.</li>
+</ol>
+
+<h3>الأيام 10–12: الرفع على المتاجر (اختبار أولاً)</h3>
+<ol>
+  <li>Google Play: إنشاء التطبيق، استكمال التصنيف، Data Safety، سياسة الخصوصية، ثم رفع AAB على Internal ثم Closed testing.</li>
+  <li>دعوة 12 مختبراً على الأقل إن كان الحساب شخصياً جديداً — وابدأوا العدّاد من اليوم لأن الإنتاج العام ينتظر 14 يوماً.</li>
+  <li>App Store Connect: إنشاء التطبيق، الفئة Medical أو Productivity، Privacy Nutrition Labels، رفع IPA عبر <span class="mono">eas submit --platform ios</span>.</li>
+  <li>توزيع TestFlight على الفريق.</li>
+</ol>
+
+<h3>الأيام 13–14: المراجعة والإرسال</h3>
+<ol>
+  <li>إصلاح ملاحظات المختبرين.</li>
+  <li>إرسال نسخة App Store للمراجعة (Submit for Review) إذا اكتملت الميتاداتا.</li>
+  <li>على Play: الإبقاء على Closed testing إن لم تكتمل نافذة الـ 14 يوماً، أو التقديم للإنتاج إن كان الحساب مؤسسة/قديماً ويستوفي الشروط.</li>
+  <li>تجهيز رد المراجعة: حساب تجريبي حقيقي للمراجع (طبيب + مريض) على السيرفر، وليس Mock.</li>
+</ol>
+
+<h2>14) Google Play — الخطوات العملية</h2>
+<ol>
+  <li>ادفعوا 25 دولار مرة واحدة على <span class="mono">play.google.com/console</span>.</li>
+  <li>Create app: الاسم Clinsync، لغة عربية، تطبيق مجاني أو مدفوع حسب النموذج التجاري.</li>
+  <li>أكملوا: محتوى التطبيق، الفئة (طب)، الفئة العمرية، سياسة الخصوصية، Data safety (بيانات صحية + حسابات + جهاز).</li>
+  <li>أول رفع AAB غالباً يذهب Internal testing. بعد نجاحه انقلوا إلى Closed testing.</li>
+  <li>أوامر مقترحة:
+<pre>npx eas-cli login
+npx eas-cli build --platform android --profile production
+npx eas-cli submit --platform android --latest</pre>
+  </li>
+  <li>جوجل لا تنشر للجمهور تلقائياً بعد الرفع. أنتم تروّجون المسار (Promote) بعد اكتمال المتطلبات.</li>
+</ol>
+<p class="small">الحسابات الشخصية الجديدة بعد 13 نوفمبر 2023: Closed test بـ 12 مختبراً لمدة 14 يوماً متصلة ثم Apply for production.</p>
+
+<h2>15) Apple App Store — الخطوات العملية</h2>
+<ol>
+  <li>Apple Developer Program: 99 دولار/سنة. انتظروا تفعيل الحساب (قد يأخذ ساعات حتى يومين).</li>
+  <li>في <span class="mono">app.json</span> أضيفوا مثلاً:
+<pre>"ios": {
+  "bundleIdentifier": "com.clinify.app",
+  "supportsTablet": true,
+  "infoPlist": {
+    "ITSAppUsesNonExemptEncryption": false
+  }
+}</pre>
+  اضبطوا قيمة التشفير حسب الواقع إن استخدمتم تشفيراً غير المعفى.
+  </li>
+  <li>أنشئوا التطبيق في App Store Connect بنفس Bundle ID.</li>
+  <li>ارفعوا IPA:
+<pre>npx eas-cli build --platform ios --profile production
+npx eas-cli submit --platform ios --latest</pre>
+  </li>
+  <li>بعد المعالجة يظهر البناء في TestFlight خلال نحو 10–15 دقيقة (أحياناً أطول).</li>
+  <li>أكملوا: الاسم، الوصف العربي، الكلمات المفتاحية، لقطات الشاشة لكل مقاس مطلوب، رابط الخصوصية، بيانات الاتصال، تصنيف العمر.</li>
+  <li>Submit for Review. راجعوا إرشادات آبل للخصوصية والبيانات الصحية: لا إعلانات على البيانات الطبية، ووضوح الغرض.</li>
+</ol>
+<p>EAS Submit يعمل من ويندوز؛ لا حاجة لماك للرفع. الماك مفيد للاختبار على Simulator فقط.</p>
+
+<h2>16) صفحة المتجر — نصوص مقترحة (عربي)</h2>
+<p><strong>الاسم:</strong> Clinsync — إدارة العيادات</p>
+<p><strong>وصف قصير (Play، حتى 80 حرفاً):</strong> احجز موعدك وتابع سجلك الطبي — للطبيب والمريض والعيادة.</p>
+<p><strong>وصف كامل (مختصر للستور):</strong></p>
+<ul>
+  <li>للمرضى: البحث عن عيادة/طبيب، حجز، إلغاء، سجل وصفات وتحاليل وزيارات.</li>
+  <li>للأطباء: جدول اليوم، بدء الزيارة، الوصفات وطلبات التحاليل، جدول التوفر.</li>
+  <li>للاستقبال: تسجيل مريض وحجز فوري.</li>
+  <li>للإدارة: مؤشرات، تقارير، إدارة الأطباء والمرضى.</li>
+  <li>عربي بالكامل مع وضع ليلي.</li>
+</ul>
+<p>لا تكتبوا «يعالج» أو «يشخّص» كادعاء طبي. التطبيق أداة إدارة مواعيد وسجلات، وليس جهاز طبي.</p>
+
+<h2>17) التكاليف والمتطلبات غير البرمجية</h2>
+<table>
+  <tr><th>البند</th><th>التكلفة / الملاحظة</th></tr>
+  <tr><td>Google Play Console</td><td>25 دولار مرة واحدة</td></tr>
+  <tr><td>Apple Developer</td><td>99 دولار سنوياً</td></tr>
+  <tr><td>EAS Build</td><td>خطة Expo المجانية محدودة الدقائق؛ الإنتاج الأسبوعي قد يحتاج خطة مدفوعة</td></tr>
+  <tr><td>دومين + استضافة سياسة الخصوصية</td><td>منخفض</td></tr>
+  <tr><td>سيرفر Backend + قاعدة بيانات + نسخ احتياطي</td><td>حسب المزود — إلزامي قبل الجمهور</td></tr>
+  <tr><td>12 مختبر أندرويد</td><td>فريق + أصدقاء بريد Gmail حقيقي</td></tr>
+  <tr><td>أجهزة اختبار</td><td>أندرويد حديث + آيفون واحد على الأقل عبر TestFlight</td></tr>
+</table>
+
+<h2>18) أوامر التشغيل والبناء</h2>
+<pre># تطوير
+npm install
+npm start                 # ويب/موبايل على 8081
+npm run web
+npm run android
+npm run typecheck
+
+# إنتاج أندرويد (AAB للمتجر) — بعد ضبط production env
+npx eas-cli build --platform android --profile production
+
+# APK للتجربة الداخلية فقط
+npm run build:apk
+
+# إنتاج iOS
+npx eas-cli build --platform ios --profile production
+
+# رفع
+npx eas-cli submit --platform android --latest
+npx eas-cli submit --platform ios --latest</pre>
+<p>بروفايل <span class="mono">preview</span> الحالي يخرج APK ويفعّل Mock — لا تستخدموا هذا البروفايل للمتاجر.</p>
+
+<h2>19) مخاطر مهمة لتطبيق عيادات</h2>
+<ul>
+  <li><strong>بيانات صحية:</strong> يلزم الإفصاح في المتجرين، وتشفير النقل (HTTPS)، وعدم تسريب بيانات في السجلات.</li>
+  <li><strong>مصر / المنطقة:</strong> راجعوا متطلبات حماية البيانات المحلية مع المستشار القانوني إن وُجد.</li>
+  <li><strong>مراجع آبل:</strong> أعطوهم حساباً يعمل على السيرفر الحقيقي. التطبيق الذي لا يعمل للمراجع يُرفض.</li>
+  <li><strong>لا ترفعوا نسخة Mock</strong> على أنها منتج طبي حقيقي.</li>
+  <li>اختلاف الأسماء (Clinsync / Clinify / doctors-app) يربك الشهادات والستور — وحّدوا قبل البناء النهائي لأن Bundle ID و Package لا يتغيران بسهولة بعد أول رفع.</li>
+</ul>
+
+<h2>20) قائمة تسليم نهاية الأسبوعين</h2>
+<ol>
+  <li>التطبيق مربوط بسيرفر حقيقي (أو قرار رسمي أن الإطلاق داخلي فقط).</li>
+  <li>سياسة خصوصية منشورة + رابطها داخل التطبيق وفي المتجرين.</li>
+  <li>AAB مرفوع على Play (Internal/Closed).</li>
+  <li>IPA ظاهر في TestFlight، وإن اكتملت الصفحة: Submit for Review.</li>
+  <li>حسابات تجريبية للمراجعين.</li>
+  <li>لقطات شاشة ووصف المتجر بالعربي.</li>
+  <li>12 مختبراً بدأوا Closed testing إن لزم لحساب Play الشخصي.</li>
+  <li>Sentry أو مراقبة بديلة مفعّلة اختياريًا.</li>
+</ol>
+
+<div class="next">
+  <strong>ابدأوا غداً صباحاً بهذا الترتيب فقط:</strong>
+  1) قرار الـ Backend &nbsp;
+  2) فتح حسابات المتاجر &nbsp;
+  3) سياسة الخصوصية على دومين &nbsp;
+  4) Bundle ID لآيفون وتوحيد الاسم &nbsp;
+  5) ضبط production على EAS وإيقاف الـ Mock.
+</div>
+
+<p class="footer note">
+  أُعد هذا الدليل من حالة المشروع الفعلية بتاريخ 11 سبتمبر 2026 (Expo 57، أدوار: مريض/طبيب/سكرتارية/أدمن، Mock API مفعّل).
+  المصدر: الكود الحالي، app.json، eas.json، ووثائق Expo لإرسال المتاجر.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "admin@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Admin Dashboard"
+    timeout: 15000
+- tapOn: "Patients"
+- extendedWaitUntil:
+    visible: "Nour Adel"
+    timeout: 10000
+- tapOn: "Nour Adel"
+- extendedWaitUntil:
+    visible: "Deactivate Patient"
+    timeout: 10000
+- tapOn:
+    id: "admin-deactivate-patient"
+- extendedWaitUntil:
+    visible: "Deactivate"
+    timeout: 5000
+- tapOn:
+    id: "confirm-dialog-confirm"
+- extendedWaitUntil:
+    visible: "Patients"
+    timeout: 10000

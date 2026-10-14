@@ -1,0 +1,133 @@
+{
+  "title": "Home nursing",
+  "requestAction": "Request home nursing",
+  "requestTitle": "Home nursing request",
+  "requestHint": "A quick visit is one task at a fixed price. Shift care stays with the patient for longer. Prices are a guide in EGP and include basic supplies.",
+  "myRequests": "My requests",
+  "emptyTitle": "No requests",
+  "emptyDescription": "Home nursing requests will show up here.",
+  "service": "Service",
+  "servicePlaceholder": "Choose a service",
+  "chooseService": "Choose one or more services",
+  "selectionTotal": "{{count}} services selected",
+  "visitsTitle": "Quick visits",
+  "visitsHint": "15 to 45 minutes",
+  "shiftsTitle": "Extended care",
+  "shiftsHint": "A nurse stays with the patient for the shift",
+  "expectedPrice": "Expected price",
+  "currency": "EGP",
+  "address": "Address",
+  "date": "Date",
+  "datePlaceholder": "YYYY-MM-DD",
+  "time": "Time",
+  "timePlaceholder": "HH:mm",
+  "submit": "Send request",
+  "price": "Price",
+  "pricePlaceholder": "Amount in EGP",
+  "notify": "Save price and mark patient informed",
+  "sendNurse": "Send to nurse",
+  "verifiedNurses": "Verified nurses",
+  "noVerifiedNurses": "No verified nurses yet.",
+  "patient": "Patient",
+  "phone": "Phone",
+  "scheduled": "Time",
+  "status": "Status",
+  "nurse": "Nurse",
+  "accept": "Accept",
+  "decline": "Decline",
+  "complete": "Mark visit done",
+  "waitingNurse": "Waiting for the nurse",
+  "adminTitle": "Nursing requests",
+  "nursesTitle": "Nurses",
+  "proof": "Nursing proof",
+  "approve": "Verify",
+  "reject": "Reject verification",
+  "pendingAccount": "Your account is waiting for administration to verify your nursing proof. Requests arrive only after verification.",
+  "rejectedAccount": "Administration rejected this account. Contact them and submit proof again.",
+  "registerTitle": "Nurse registration",
+  "registerSubtitle": "After you register, administration reviews your proof before requests can reach you.",
+  "registerAction": "Create account",
+  "loginLink": "Register as a nurse",
+  "services": {
+    "injection": {
+      "name": "Injection (intramuscular / subcutaneous)",
+      "description": "Medication, insulin, or vitamin injections."
+    },
+    "cannulaIv": {
+      "name": "Cannula and IV injection",
+      "description": "Insert a cannula and give the medicine into the vein."
+    },
+    "ivDrip": {
+      "name": "IV drip (up to 2 hours)",
+      "description": "Set up the drip and stay until it finishes."
+    },
+    "woundSimple": {
+      "name": "Simple or moderate wound dressing",
+      "description": "Surgical, cesarean, or superficial wound dressing."
+    },
+    "woundLarge": {
+      "name": "Large wound or pressure ulcer dressing",
+      "description": "Clean and dress deep wounds and pressure ulcers."
+    },
+    "catheter": {
+      "name": "Urinary catheter insertion or change",
+      "description": "Insert or change a catheter for elderly patients or after surgery."
+    },
+    "ngTube": {
+      "name": "Feeding tube (Ryle)",
+      "description": "Insert a nasogastric tube and confirm placement."
+    },
+    "nebulizer": {
+      "name": "Nebulizer session",
+      "description": "Set up the nebulizer and watch the patient's breathing."
+    },
+    "labSample": {
+      "name": "Home lab sample",
+      "description": "Draw blood or collect urine and deliver it to the lab."
+    },
+    "vitals": {
+      "name": "Full vital signs",
+      "description": "Blood pressure, glucose, pulse, temperature, and oxygen, with a report."
+    },
+    "shift8": {
+      "name": "8-hour shift",
+      "description": "Daytime follow-up, or a break for the mother."
+    },
+    "shift12": {
+      "name": "12-hour shift",
+      "description": "Day or night shift, the most requested for mother and baby care."
+    },
+    "shift24": {
+      "name": "24-hour shift (resident nurse)",
+      "description": "Rotating or resident nurse, with meals and stay, for home intensive care."
+    }
+  },
+  "statuses": {
+    "requested": "Waiting for confirmation",
+    "priced": "Patient was told the price",
+    "assigned": "Sent to the nurse",
+    "accepted": "Nurse accepted",
+    "declined": "Nurse declined",
+    "completed": "Visit completed"
+  },
+  "verification": {
+    "pending": "Waiting for verification",
+    "approved": "Verified",
+    "rejected": "Rejected"
+  },
+  "tabs": {
+    "orders": "Requests",
+    "nurses": "Nurses",
+    "profile": "Profile"
+  },
+  "toast": {
+    "requested": "Request sent to administration",
+    "priced": "Price saved and patient marked as informed",
+    "assigned": "Request sent to the nurse",
+    "accepted": "Request accepted",
+    "declined": "Request declined",
+    "completed": "Visit marked done",
+    "verified": "Nurse verification updated",
+    "failed": "Something went wrong"
+  }
+}

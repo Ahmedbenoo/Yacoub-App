@@ -1,0 +1,32 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "patient@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Home"
+    timeout: 15000
+- tapOn: "Appointments"
+- extendedWaitUntil:
+    visible: "Lab results review"
+    timeout: 10000
+- tapOn: "Lab results review"
+- extendedWaitUntil:
+    visible: "Cancel Appointment"
+    timeout: 10000
+- tapOn:
+    id: "appointment-cancel"
+- extendedWaitUntil:
+    visible: "Yes, cancel"
+    timeout: 5000
+- tapOn:
+    id: "confirm-dialog-confirm"
+- extendedWaitUntil:
+    visible: "Cancelled"
+    timeout: 10000

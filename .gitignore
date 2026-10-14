@@ -31,7 +31,15 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+
+# local export and inspect scratch
+.expo-tmp-export/
+.tmp-apk-inspect/
+.tmp-nw-export/
+.tmp-nw-export-p*/
+.tmp-nw-export-p/
 
 # typescript
 *.tsbuildinfo

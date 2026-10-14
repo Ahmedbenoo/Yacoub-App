@@ -1,0 +1,26 @@
+appId: com.clinify.app
+---
+- launchApp
+- tapOn:
+    text: "Email"
+- inputText: "admin@clinic.com"
+- tapOn:
+    text: "Password"
+- inputText: "password123"
+- tapOn:
+    text: "Sign In"
+- extendedWaitUntil:
+    visible: "Admin Dashboard"
+    timeout: 15000
+- tapOn: "Doctors"
+- extendedWaitUntil:
+    visible: "Dr. Ahmed Fathy"
+    timeout: 10000
+- tapOn: "Dr. Ahmed Fathy"
+- extendedWaitUntil:
+    visible: "Edit Doctor"
+    timeout: 10000
+- tapOn: "Edit Doctor"
+- extendedWaitUntil:
+    visible: "Save Changes"
+    timeout: 10000

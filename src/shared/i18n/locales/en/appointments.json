@@ -1,0 +1,196 @@
+{
+  "title": "Appointments",
+  "detailTitle": "Appointment Details",
+  "today": "Today",
+  "upcoming": "Upcoming",
+  "past": "Past",
+  "all": "All",
+  "empty": {
+    "title": "No appointments",
+    "description": "Appointments will appear here when scheduled."
+  },
+  "guest": {
+    "title": "Your appointments",
+    "description": "Sign in with your phone when you book to see them here."
+  },
+  "error": "Failed to load appointments",
+  "reason": "Reason",
+  "notes": "Notes",
+  "branch": "Branch",
+  "duration": "Duration",
+  "minutes": "{{count}} min",
+  "doctor": "Doctor",
+  "patient": "Patient",
+  "specialty": "Specialty",
+  "dateTime": "Date & Time",
+  "cancel": "Cancel Appointment",
+  "confirm": "Confirm Appointment",
+  "confirmSuccess": "Appointment confirmed",
+  "confirmFailed": "Confirmation failed",
+  "confirming": "Confirming...",
+  "cancelSuccess": "Appointment cancelled",
+  "cancelFailed": "Cancellation failed",
+  "rescheduleSuccess": "Appointment rescheduled",
+  "rescheduleFailed": "Reschedule failed",
+  "bookSuccess": "Appointment booked",
+  "bookPending": "The booking was sent and is waiting for the secretary",
+  "bookFailed": "Booking failed",
+  "propose": "Propose a time",
+  "acceptTime": "Accept this time",
+  "waiting": "Status",
+  "awaitingSecretary": "Waiting for the secretary",
+  "awaitingPatient": "Waiting for the patient",
+  "noShow": "No-show",
+  "noShowPending": "Saving...",
+  "noShowSuccess": "Marked as a no-show",
+  "noShowFailed": "Could not mark the no-show",
+  "patientLookupFailed": "Could not load patient profile",
+  "reschedule": "Reschedule",
+  "selectNewTime": "Select a new time",
+  "confirmCancel": "Are you sure you want to cancel this appointment?",
+  "confirmCancelYes": "Yes, cancel",
+  "confirmCancelNo": "No, keep it",
+  "cancelling": "Cancelling...",
+  "rescheduling": "Rescheduling...",
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "viewAll": "View all notifications",
+    "markAllRead": "Mark all as read",
+    "error": "Failed to load notifications",
+    "items": {
+      "newAppointment": {
+        "title": "New appointment booked",
+        "body": "{{patientName}} booked an appointment for today at {{time}}"
+      },
+      "reminder": {
+        "title": "Appointment reminder",
+        "body": "You have a follow-up with {{patientName}} at {{time}}"
+      },
+      "appointmentConfirmed": {
+        "title": "Appointment confirmed",
+        "body": "Your appointment with Dr. {{doctorName}} is confirmed for tomorrow"
+      },
+      "welcome": {
+        "title": "Welcome to Yacoub",
+        "body": "Manage your appointments and medical records in one place"
+      },
+      "weeklyReport": {
+        "title": "Weekly clinic report ready",
+        "body": "Your weekly operations summary is available in reports"
+      },
+      "nursingPriced": {
+        "title": "Nursing request confirmed",
+        "body": "The visit was confirmed at {{price}} EGP"
+      },
+      "nursingAccepted": {
+        "title": "The nurse accepted the request",
+        "body": "{{nurseName}} accepted the home visit"
+      },
+      "appointmentCancelled": {
+        "title": "Appointment cancelled",
+        "body": "{{patientName}}'s appointment was cancelled"
+      },
+      "appointmentNoShow": {
+        "title": "Patient did not show",
+        "body": "{{patientName}} did not attend"
+      },
+      "appointmentProposed": {
+        "title": "Another time was proposed",
+        "body": "The secretary proposed a new time"
+      },
+      "appointmentAwaiting": {
+        "title": "The patient replied",
+        "body": "The time is back with the secretary to confirm"
+      }
+    }
+  },
+  "overview": {
+    "todayTitle": "Today's Appointments",
+    "upcomingTitle": "Upcoming",
+    "viewAll": "View all"
+  },
+  "stats": {
+    "today": "Today's appointments",
+    "awaitingConfirmation": "Awaiting confirmation",
+    "pending": "Pending",
+    "unread": "Unread"
+  },
+  "status": {
+    "scheduled": "Awaiting confirmation",
+    "confirmed": "Confirmed",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "no_show": "No Show"
+  },
+  "tabs": {
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "clinic": "Clinic appointments",
+    "nursing": "Home nursing appointments",
+    "noShow": "No-show"
+  },
+  "filters": {
+    "all": "All"
+  },
+  "review": {
+    "title": "Rate this visit",
+    "hint": "Your rating shows on the doctor's page.",
+    "comment": "Comment",
+    "commentPlaceholder": "Optional",
+    "submit": "Send rating",
+    "saved": "Rating saved",
+    "failed": "Could not save the rating",
+    "yours": "Your rating"
+  },
+  "billing": {
+    "title": "Visit invoice",
+    "issue": "Issue invoice",
+    "dayClose": "Close the day",
+    "today": "Today",
+    "collected": "Collected {{amount}}",
+    "openAmount": "Still open {{amount}}",
+    "doctorsTotal": "Doctors' share {{amount}}",
+    "clinicTotal": "Clinic share {{amount}}",
+    "doctorShare": "Doctor {{percent}}% — {{amount}}",
+    "clinicShare": "Clinic {{amount}}",
+    "doctorLine": "{{percent}}% to the doctor {{doctor}}, clinic {{clinic}}",
+    "open": "Invoice is open",
+    "paid": "Payment saved",
+    "paidWith": "Paid — {{method}}",
+    "payWith": "Pay by {{method}}",
+    "failed": "Could not save the invoice",
+    "methods": {
+      "cash": "Cash",
+      "instapay": "InstaPay",
+      "wallet": "Wallet"
+    }
+  },
+  "whatsapp": {
+    "title": "WhatsApp",
+    "hint": "Two messages: a confirmation when the secretary confirms, and a reminder one day before.",
+    "sent": "Sent",
+    "scheduled": "Scheduled",
+    "kinds": {
+      "confirmation": "Appointment confirmation",
+      "reminder": "Reminder"
+    }
+  },
+  "queue": {
+    "screenTitle": "Waiting room",
+    "screenHint": "Names only, without the complaint or the medical file.",
+    "open": "Waiting room",
+    "nowServing": "Now",
+    "now": "Your turn",
+    "next": "Next",
+    "emptyNow": "Nobody inside",
+    "emptyNext": "Nobody waiting",
+    "callNext": "Call next",
+    "checkIn": "Check in",
+    "checkedIn": "The patient joined the queue",
+    "yourTurn": "Your place",
+    "position": "{{count}}",
+    "failed": "Could not update the queue"
+  }
+}
