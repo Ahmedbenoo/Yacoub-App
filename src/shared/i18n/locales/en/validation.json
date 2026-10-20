@@ -22,6 +22,7 @@
     "passwordSameAsCurrent": "New password must be different from current password",
     "specialtyMin": "Specialty must be at least 2 characters",
     "specialtyRequired": "Please select a specialty",
+    "genderRequired": "Choose male or female",
     "branchMin": "Branch name must be at least 2 characters",
     "languagesMin": "Languages must be at least 2 characters",
     "dateOfBirthRequired": "Date of birth is required",

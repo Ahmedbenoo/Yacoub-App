@@ -446,7 +446,9 @@ app.post('/api/v1/auth/register', async (req, res) => {
 const registerOwnerBody = z.object({
   firstName: z.string().min(2),
   lastName: z.string().min(2),
+  email: z.string().email(),
   phone: z.string().min(8),
+  gender: z.enum(['male', 'female']),
   password: z.string().min(8),
   placeKind: z.enum(['clinic', 'center']),
   placeName: z.string().min(2),
@@ -477,7 +479,9 @@ app.post('/api/v1/auth/register-owner', async (req, res) => {
 const registerDoctorAccountBody = z.object({
   firstName: z.string().min(2),
   lastName: z.string().min(2),
+  email: z.string().email(),
   phone: z.string().min(8),
+  gender: z.enum(['male', 'female']),
   password: z.string().min(8),
   specialty: z.string().min(2),
 });

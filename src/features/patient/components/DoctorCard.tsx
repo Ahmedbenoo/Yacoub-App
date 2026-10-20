@@ -30,7 +30,7 @@ export function DoctorCard({ doctor, href, onPress }: DoctorCardProps) {
         firstName={doctor.firstName}
         lastName={doctor.lastName}
         imageUrl={doctor.avatarUrl}
-        source={getDoctorPortrait(doctor.firstName)}
+        source={getDoctorPortrait(doctor.gender, doctor.firstName)}
         size="md"
       />
 

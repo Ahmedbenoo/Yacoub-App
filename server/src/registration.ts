@@ -19,10 +19,6 @@ function normalizePhone(input: string): string {
   return `+${digits}`;
 }
 
-function staffEmail(phone: string, kind: 'doctor' | 'owner'): string {
-  return `${phone.replace(/\D/g, '')}@${kind}.clinsync`;
-}
-
 async function defaultSlots(doctorId: string): Promise<void> {
   for (let day = 0; day < 7; day += 1) {
     await db.query(
@@ -40,19 +36,22 @@ async function insertUser(input: {
   password: string;
   firstName: string;
   lastName: string;
+  gender: 'male' | 'female';
 }): Promise<void> {
-  try {
-    await db.query(
-      `INSERT INTO users (
-         id, email, phone, password_hash, first_name, last_name, locale, is_email_verified, is_phone_verified
-       ) VALUES ($1, $2, $3, $4, $5, $6, 'ar', true, true)`,
-      [input.id, input.email, input.phone, await bcrypt.hash(input.password, 10), input.firstName, input.lastName],
-    );
-  } catch (error) {
-    const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
-    if (code === '23505') throw httpError(409, 'PHONE_EXISTS', 'An account with this phone already exists');
-    throw error;
+  const taken = await db.query<{ email: string | null; phone: string | null }>(
+    'SELECT email, phone FROM users WHERE lower(email) = lower($1) OR phone = $2',
+    [input.email, input.phone],
+  );
+  if (taken.rows.some((row) => row.phone === input.phone)) {
+    throw httpError(409, 'PHONE_EXISTS', 'An account with this phone already exists');
   }
+  if (taken.rows.length > 0) throw httpError(409, 'EMAIL_EXISTS', 'هذا البريد الإلكتروني مستخدم بالفعل');
+  await db.query(
+    `INSERT INTO users (
+       id, email, phone, password_hash, first_name, last_name, locale, gender, is_email_verified, is_phone_verified
+     ) VALUES ($1, $2, $3, $4, $5, $6, 'ar', $7, true, true)`,
+    [input.id, input.email, input.phone, await bcrypt.hash(input.password, 10), input.firstName, input.lastName, input.gender],
+  );
 }
 
 async function insertClinic(input: {
@@ -99,6 +98,7 @@ async function insertDoctor(
   email: string,
   firstName: string,
   lastName: string,
+  gender: 'male' | 'female',
   offersHomeVisits = false,
 ) {
   await db.query(`INSERT INTO memberships (id, user_id, clinic_id, role) VALUES ($1, $2, $3, 'doctor')`, [
@@ -108,9 +108,9 @@ async function insertDoctor(
   ]);
   await db.query(
     `INSERT INTO doctors (
-       id, user_id, clinic_id, first_name, last_name, email, phone, specialty, branch_id, branch_name, languages, offers_home_visits
-     ) VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $2, $8, '["Arabic"]', $9)`,
-    [userId, clinicId, firstName, lastName, email, phone, specialty, clinicName, offersHomeVisits],
+       id, user_id, clinic_id, first_name, last_name, email, phone, specialty, branch_id, branch_name, languages, gender, offers_home_visits
+     ) VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $2, $8, '["Arabic"]', $9, $10)`,
+    [userId, clinicId, firstName, lastName, email, phone, specialty, clinicName, gender, offersHomeVisits],
   );
   await defaultSlots(userId);
 }
@@ -118,7 +118,9 @@ async function insertDoctor(
 export async function registerOwnerAccount(input: {
   firstName: string;
   lastName: string;
+  email: string;
   phone: string;
+  gender: 'male' | 'female';
   password: string;
   placeKind: 'clinic' | 'center';
   placeName: string;
@@ -135,10 +137,10 @@ export async function registerOwnerAccount(input: {
   const phone = normalizePhone(input.phone);
   if (!/^\+\d{10,15}$/.test(phone)) throw httpError(400, 'VALIDATION_ERROR', 'Phone number is invalid');
   const userId = `user-owner-${randomUUID()}`;
-  const email = staffEmail(phone, 'owner');
+  const email = input.email.trim().toLowerCase();
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
-  await insertUser({ id: userId, email, phone, password: input.password, firstName, lastName });
+  await insertUser({ id: userId, email, phone, password: input.password, firstName, lastName, gender: input.gender });
   const clinicName = (input.placeKind === 'center' ? input.clinicName || input.placeName : input.placeName).trim();
   const clinicId = await insertClinic({
     ownerId: userId,
@@ -158,7 +160,7 @@ export async function registerOwnerAccount(input: {
     clinicId,
   ]);
   if (input.practices) {
-    await insertDoctor(userId, clinicId, clinicName, phone, input.specialty, email, firstName, lastName);
+    await insertDoctor(userId, clinicId, clinicName, phone, input.specialty, email, firstName, lastName, input.gender);
   }
   return sessionForUser(userId);
 }
@@ -166,18 +168,20 @@ export async function registerOwnerAccount(input: {
 export async function registerDoctorAccount(input: {
   firstName: string;
   lastName: string;
+  email: string;
   phone: string;
+  gender: 'male' | 'female';
   password: string;
   specialty: string;
 }) {
   const phone = normalizePhone(input.phone);
   if (!/^\+\d{10,15}$/.test(phone)) throw httpError(400, 'VALIDATION_ERROR', 'Phone number is invalid');
   const userId = `user-doctor-${randomUUID()}`;
-  const email = staffEmail(phone, 'doctor');
+  const email = input.email.trim().toLowerCase();
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
   const clinicName = `${firstName} ${lastName}`.trim();
-  await insertUser({ id: userId, email, phone, password: input.password, firstName, lastName });
+  await insertUser({ id: userId, email, phone, password: input.password, firstName, lastName, gender: input.gender });
   const clinicId = await insertClinic({
     ownerId: userId,
     name: clinicName,
@@ -192,6 +196,6 @@ export async function registerDoctorAccount(input: {
     userId,
     clinicId,
   ]);
-  await insertDoctor(userId, clinicId, clinicName, phone, input.specialty, email, firstName, lastName, true);
+  await insertDoctor(userId, clinicId, clinicName, phone, input.specialty, email, firstName, lastName, input.gender, true);
   return sessionForUser(userId);
 }

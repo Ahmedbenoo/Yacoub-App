@@ -13,6 +13,7 @@ export interface DoctorProfile {
   branchId: string;
   branchName: string;
   avatarUrl?: string;
+  gender?: 'male' | 'female';
   languages: string[];
   sharePercent?: number;
   isActive?: boolean;

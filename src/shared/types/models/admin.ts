@@ -85,7 +85,9 @@ export interface CreateSecretaryResult {
 export interface RegisterDoctorPayload {
   firstName: string;
   lastName: string;
+  email: string;
   phone: string;
+  gender: 'male' | 'female';
   password: string;
   specialty: string;
 }
@@ -93,7 +95,9 @@ export interface RegisterDoctorPayload {
 export interface RegisterOwnerPayload {
   firstName: string;
   lastName: string;
+  email: string;
   phone: string;
+  gender: 'male' | 'female';
   password: string;
   placeKind: 'clinic' | 'center';
   placeName: string;

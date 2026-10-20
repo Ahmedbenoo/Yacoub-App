@@ -22,6 +22,7 @@
     "passwordSameAsCurrent": "يجب أن تكون كلمة المرور الجديدة مختلفة عن الحالية",
     "specialtyMin": "يجب أن يكون التخصص حرفين على الأقل",
     "specialtyRequired": "يرجى اختيار التخصص",
+    "genderRequired": "اختار ذكر أو أنثى",
     "branchMin": "يجب أن يكون اسم الفرع حرفين على الأقل",
     "languagesMin": "يجب إدخال لغة واحدة على الأقل",
     "dateOfBirthRequired": "تاريخ الميلاد مطلوب",

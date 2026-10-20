@@ -491,6 +491,11 @@ export async function updateProfile(
         textOrCurrent(input.stampUrl, row.stamp_url),
       ],
     );
+    const avatarUrl = textOrCurrent(input.avatarUrl, row.avatar_url);
+    await db.query(
+      `UPDATE doctors SET avatar_url = $2, updated_at = now() WHERE id = $1 OR user_id = $1`,
+      [userId, avatarUrl],
+    );
   } catch (error) {
     if (isUniqueViolation(error)) throw httpError(409, 'PHONE_EXISTS', 'An account with this phone already exists');
     throw error;

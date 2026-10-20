@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
@@ -10,6 +10,7 @@ import { useGuestGuard } from '@/shared/navigation/guards';
 import { Header } from '@/shared/components/layout/Header';
 import { Screen } from '@/shared/components/layout/Screen';
 import { Button } from '@/shared/components/ui/Button';
+import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
 import { Card } from '@/shared/components/ui/Card';
 import { Text } from '@/shared/components/ui/Text';
 import { FormInput } from '@/shared/components/form/FormInput';
@@ -150,7 +151,9 @@ function DoctorRegisterForm() {
     defaultValues: {
       firstName: '',
       lastName: '',
+      email: '',
       phone: '',
+      gender: 'male',
       password: '',
       confirmPassword: '',
       specialty: '',
@@ -161,7 +164,30 @@ function DoctorRegisterForm() {
     <View className="gap-4">
       <FormInput control={control} name="firstName" label={t('register.firstName')} autoCapitalize="words" />
       <FormInput control={control} name="lastName" label={t('register.lastName')} autoCapitalize="words" />
+      <FormInput
+        control={control}
+        name="email"
+        label={t('register.email')}
+        placeholder={t('register.emailPlaceholder')}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
       <FormInput control={control} name="phone" label={t('register.phone')} keyboardType="phone-pad" />
+      <Text variant="label">{t('register.gender')}</Text>
+      <Controller
+        control={control}
+        name="gender"
+        render={({ field: { value, onChange } }) => (
+          <SegmentedControl
+            options={[
+              { value: 'male', label: t('register.genderMale') },
+              { value: 'female', label: t('register.genderFemale') },
+            ]}
+            value={value}
+            onChange={onChange}
+          />
+        )}
+      />
       <FormSelect
         control={control}
         name="specialty"
@@ -178,7 +204,9 @@ function DoctorRegisterForm() {
           registerDoctor.mutate({
             firstName: data.firstName.trim(),
             lastName: data.lastName.trim(),
+            email: data.email.trim(),
             phone: data.phone.trim(),
+            gender: data.gender,
             password: data.password,
             specialty: data.specialty,
           }),

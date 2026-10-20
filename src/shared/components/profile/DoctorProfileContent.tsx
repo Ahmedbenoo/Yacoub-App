@@ -132,7 +132,7 @@ export function DoctorProfileContent({ doctor }: { doctor: DoctorProfile }) {
             }}
           />
           <Image
-            source={doctor.avatarUrl ? { uri: doctor.avatarUrl } : getDoctorPortrait(doctor.firstName)}
+            source={doctor.avatarUrl ? { uri: doctor.avatarUrl } : getDoctorPortrait(doctor.gender, doctor.firstName)}
             style={{
               width: 144,
               height: 144,

@@ -39,7 +39,9 @@ export function RegisterClinicScreen() {
       placeKind: lockedKind ?? 'clinic',
       firstName: '',
       lastName: '',
+      email: '',
       phone: '',
+      gender: 'male',
       password: '',
       confirmPassword: '',
       placeName: '',
@@ -104,9 +106,32 @@ export function RegisterClinicScreen() {
           <FormInput control={control} name="lastName" label={t('register.lastName')} />
           <FormInput
             control={control}
+            name="email"
+            label={t('register.email')}
+            placeholder={t('register.emailPlaceholder')}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <FormInput
+            control={control}
             name="phone"
             label={t('register.phone')}
             keyboardType="phone-pad"
+          />
+          <Text variant="label">{t('register.gender')}</Text>
+          <Controller
+            control={control}
+            name="gender"
+            render={({ field: { value, onChange } }) => (
+              <SegmentedControl
+                options={[
+                  { value: 'male', label: t('register.genderMale') },
+                  { value: 'female', label: t('register.genderFemale') },
+                ]}
+                value={value}
+                onChange={onChange}
+              />
+            )}
           />
           <FormInput control={control} name="password" label={t('register.password')} secureTextEntry />
           <FormInput
@@ -182,7 +207,9 @@ export function RegisterClinicScreen() {
             registerOwner.mutate({
               firstName: data.firstName.trim(),
               lastName: data.lastName.trim(),
+              email: data.email.trim(),
               phone: data.phone.trim(),
+              gender: data.gender,
               password: data.password,
               placeKind: data.placeKind,
               placeName: data.placeName.trim(),

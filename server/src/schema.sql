@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS memberships (
   UNIQUE (user_id, clinic_id, role)
 );
 
+ALTER TABLE users ADD COLUMN IF NOT EXISTS gender text;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url text;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS signature_url text;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS stamp_url text;
@@ -239,6 +240,7 @@ ALTER TABLE clinics ADD COLUMN IF NOT EXISTS owner_user_id text;
 ALTER TABLE clinics ADD COLUMN IF NOT EXISTS place_kind text NOT NULL DEFAULT 'clinic';
 ALTER TABLE clinics ADD COLUMN IF NOT EXISTS whatsapp_phone_number_id text;
 ALTER TABLE doctors ADD COLUMN IF NOT EXISTS offers_home_visits boolean NOT NULL DEFAULT false;
+ALTER TABLE doctors ADD COLUMN IF NOT EXISTS gender text;
 
 CREATE TABLE IF NOT EXISTS staff_whatsapp (
   id text PRIMARY KEY,

@@ -28,21 +28,21 @@ export const bookingAuthSchema = z.object({
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('invalidEmail'),
+  phone: z.string().min(8, 'invalidPhone'),
 });
 
 export const verifyOtpSchema = z.object({
-  email: z.string().email('invalidEmail'),
+  phone: z.string().min(8, 'invalidPhone'),
   otp: z.string().length(6, 'otpLength'),
 });
 
 export const resendOtpSchema = z.object({
-  email: z.string().email('invalidEmail'),
+  phone: z.string().min(8, 'invalidPhone'),
 });
 
 export const resetPasswordSchema = z
   .object({
-    email: z.string().email('invalidEmail'),
+    phone: z.string().min(8, 'invalidPhone'),
     resetToken: z.string().min(1, 'resetTokenRequired'),
     password: z.string().min(8, 'passwordMin'),
     confirmPassword: z.string(),
@@ -80,7 +80,9 @@ export const registerDoctorSchema = z
   .object({
     firstName: z.string().min(2, 'firstNameMin'),
     lastName: z.string().min(2, 'lastNameMin'),
+    email: z.string().email('invalidEmail'),
     phone: z.string().refine(isValidPhone, 'invalidPhone'),
+    gender: z.enum(['male', 'female'], { message: 'genderRequired' }),
     password: z.string().min(8, 'passwordMin'),
     confirmPassword: z.string(),
     specialty: z.string().min(1, 'specialtyRequired'),
@@ -95,7 +97,9 @@ export const registerOwnerSchema = z
     placeKind: z.enum(['clinic', 'center']),
     firstName: z.string().min(2, 'firstNameMin'),
     lastName: z.string().min(2, 'lastNameMin'),
+    email: z.string().email('invalidEmail'),
     phone: z.string().refine(isValidPhone, 'invalidPhone'),
+    gender: z.enum(['male', 'female'], { message: 'genderRequired' }),
     password: z.string().min(8, 'passwordMin'),
     confirmPassword: z.string(),
     placeName: z.string().min(2, 'firstNameMin'),

@@ -19,6 +19,7 @@ type DoctorRow = {
   branch_id: string;
   branch_name: string;
   avatar_url: string | null;
+  gender?: string | null;
   languages: string;
   share_percent: number | null;
   is_active: boolean;
@@ -48,6 +49,7 @@ export type PublicDoctor = {
   branchId: string;
   branchName: string;
   avatarUrl?: string;
+  gender?: 'male' | 'female';
   languages: string[];
   sharePercent?: number;
   isActive?: boolean;
@@ -210,6 +212,22 @@ function readLanguages(value: string): string[] {
   }
 }
 
+async function applyUserAvatars(rows: DoctorRow[]): Promise<DoctorRow[]> {
+  const missing = rows.filter((row) => !row.avatar_url);
+  if (!missing.length) return rows;
+  const ids = [...new Set(missing.flatMap((row) => [row.id, row.user_id].filter((id): id is string => Boolean(id))))];
+  const placeholders = ids.map((_, index) => `$${index + 1}`).join(', ');
+  const users = await db.query<{ id: string; avatar_url: string | null }>(
+    `SELECT id, avatar_url FROM users WHERE id IN (${placeholders})`,
+    ids,
+  );
+  const byId = new Map(users.rows.map((user) => [user.id, user.avatar_url]));
+  return rows.map((row) => {
+    if (row.avatar_url) return row;
+    return { ...row, avatar_url: byId.get(row.user_id ?? '') || byId.get(row.id) || null };
+  });
+}
+
 function toPublicDoctor(row: DoctorRow): PublicDoctor {
   return {
     id: row.id,
@@ -226,6 +244,7 @@ function toPublicDoctor(row: DoctorRow): PublicDoctor {
     branchId: row.branch_id,
     branchName: row.branch_name,
     avatarUrl: row.avatar_url ?? undefined,
+    gender: row.gender === 'male' || row.gender === 'female' ? row.gender : undefined,
     languages: readLanguages(row.languages),
     sharePercent: row.share_percent ?? undefined,
     isActive: row.is_active,
@@ -237,7 +256,8 @@ async function doctorById(id: string): Promise<DoctorRow | undefined> {
     'SELECT * FROM doctors WHERE id = $1 OR user_id = $1 ORDER BY id LIMIT 1',
     [id],
   );
-  return result.rows[0];
+  const [row] = await applyUserAvatars(result.rows);
+  return row;
 }
 
 async function slotsFor(doctorId: string): Promise<SlotRow[]> {
@@ -342,8 +362,9 @@ export async function listDoctors(filters: {
      LIMIT $6 OFFSET $7`,
     [...params, limit, (page - 1) * limit],
   );
+  const rows = await applyUserAvatars(result.rows);
   return {
-    data: result.rows.map(toPublicDoctor),
+    data: rows.map(toPublicDoctor),
     meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
   };
 }
