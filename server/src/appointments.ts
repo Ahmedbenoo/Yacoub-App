@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { db } from './db.js';
+import { ensureBookingPatient } from './users.js';
 import { ensureInvoice, voidOpenInvoice } from './invoices.js';
 import { notifySavedAppointment } from './notifications.js';
 import {
@@ -323,6 +324,7 @@ export async function createAppointment(
   const doctor = doctorResult.rows[0];
   if (!doctor) throw httpError(404, 'NOT_FOUND', 'Doctor not found');
 
+  await ensureBookingPatient(userId, doctor.clinic_id);
   const roles = await requireMember(userId, doctor.clinic_id);
   const manager = managesClinic(roles);
   const desk = Boolean(input.desk) && manager;

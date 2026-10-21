@@ -243,10 +243,8 @@ async function membershipsFor(userId: string): Promise<MembershipRow[]> {
 }
 
 function toPublicUser(row: UserRow, memberships: MembershipRow[]): PublicUser {
-  const clinicId = memberships[0]?.clinic_id;
-  if (!clinicId) {
-    throw Object.assign(new Error('User has no clinic'), { status: 403, code: 'NO_CLINIC' });
-  }
+  const clinicId = memberships[0]?.clinic_id ?? '';
+  const roles = memberships.length > 0 ? [...new Set(memberships.map((item) => item.role))] : ['patient'];
 
   return {
     id: row.id,
@@ -257,7 +255,7 @@ function toPublicUser(row: UserRow, memberships: MembershipRow[]): PublicUser {
     avatarUrl: row.avatar_url ?? undefined,
     signatureUrl: row.signature_url ?? undefined,
     stampUrl: row.stamp_url ?? undefined,
-    roles: [...new Set(memberships.map((item) => item.role))],
+    roles,
     locale: row.locale,
     isEmailVerified: row.is_email_verified,
     isPhoneVerified: row.is_phone_verified,
@@ -389,6 +387,25 @@ async function clinicForNewPatient(requested?: string): Promise<string | null> {
   }
   const demo = await db.query<{ id: string }>(`SELECT id FROM clinics WHERE id = 'clinic-001'`);
   return demo.rows[0]?.id ?? null;
+}
+
+export async function ensureBookingPatient(userId: string, clinicId: string): Promise<void> {
+  const memberships = await membershipsFor(userId);
+  if (memberships.some((item) => item.clinic_id === clinicId && item.role === 'patient')) return;
+  if (memberships.some((item) => item.role !== 'patient')) return;
+
+  const result = await db.query<UserRow>('SELECT * FROM users WHERE id = $1', [userId]);
+  const row = result.rows[0];
+  if (!row) return;
+
+  await attachPatientToClinic({
+    userId,
+    clinicId,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    email: row.email ?? undefined,
+    phone: row.phone ?? undefined,
+  });
 }
 
 async function attachPatientToClinic(input: {
