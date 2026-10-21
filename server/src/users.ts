@@ -189,15 +189,6 @@ export async function releasePersonalPhone(): Promise<void> {
   }
 }
 
-export async function resetAllPasswords(): Promise<number> {
-  const passwordHash = await bcrypt.hash('password123', 10);
-  const result = await db.query<{ id: string }>(
-    'UPDATE users SET password_hash = $1, updated_at = now() RETURNING id',
-    [passwordHash],
-  );
-  return result.rows.length;
-}
-
 export async function seedAdmin(): Promise<void> {
   const clinics = [
     ['clinic-001', 'Clinsync Main Clinic', 'العيادة الرئيسية'],

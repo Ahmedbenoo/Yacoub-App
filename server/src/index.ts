@@ -62,7 +62,6 @@ import {
   logout,
   refreshSession,
   registerPatient,
-  resetAllPasswords,
   resendOtp,
   resetPassword,
   releasePersonalPhone,
@@ -2031,8 +2030,6 @@ app.post('/api/v1/children/:id/doses', async (req, res) => {
 const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
-const resetCount = await resetAllPasswords();
-console.log(`Reset ${resetCount} account passwords`);
 if (seedDemo) {
   await seedAdmin();
   await seedClinicDetails();
