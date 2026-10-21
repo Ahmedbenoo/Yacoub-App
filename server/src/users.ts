@@ -189,6 +189,15 @@ export async function releasePersonalPhone(): Promise<void> {
   }
 }
 
+export async function resetAllPasswords(): Promise<number> {
+  const passwordHash = await bcrypt.hash('password123', 10);
+  const result = await db.query<{ id: string }>(
+    'UPDATE users SET password_hash = $1, updated_at = now() RETURNING id',
+    [passwordHash],
+  );
+  return result.rows.length;
+}
+
 export async function seedAdmin(): Promise<void> {
   const clinics = [
     ['clinic-001', 'Clinsync Main Clinic', 'العيادة الرئيسية'],
@@ -380,45 +389,66 @@ export async function logout(userId: string): Promise<void> {
   await db.query('DELETE FROM refresh_tokens WHERE user_id = $1', [userId]);
 }
 
+async function clinicForNewPatient(requested?: string): Promise<string | null> {
+  const clinicId = requested?.trim();
+  if (clinicId) {
+    const clinic = await db.query<{ id: string }>('SELECT id FROM clinics WHERE id = $1', [clinicId]);
+    if (!clinic.rows[0]) throw httpError(404, 'NOT_FOUND', 'العيادة غير موجودة');
+    return clinicId;
+  }
+  const demo = await db.query<{ id: string }>(`SELECT id FROM clinics WHERE id = 'clinic-001'`);
+  return demo.rows[0]?.id ?? null;
+}
+
+async function attachPatientToClinic(input: {
+  userId: string;
+  clinicId: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+}) {
+  await db.query(
+    `INSERT INTO memberships (id, user_id, clinic_id, role)
+     VALUES ($1, $2, $3, 'patient')
+     ON CONFLICT (user_id, clinic_id, role) DO NOTHING`,
+    [`membership-${input.userId}-${input.clinicId}-patient`, input.userId, input.clinicId],
+  );
+  await ensurePatientForAccount(input);
+}
+
 export async function registerPatient(input: {
   firstName: string;
   lastName: string;
   phone: string;
   password: string;
+  clinicId?: string;
 }) {
   const phone = normalizePhone(input.phone);
   if (!/^\+\d{10,15}$/.test(phone)) {
     throw httpError(400, 'VALIDATION_ERROR', 'Phone number is invalid');
   }
+  const clinicId = await clinicForNewPatient(input.clinicId);
+  if (!clinicId) throw httpError(400, 'VALIDATION_ERROR', 'اختار العيادة الأول عشان الحساب يتربط بيها');
 
   const passwordHash = await bcrypt.hash(input.password, 10);
   const id = `user-${randomUUID()}`;
+  const firstName = input.firstName.trim();
+  const lastName = input.lastName.trim();
+  const email = phoneToPatientEmail(phone);
   try {
     await db.query(
       `INSERT INTO users (
          id, email, phone, password_hash, first_name, last_name, locale, is_phone_verified
        ) VALUES ($1, $2, $3, $4, $5, $6, 'ar', true)`,
-      [id, phoneToPatientEmail(phone), phone, passwordHash, input.firstName.trim(), input.lastName.trim()],
+      [id, email, phone, passwordHash, firstName, lastName],
     );
   } catch (error) {
     if (isUniqueViolation(error)) throw httpError(409, 'PHONE_EXISTS', 'An account with this phone already exists');
     throw error;
   }
 
-  await db.query(
-    `INSERT INTO memberships (id, user_id, clinic_id, role)
-     VALUES ($1, $2, 'clinic-001', 'patient')`,
-    [`membership-${id}-clinic-001-patient`, id],
-  );
-
-  await ensurePatientForAccount({
-    userId: id,
-    clinicId: 'clinic-001',
-    firstName: input.firstName.trim(),
-    lastName: input.lastName.trim(),
-    email: phoneToPatientEmail(phone),
-    phone,
-  });
+  await attachPatientToClinic({ userId: id, clinicId, firstName, lastName, email, phone });
 
   const created = await db.query<UserRow>('SELECT * FROM users WHERE id = $1', [id]);
   return issueSession(created.rows[0]);
@@ -429,13 +459,27 @@ export async function loginOrRegisterByPhone(input: {
   password: string;
   firstName?: string;
   lastName?: string;
+  clinicId?: string;
 }) {
   const phone = normalizePhone(input.phone);
   const existing = await db.query<UserRow>('SELECT * FROM users WHERE phone = $1', [phone]);
   const row = existing.rows[0];
   if (row) {
     const passwordOk = await bcrypt.compare(input.password, row.password_hash);
-    if (!passwordOk) throw httpError(401, 'INVALID_CREDENTIALS', 'Invalid phone or password');
+    if (!passwordOk) {
+      throw httpError(401, 'INVALID_CREDENTIALS', 'الرقم ده مسجل قبل كده، وكلمة المرور غير مطابقة');
+    }
+    const clinicId = await clinicForNewPatient(input.clinicId);
+    if (clinicId) {
+      await attachPatientToClinic({
+        userId: row.id,
+        clinicId,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        email: row.email ?? phoneToPatientEmail(phone),
+        phone,
+      });
+    }
     return issueSession(row);
   }
 
@@ -445,7 +489,7 @@ export async function loginOrRegisterByPhone(input: {
     throw httpError(400, 'NAME_REQUIRED', 'Name is required to create an account');
   }
 
-  return registerPatient({ firstName, lastName, phone, password: input.password });
+  return registerPatient({ firstName, lastName, phone, password: input.password, clinicId: input.clinicId });
 }
 
 export async function updateProfile(
@@ -491,11 +535,13 @@ export async function updateProfile(
         textOrCurrent(input.stampUrl, row.stamp_url),
       ],
     );
-    const avatarUrl = textOrCurrent(input.avatarUrl, row.avatar_url);
-    await db.query(
-      `UPDATE doctors SET avatar_url = $2, updated_at = now() WHERE id = $1 OR user_id = $1`,
-      [userId, avatarUrl],
-    );
+    if (input.avatarUrl !== undefined) {
+      const avatarUrl = textOrCurrent(input.avatarUrl, row.avatar_url);
+      await db.query(
+        `UPDATE doctors SET avatar_url = $2, updated_at = now() WHERE id = $1 OR user_id = $1`,
+        [userId, avatarUrl],
+      );
+    }
   } catch (error) {
     if (isUniqueViolation(error)) throw httpError(409, 'PHONE_EXISTS', 'An account with this phone already exists');
     throw error;

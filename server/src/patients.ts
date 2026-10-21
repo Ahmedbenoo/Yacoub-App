@@ -236,7 +236,10 @@ export async function ensurePatientForAccount(input: {
   email?: string;
   phone?: string;
 }): Promise<void> {
-  const existing = await db.query<{ id: string }>('SELECT id FROM patients WHERE user_id = $1', [input.userId]);
+  const existing = await db.query<{ id: string }>(
+    'SELECT id FROM patients WHERE user_id = $1 AND clinic_id = $2',
+    [input.userId, input.clinicId],
+  );
   if (existing.rows[0]) return;
   await db.query(
     `INSERT INTO patients (

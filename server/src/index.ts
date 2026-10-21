@@ -62,6 +62,7 @@ import {
   logout,
   refreshSession,
   registerPatient,
+  resetAllPasswords,
   resendOtp,
   resetPassword,
   releasePersonalPhone,
@@ -135,6 +136,7 @@ const phoneAuthBody = z.object({
   lastName: z.string().optional(),
   phone: z.string().min(8),
   password: z.string().min(8),
+  clinicId: z.string().min(1).optional(),
 });
 
 const phoneOtpBody = z.object({
@@ -1422,6 +1424,7 @@ const updateDoctorBody = z.object({
   branchName: z.string().min(1),
   languages: z.array(z.string()).default([]),
   sharePercent: z.number().optional(),
+  avatarUrl: z.string().optional(),
 });
 
 const secretaryBody = z.object({
@@ -2028,6 +2031,8 @@ app.post('/api/v1/children/:id/doses', async (req, res) => {
 const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
+const resetCount = await resetAllPasswords();
+console.log(`Reset ${resetCount} account passwords`);
 if (seedDemo) {
   await seedAdmin();
   await seedClinicDetails();
