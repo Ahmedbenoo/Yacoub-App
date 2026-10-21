@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { db } from './db.js';
 import { ensureBookingPatient } from './users.js';
+import { isSameClinicDay } from './clinic-time.js';
 import { ensureInvoice, voidOpenInvoice } from './invoices.js';
 import { notifySavedAppointment } from './notifications.js';
 import {
@@ -90,7 +91,7 @@ function iso(value: string | Date): string {
 }
 
 function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return isSameClinicDay(a, b);
 }
 
 function isoAt(hours: number, minutes: number, dayOffset: number): string {

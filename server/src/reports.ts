@@ -1,4 +1,5 @@
 import { db } from './db.js';
+import { isSameClinicDay } from './clinic-time.js';
 
 type AppointmentRow = {
   status: string;
@@ -55,8 +56,7 @@ function asDate(value: string | Date): Date {
 }
 
 function isSameDay(value: string | Date, day = new Date()): boolean {
-  const date = asDate(value);
-  return date.getFullYear() === day.getFullYear() && date.getMonth() === day.getMonth() && date.getDate() === day.getDate();
+  return isSameClinicDay(value, day);
 }
 
 function inMonth(value: string | Date, day = new Date()): boolean {

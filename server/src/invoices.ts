@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { db } from './db.js';
+import { isSameClinicDay } from './clinic-time.js';
 
 type InvoiceRow = {
   id: string;
@@ -63,8 +64,7 @@ function iso(value: string | Date): string {
 }
 
 function isSameDay(value: string | Date, day = new Date()): boolean {
-  const date = value instanceof Date ? value : new Date(value);
-  return date.getFullYear() === day.getFullYear() && date.getMonth() === day.getMonth() && date.getDate() === day.getDate();
+  return isSameClinicDay(value, day);
 }
 
 function toPublic(row: InvoiceRow): PublicInvoice {
