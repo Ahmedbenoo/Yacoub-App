@@ -60,6 +60,8 @@ import {
   login,
   loginOrRegisterByPhone,
   logout,
+  requestLoginOtp,
+  verifyLoginOtp,
   refreshSession,
   registerPatient,
   resendOtp,
@@ -497,6 +499,47 @@ app.post('/api/v1/auth/register-doctor', async (req, res) => {
     res.status(201).json({ success: true, data: await registerDoctorAccount(parsed.data) });
   } catch (error) {
     sendError(res, error, 'Registration failed');
+  }
+});
+
+const loginOtpRequestBody = z.object({
+  phone: z.string().min(8),
+  intent: z.enum(['login', 'signup']).optional(),
+});
+
+const loginOtpVerifyBody = loginOtpRequestBody.extend({
+  otp: z.string().length(6),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  clinicId: z.string().min(1).optional(),
+});
+
+app.post('/api/v1/auth/login-otp', async (req, res) => {
+  const parsed = loginOtpRequestBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Phone is required' });
+    return;
+  }
+  try {
+    res.json({
+      success: true,
+      data: await requestLoginOtp(parsed.data.phone, parsed.data.intent ?? 'login'),
+    });
+  } catch (error) {
+    sendError(res, error, 'Could not send the verification code');
+  }
+});
+
+app.post('/api/v1/auth/login-otp/verify', async (req, res) => {
+  const parsed = loginOtpVerifyBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Phone and verification code are required' });
+    return;
+  }
+  try {
+    res.json({ success: true, data: await verifyLoginOtp(parsed.data) });
+  } catch (error) {
+    sendError(res, error, 'Invalid verification code');
   }
 });
 

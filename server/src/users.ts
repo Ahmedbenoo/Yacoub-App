@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomInt, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -498,6 +498,117 @@ export async function loginOrRegisterByPhone(input: {
   }
 
   return registerPatient({ firstName, lastName, phone, password: input.password, clinicId: input.clinicId });
+}
+
+function hashesMatch(stored: string, next: string): boolean {
+  const left = Buffer.from(stored);
+  const right = Buffer.from(next);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
+async function assertPatientPhone(phone: string): Promise<UserRow | null> {
+  const existing = await db.query<UserRow>('SELECT * FROM users WHERE phone = $1', [phone]);
+  const row = existing.rows[0] ?? null;
+  if (!row) return null;
+  const memberships = await membershipsFor(row.id);
+  if (memberships.some((item) => item.role !== 'patient')) {
+    throw httpError(403, 'STAFF_USE_PASSWORD', 'الحساب ده للعيادة. ادخل برقم الموبايل وكلمة المرور.');
+  }
+  return row;
+}
+
+export async function requestLoginOtp(phoneInput: string, intent: 'login' | 'signup'): Promise<{ message: string }> {
+  const phone = normalizePhone(phoneInput);
+  if (!/^\+\d{10,15}$/.test(phone)) {
+    throw httpError(400, 'VALIDATION_ERROR', 'Phone number is invalid');
+  }
+
+  const user = await assertPatientPhone(phone);
+  if (!user && intent === 'login') {
+    throw httpError(404, 'PHONE_NOT_FOUND', 'مفيش حساب على الرقم ده. اعمل حساب الأول.');
+  }
+
+  const otp = String(randomInt(100000, 1000000));
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  await db.query('DELETE FROM login_otps WHERE phone = $1', [phone]);
+  await db.query(
+    `INSERT INTO login_otps (id, phone, otp_hash, expires_at) VALUES ($1, $2, $3, $4)`,
+    [randomUUID(), phone, hashToken(otp), expiresAt],
+  );
+  const sent = await deliverAppWhatsApp(`رمز الدخول في يعقوب: ${otp}`, phone);
+  if (!sent) {
+    await db.query('DELETE FROM login_otps WHERE phone = $1', [phone]);
+    throw httpError(503, 'OTP_NOT_SENT', 'تعذر إرسال الرمز على واتساب');
+  }
+  return { message: 'Verification code sent on WhatsApp' };
+}
+
+export async function verifyLoginOtp(input: {
+  phone: string;
+  otp: string;
+  firstName?: string;
+  lastName?: string;
+  clinicId?: string;
+}) {
+  const phone = normalizePhone(input.phone);
+  if (!/^\+\d{10,15}$/.test(phone)) {
+    throw httpError(400, 'VALIDATION_ERROR', 'Phone number is invalid');
+  }
+
+  const stored = await db.query<{ otp_hash: string; expires_at: string }>(
+    `SELECT otp_hash, expires_at FROM login_otps WHERE phone = $1 ORDER BY created_at DESC LIMIT 1`,
+    [phone],
+  );
+  const code = stored.rows[0];
+  if (!code || new Date(code.expires_at).getTime() <= Date.now() || !hashesMatch(code.otp_hash, hashToken(input.otp))) {
+    throw httpError(400, 'INVALID_OTP', 'الكود غير صحيح أو انتهت صلاحيته');
+  }
+
+  const existing = await assertPatientPhone(phone);
+  if (existing) {
+    await db.query('DELETE FROM login_otps WHERE phone = $1', [phone]);
+    const clinicId = await clinicForNewPatient(input.clinicId);
+    if (clinicId) {
+      await attachPatientToClinic({
+        userId: existing.id,
+        clinicId,
+        firstName: existing.first_name,
+        lastName: existing.last_name,
+        email: existing.email ?? phoneToPatientEmail(phone),
+        phone,
+      });
+    }
+    return issueSession(existing);
+  }
+
+  const firstName = input.firstName?.trim() ?? '';
+  const lastName = input.lastName?.trim() ?? '';
+  if (firstName.length < 2 || lastName.length < 2) {
+    throw httpError(400, 'NAME_REQUIRED', 'اكتب الاسم الأول واسم العائلة');
+  }
+
+  const clinicId = await clinicForNewPatient(input.clinicId);
+  const id = `user-${randomUUID()}`;
+  const email = phoneToPatientEmail(phone);
+  const passwordHash = await bcrypt.hash(randomBytes(24).toString('hex'), 10);
+  try {
+    await db.query(
+      `INSERT INTO users (
+         id, email, phone, password_hash, first_name, last_name, locale, is_phone_verified
+       ) VALUES ($1, $2, $3, $4, $5, $6, 'ar', true)`,
+      [id, email, phone, passwordHash, firstName, lastName],
+    );
+  } catch (error) {
+    if (isUniqueViolation(error)) throw httpError(409, 'PHONE_EXISTS', 'An account with this phone already exists');
+    throw error;
+  }
+
+  if (clinicId) {
+    await attachPatientToClinic({ userId: id, clinicId, firstName, lastName, email, phone });
+  }
+  await db.query('DELETE FROM login_otps WHERE phone = $1', [phone]);
+  const created = await db.query<UserRow>('SELECT * FROM users WHERE id = $1', [id]);
+  return issueSession(created.rows[0]);
 }
 
 export async function updateProfile(

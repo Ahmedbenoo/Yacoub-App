@@ -42,6 +42,14 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS login_otps (
+  id text PRIMARY KEY,
+  phone text NOT NULL,
+  otp_hash text NOT NULL,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS password_resets (
   id text PRIMARY KEY,
   email text NOT NULL,
