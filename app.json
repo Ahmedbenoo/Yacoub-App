@@ -39,18 +39,18 @@
         {
           "android": {
             "abiFilters": ["arm64-v8a"],
-            "enableMinifyInReleaseBuilds": false,
-            "enableShrinkResourcesInReleaseBuilds": false
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ],
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#ffffff",
-          "image": "./assets/images/splash-blank.png",
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/images/logo-yacoub.png",
           "resizeMode": "contain",
-          "imageWidth": 1
+          "imageWidth": 280
         }
       ],
       [

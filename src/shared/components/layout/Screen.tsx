@@ -1,4 +1,4 @@
-import { Platform, ScrollView, View, type ViewProps } from 'react-native';
+import { ScrollView, View, type ViewProps } from 'react-native';
 
 import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
 import { cn } from '@/shared/lib/utils';
@@ -21,7 +21,7 @@ export function Screen({
   const colorScheme = useResolvedColorScheme();
   const isDark = colorScheme === 'dark';
   const { direction } = useLayoutDirection();
-  const webDirectionStyle = Platform.OS === 'web' ? { direction } : undefined;
+  const directionStyle = { direction };
 
   const content = (
     <View
@@ -31,7 +31,7 @@ export function Screen({
         padded && 'px-5',
         className,
       )}
-      style={[{ flex: 1 }, webDirectionStyle]}
+      style={[{ flex: 1 }, directionStyle]}
       {...props}
     >
       {children}
@@ -43,7 +43,7 @@ export function Screen({
       <ScrollView
         className={cn('flex-1', isDark ? 'bg-slate-900' : 'bg-slate-50')}
         style={{ flex: 1 }}
-        contentContainerStyle={[{ flexGrow: 1 }, webDirectionStyle]}
+        contentContainerStyle={[{ flexGrow: 1, paddingBottom: 24 }, directionStyle]}
         contentContainerClassName={cn(padded && 'px-5 pb-8', className)}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

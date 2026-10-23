@@ -120,7 +120,7 @@ export function PatientPathChoices({ isAuthenticated }: PatientPathChoicesProps)
                 onPress={() => open(option.key, option.frozen)}
                 style={{ flex: 1 }}
               >
-                <View className="h-full justify-center p-4">
+                <View className="flex-1 justify-center p-4">
                   <PathRow
                     icon={option.icon}
                     title={t(option.titleKey)}

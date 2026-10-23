@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 
-import { View } from 'react-native';
+import { BootScreen } from '@/shared/components/brand/BootScreen';
 
 import { resolvePostAuthNavigation } from '@/features/clinic/lib/navigation';
 import { useAuthStore } from '@/shared/stores';
@@ -33,5 +33,5 @@ export default function Index() {
     router.replace('/(auth)/login');
   }, [isHydrated, isAuthenticated, activeRole, user]);
 
-  return <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />;
+  return <BootScreen />;
 }

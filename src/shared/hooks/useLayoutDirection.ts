@@ -1,4 +1,4 @@
-import { I18nManager, Platform, type TextStyle, type ViewStyle } from 'react-native';
+import { I18nManager, type TextStyle, type ViewStyle } from 'react-native';
 
 import { useLocaleStore } from '@/shared/stores';
 
@@ -14,15 +14,7 @@ export function getStartTextAlign(isRtl: boolean, centered = false): NonNullable
 }
 
 export function getRowLayoutStyle(isRtl: boolean): ViewStyle {
-  if (Platform.OS === 'web') {
-    return { direction: isRtl ? 'rtl' : 'ltr', flexDirection: 'row' };
-  }
-
-  if (nativeLayoutMatchesLocale(isRtl)) {
-    return { flexDirection: 'row' };
-  }
-
-  return { flexDirection: isRtl ? 'row-reverse' : 'row' };
+  return { direction: isRtl ? 'rtl' : 'ltr', flexDirection: 'row' };
 }
 
 export function useLayoutDirection() {

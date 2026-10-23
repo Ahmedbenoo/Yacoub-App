@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { validateSession } from '@/features/auth/lib/session';
+import { BootScreen } from '@/shared/components/brand/BootScreen';
 import { OfflineBanner } from '@/shared/components/feedback/OfflineBanner';
 import { usePushNotificationsSetup } from '@/shared/hooks/usePushNotificationsSetup';
 import { i18n } from '@/shared/i18n';
@@ -73,7 +74,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   if (!ready) {
     return (
       <I18nextProvider i18n={i18n}>
-        <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />
+        <BootScreen />
       </I18nextProvider>
     );
   }
@@ -97,7 +98,11 @@ export function AppProviders({ children }: AppProvidersProps) {
               style={
                 Platform.OS === 'web'
                   ? { direction: isRtl ? 'rtl' : 'ltr', height: '100%', overflow: 'hidden' }
-                  : { flex: 1, backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F8FAFC' }
+                  : {
+                      flex: 1,
+                      direction: isRtl ? 'rtl' : 'ltr',
+                      backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F8FAFC',
+                    }
               }
             >
               <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />

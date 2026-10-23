@@ -1,7 +1,6 @@
 import '../global.css';
 
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -19,6 +18,9 @@ import {
 } from '@expo-google-fonts/cairo';
 
 import { AppProviders } from '@/shared/providers/AppProviders';
+import { BootScreen } from '@/shared/components/brand/BootScreen';
+import { i18n } from '@/shared/i18n';
+import { I18nextProvider } from 'react-i18next';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -56,7 +58,11 @@ export default function RootLayout() {
   }, [ready]);
 
   if (!ready) {
-    return <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />;
+    return (
+      <I18nextProvider i18n={i18n}>
+        <BootScreen />
+      </I18nextProvider>
+    );
   }
 
   return (
