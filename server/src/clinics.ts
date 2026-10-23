@@ -345,6 +345,12 @@ export async function updateClinic(userId: string, clinicId: string, patch: Clin
   return getClinic(clinicId, baseUrl);
 }
 
+export async function deactivateClinic(userId: string, clinicId: string): Promise<void> {
+  await requireClinicAdmin(userId, clinicId);
+  await db.query('UPDATE clinics SET is_active = false, updated_at = now() WHERE id = $1', [clinicId]);
+  await db.query('UPDATE doctors SET is_active = false, updated_at = now() WHERE clinic_id = $1', [clinicId]);
+}
+
 export async function seedClinicOwners(): Promise<void> {
   const clinics = await db.query<{ id: string }>('SELECT id FROM clinics WHERE owner_user_id IS NULL');
   for (const clinic of clinics.rows) {

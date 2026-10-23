@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import { z } from 'zod';
 
-import { getClinic, listClinicsForUser, searchClinics, seedClinicDetails, seedClinicOwners, updateClinic, addOwnerClinic, approveClinic, listPendingClinics, listClinicCities } from './clinics.js';
+import { getClinic, listClinicsForUser, searchClinics, seedClinicDetails, seedClinicOwners, updateClinic, deactivateClinic, addOwnerClinic, approveClinic, listPendingClinics, listClinicCities } from './clinics.js';
 import { migrate, seedDemo } from './db.js';
 import {
   callNextAppointment,
@@ -736,6 +736,17 @@ app.patch('/api/v1/clinics/:id', async (req, res) => {
     res.json({ success: true, data: clinic });
   } catch (error) {
     sendError(res, error, 'Clinic update failed');
+  }
+});
+
+app.delete('/api/v1/clinics/:id', async (req, res) => {
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    await deactivateClinic(user.id, req.params.id);
+    res.json({ success: true, data: { id: req.params.id } });
+  } catch (error) {
+    sendError(res, error, 'Could not delete the clinic');
   }
 });
 
