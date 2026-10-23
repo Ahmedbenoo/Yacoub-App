@@ -470,8 +470,7 @@ export async function loginOrRegisterByPhone(input: {
   clinicId?: string;
 }) {
   const phone = normalizePhone(input.phone);
-  const existing = await db.query<UserRow>('SELECT * FROM users WHERE phone = $1', [phone]);
-  const row = existing.rows[0];
+  const row = await assertPatientPhone(phone);
   if (row) {
     const passwordOk = await bcrypt.compare(input.password, row.password_hash);
     if (!passwordOk) {
