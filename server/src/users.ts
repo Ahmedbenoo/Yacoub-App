@@ -378,6 +378,44 @@ export async function logout(userId: string): Promise<void> {
   await db.query('DELETE FROM refresh_tokens WHERE user_id = $1', [userId]);
 }
 
+export async function deleteOwnAccount(userId: string): Promise<void> {
+  const owned = await db.query<{ id: string }>(
+    'SELECT id FROM clinics WHERE owner_user_id = $1 AND is_active = true',
+    [userId],
+  );
+  if (owned.rows.length > 0) {
+    throw httpError(403, 'CLINIC_ACCOUNT', 'حساب مدير العيادة ماينفعش يتحذف من ملف المريض');
+  }
+  const staff = await db.query<{ role: string }>(
+    `SELECT m.role
+     FROM memberships m
+     JOIN clinics c ON c.id = m.clinic_id
+     WHERE m.user_id = $1 AND m.role <> 'patient' AND c.is_active = true`,
+    [userId],
+  );
+  if (staff.rows.length > 0) {
+    throw httpError(403, 'CLINIC_ACCOUNT', 'حساب العيادة ماينفعش يتحذف من هنا');
+  }
+
+  const current = await db.query<{ phone: string | null; email: string | null }>(
+    'SELECT phone, email FROM users WHERE id = $1',
+    [userId],
+  );
+  const phone = current.rows[0]?.phone;
+  const email = current.rows[0]?.email;
+
+  await db.query('DELETE FROM refresh_tokens WHERE user_id = $1', [userId]);
+  await db.query('DELETE FROM memberships WHERE user_id = $1', [userId]);
+  await db.query('DELETE FROM notifications WHERE user_id = $1', [userId]);
+  await db.query('DELETE FROM device_tokens WHERE user_id = $1', [userId]);
+  await db.query('DELETE FROM nurse_profiles WHERE user_id = $1', [userId]);
+  await db.query('UPDATE doctors SET user_id = NULL WHERE user_id = $1', [userId]);
+  await db.query('UPDATE patients SET user_id = NULL WHERE user_id = $1', [userId]);
+  if (phone) await db.query('DELETE FROM login_otps WHERE phone = $1', [phone]);
+  if (email) await db.query('DELETE FROM password_resets WHERE lower(email) = lower($1)', [email]);
+  await db.query('DELETE FROM users WHERE id = $1', [userId]);
+}
+
 async function clinicForNewPatient(requested?: string): Promise<string | null> {
   const clinicId = requested?.trim();
   if (clinicId) {

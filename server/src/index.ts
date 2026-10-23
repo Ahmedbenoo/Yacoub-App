@@ -66,6 +66,7 @@ import {
   registerPatient,
   resendOtp,
   resetPassword,
+  deleteOwnAccount,
   releasePersonalPhone,
   seedAdmin,
   updateProfile,
@@ -619,6 +620,17 @@ app.post('/api/v1/auth/logout', async (req, res) => {
     res.json({ success: true, data: { message: 'Signed out' } });
   } catch (error) {
     sendError(res, error, 'Not authenticated');
+  }
+});
+
+app.delete('/api/v1/auth/account', async (req, res) => {
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    await deleteOwnAccount(user.id);
+    res.json({ success: true, data: { message: 'Account deleted' } });
+  } catch (error) {
+    sendError(res, error, 'Could not delete the account');
   }
 });
 
