@@ -509,8 +509,14 @@ async function assertPatientPhone(phone: string): Promise<UserRow | null> {
   const existing = await db.query<UserRow>('SELECT * FROM users WHERE phone = $1', [phone]);
   const row = existing.rows[0] ?? null;
   if (!row) return null;
-  const memberships = await membershipsFor(row.id);
-  if (memberships.some((item) => item.role !== 'patient')) {
+  const staff = await db.query<{ role: string }>(
+    `SELECT m.role
+     FROM memberships m
+     JOIN clinics c ON c.id = m.clinic_id
+     WHERE m.user_id = $1 AND m.role <> 'patient' AND c.is_active = true`,
+    [row.id],
+  );
+  if (staff.rows.length > 0) {
     throw httpError(403, 'STAFF_USE_PASSWORD', 'الحساب ده للعيادة. ادخل برقم الموبايل وكلمة المرور.');
   }
   return row;
