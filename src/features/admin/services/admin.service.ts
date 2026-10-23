@@ -5,6 +5,7 @@ import { mockDoctorsService } from '@/shared/api/mock/doctors.mock';
 import { mockPatientsService } from '@/shared/api/mock/patients.mock';
 import { ownerRegistrationMock } from '@/shared/api/mock/owner-registration.mock';
 import { endpoints } from '@/shared/api/endpoints';
+import { getAuthToken } from '@/shared/stores';
 import type { ApiResponse } from '@/shared/types/models';
 import type {
   ClinicReport,
@@ -20,29 +21,38 @@ import type {
 import type { DoctorProfile } from '@/shared/types/models/doctor';
 import type { PatientProfile } from '@/shared/types/models/patient';
 
+function usesRealSession(): boolean {
+  const token = getAuthToken();
+  return !env.useMockApi || Boolean(token && !token.startsWith('mock-'));
+}
+
 export const adminService = {
   getStats: async (clinicId?: string): Promise<ClinicStats> => {
-    if (env.useMockApi) return mockAdminService.getStats(clinicId);
-    const response = await apiClient.get<ApiResponse<ClinicStats>>(endpoints.admin.stats);
+    if (!usesRealSession()) return mockAdminService.getStats(clinicId);
+    const response = await apiClient.get<ApiResponse<ClinicStats>>(endpoints.admin.stats, {
+      params: clinicId ? { clinicId } : undefined,
+    });
     return response.data.data;
   },
 
   getReports: async (clinicId?: string): Promise<ClinicReport[]> => {
-    if (env.useMockApi) return mockAdminService.getReports(clinicId);
-    const response = await apiClient.get<ApiResponse<ClinicReport[]>>(endpoints.admin.reports);
+    if (!usesRealSession()) return mockAdminService.getReports(clinicId);
+    const response = await apiClient.get<ApiResponse<ClinicReport[]>>(endpoints.admin.reports, {
+      params: clinicId ? { clinicId } : undefined,
+    });
     return response.data.data;
   },
 
   getReportById: async (id: string, clinicId?: string): Promise<ClinicReport> => {
-    if (env.useMockApi) return mockAdminService.getReportById(id, clinicId);
-    const response = await apiClient.get<ApiResponse<ClinicReport>>(
-      endpoints.admin.reportDetail(id),
-    );
+    if (!usesRealSession()) return mockAdminService.getReportById(id, clinicId);
+    const response = await apiClient.get<ApiResponse<ClinicReport>>(endpoints.admin.reportDetail(id), {
+      params: clinicId ? { clinicId } : undefined,
+    });
     return response.data.data;
   },
 
   updateDoctor: async (id: string, payload: UpdateDoctorPayload): Promise<DoctorProfile> => {
-    if (env.useMockApi) return mockDoctorsService.update(id, payload);
+    if (!usesRealSession()) return mockDoctorsService.update(id, payload);
     const response = await apiClient.patch<ApiResponse<DoctorProfile>>(
       endpoints.admin.updateDoctor(id),
       payload,
@@ -51,7 +61,7 @@ export const adminService = {
   },
 
   updatePatient: async (id: string, payload: UpdatePatientPayload): Promise<PatientProfile> => {
-    if (env.useMockApi) return mockPatientsService.update(id, payload);
+    if (!usesRealSession()) return mockPatientsService.update(id, payload);
     const response = await apiClient.patch<ApiResponse<PatientProfile>>(
       endpoints.admin.updatePatient(id),
       payload,
@@ -60,7 +70,7 @@ export const adminService = {
   },
 
   createDoctor: async (payload: CreateDoctorPayload): Promise<CreateDoctorResult> => {
-    if (env.useMockApi) return mockDoctorsService.create(payload);
+    if (!usesRealSession()) return mockDoctorsService.create(payload);
     const response = await apiClient.post<ApiResponse<DoctorProfile>>(
       endpoints.admin.createDoctor,
       payload,
@@ -69,12 +79,13 @@ export const adminService = {
   },
 
   createSecretary: async (payload: CreateSecretaryPayload): Promise<CreateSecretaryResult> => {
-    if (env.useMockApi) return ownerRegistrationMock.createSecretary(payload);
-    throw { code: 'UNSUPPORTED', message: 'Secretary creation requires the mock API' };
+    if (!usesRealSession()) return ownerRegistrationMock.createSecretary(payload);
+    const response = await apiClient.post<ApiResponse<CreateSecretaryResult>>(endpoints.admin.createSecretary, payload);
+    return response.data.data;
   },
 
   createPatient: async (payload: CreatePatientPayload): Promise<PatientProfile> => {
-    if (env.useMockApi) return mockPatientsService.create(payload);
+    if (!usesRealSession()) return mockPatientsService.create(payload);
     const response = await apiClient.post<ApiResponse<PatientProfile>>(
       endpoints.admin.createPatient,
       payload,
@@ -83,7 +94,7 @@ export const adminService = {
   },
 
   deactivateDoctor: async (id: string): Promise<DoctorProfile> => {
-    if (env.useMockApi) return mockDoctorsService.deactivate(id);
+    if (!usesRealSession()) return mockDoctorsService.deactivate(id);
     const response = await apiClient.patch<ApiResponse<DoctorProfile>>(
       endpoints.admin.deactivateDoctor(id),
     );
@@ -91,7 +102,7 @@ export const adminService = {
   },
 
   deactivatePatient: async (id: string): Promise<PatientProfile> => {
-    if (env.useMockApi) return mockPatientsService.deactivate(id);
+    if (!usesRealSession()) return mockPatientsService.deactivate(id);
     const response = await apiClient.patch<ApiResponse<PatientProfile>>(
       endpoints.admin.deactivatePatient(id),
     );
@@ -99,7 +110,7 @@ export const adminService = {
   },
 
   reactivateDoctor: async (id: string): Promise<DoctorProfile> => {
-    if (env.useMockApi) return mockDoctorsService.reactivate(id);
+    if (!usesRealSession()) return mockDoctorsService.reactivate(id);
     const response = await apiClient.patch<ApiResponse<DoctorProfile>>(
       endpoints.admin.reactivateDoctor(id),
     );
@@ -107,7 +118,7 @@ export const adminService = {
   },
 
   reactivatePatient: async (id: string): Promise<PatientProfile> => {
-    if (env.useMockApi) return mockPatientsService.reactivate(id);
+    if (!usesRealSession()) return mockPatientsService.reactivate(id);
     const response = await apiClient.patch<ApiResponse<PatientProfile>>(
       endpoints.admin.reactivatePatient(id),
     );

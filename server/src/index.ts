@@ -4,8 +4,9 @@ import cors from 'cors';
 import express from 'express';
 import { z } from 'zod';
 
-import { getClinic, listClinicsForUser, searchClinics, seedClinicDetails, seedClinicOwners, updateClinic, deactivateClinic, addOwnerClinic, approveClinic, listPendingClinics, listClinicCities } from './clinics.js';
+import { getClinic, listClinicsForUser, searchClinics, updateClinic, deactivateClinic, addOwnerClinic, approveClinic, listPendingClinics, listClinicCities } from './clinics.js';
 import { migrate, seedDemo } from './db.js';
+import { seedDemoClinics } from './demo-clinics.js';
 import {
   callNextAppointment,
   cancelAppointment,
@@ -17,18 +18,16 @@ import {
   markNoShow,
   queueAppointments,
   rescheduleAppointment,
-  seedAppointments,
 } from './appointments.js';
-import { listAppointmentWhatsApp, seedWhatsAppMessages } from './whatsapp.js';
+import { listAppointmentWhatsApp } from './whatsapp.js';
 import { dayClose, getInvoiceForAppointment, issueInvoice, listTodayInvoices, payInvoice } from './invoices.js';
-import { getAvailability, getDoctor, listDoctors, seedDoctors, updateAvailability } from './doctors.js';
+import { getAvailability, getDoctor, listDoctors, updateAvailability } from './doctors.js';
 import { uploadsRoot } from './files.js';
 import {
   createPatient,
   getMyPatient,
   getPatient,
   listPatients,
-  seedPatients,
   setPatientActive,
   updatePatient,
 } from './patients.js';
@@ -67,8 +66,6 @@ import {
   resendOtp,
   resetPassword,
   deleteOwnAccount,
-  releasePersonalPhone,
-  seedAdmin,
   updateProfile,
   userFromAccessToken,
   verifyOtp,
@@ -97,7 +94,6 @@ import {
   listNursing,
   priceNursing,
   registerNurse,
-  seedNurseProfiles,
   setNurseVerification,
 } from './nursing.js';
 import {
@@ -2096,17 +2092,7 @@ app.post('/api/v1/children/:id/doses', async (req, res) => {
 const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
-if (seedDemo) {
-  await seedAdmin();
-  await seedClinicDetails();
-  await seedDoctors();
-  await seedPatients();
-  await seedAppointments();
-  await seedWhatsAppMessages();
-  await seedClinicOwners();
-  await seedNurseProfiles();
-  await releasePersonalPhone();
-}
+if (seedDemo) await seedDemoClinics();
 
 app.listen(port, () => {
   console.log(`Yacoub API listening on http://localhost:${port}/api/v1`);

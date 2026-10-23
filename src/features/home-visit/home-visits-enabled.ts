@@ -1,2 +1,2 @@
 /** Home-doctor visits stay visible, but the service is frozen until it opens. */
-export const HOME_VISITS_ENABLED = false;
+export const HOME_VISITS_ENABLED = true;

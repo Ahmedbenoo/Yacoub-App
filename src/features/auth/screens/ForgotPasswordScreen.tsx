@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 
-import { env } from '@/config/env';
 import { useGuestGuard } from '@/shared/navigation/guards';
 import { Header } from '@/shared/components/layout/Header';
 import { Screen } from '@/shared/components/layout/Screen';
@@ -23,7 +22,7 @@ export function ForgotPasswordScreen() {
 
   const { control, handleSubmit } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: { email: '' },
+    defaultValues: { phone: '' },
   });
 
   return (
@@ -42,10 +41,10 @@ export function ForgotPasswordScreen() {
         <View className="gap-4">
           <FormInput
             control={control}
-            name="email"
-            label={t('forgotPassword.email')}
-            placeholder={t('forgotPassword.emailPlaceholder')}
-            keyboardType="email-address"
+            name="phone"
+            label={t('forgotPassword.phone')}
+            placeholder={t('forgotPassword.phonePlaceholder')}
+            keyboardType="phone-pad"
             autoCapitalize="none"
           />
           <Button
@@ -55,11 +54,6 @@ export function ForgotPasswordScreen() {
             fullWidth
             size="lg"
           />
-          {env.useMockApi && (
-            <Text variant="caption" muted className="text-center">
-              {t('forgotPassword.demoHint')}
-            </Text>
-          )}
         </View>
       </View>
     </Screen>

@@ -20,11 +20,26 @@ export const registerSchema = z
     path: ['confirmPassword'],
   });
 
+export const patientRegisterSchema = z.object({
+  firstName: z.string().min(2, 'firstNameMin'),
+  lastName: z.string().min(2, 'lastNameMin'),
+  phone: z.string().refine(isValidPhone, 'invalidPhone'),
+});
+
+export const loginPhoneSchema = z.object({
+  phone: z.string().refine(isValidPhone, 'invalidPhone'),
+});
+
+export const loginOtpSchema = z.object({
+  otp: z.string().length(6, 'otpLength'),
+});
+
 export const bookingAuthSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   phone: z.string().refine(isValidPhone, 'invalidPhone'),
   password: z.string().min(8, 'passwordMin'),
+  clinicId: z.string().optional(),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -126,6 +141,9 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterDoctorFormData = z.infer<typeof registerDoctorSchema>;
 export type RegisterOwnerFormData = z.infer<typeof registerOwnerSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+export type PatientRegisterFormData = z.infer<typeof patientRegisterSchema>;
+export type LoginPhoneFormData = z.infer<typeof loginPhoneSchema>;
+export type LoginOtpFormData = z.infer<typeof loginOtpSchema>;
 export type BookingAuthFormData = z.infer<typeof bookingAuthSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type VerifyOtpFormData = z.infer<typeof verifyOtpSchema>;

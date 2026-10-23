@@ -30,12 +30,12 @@ export function VerifyOtpScreen() {
 
   const { control, handleSubmit, setValue } = useForm<VerifyOtpFormData>({
     resolver: zodResolver(verifyOtpSchema),
-    defaultValues: { email: resetEmail ?? '', otp: '' },
+    defaultValues: { phone: resetEmail ?? '', otp: '' },
   });
 
   useEffect(() => {
     if (resetEmail) {
-      setValue('email', resetEmail);
+      setValue('phone', resetEmail);
     }
   }, [resetEmail, setValue]);
 
@@ -60,7 +60,7 @@ export function VerifyOtpScreen() {
 
   const onSubmit = (data: VerifyOtpFormData) => {
     verifyMutation.mutate({
-      email: resetEmail ?? data.email,
+      phone: resetEmail ?? data.phone,
       otp: data.otp,
     });
   };

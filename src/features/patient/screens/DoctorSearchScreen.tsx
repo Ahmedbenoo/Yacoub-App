@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ClinicList } from '@/features/patient/components/ClinicList';
 import { DoctorList } from '@/features/patient/components/DoctorList';
+import { SpecialtyShortcuts } from '@/features/patient/components/SpecialtyShortcuts';
 import { useClinicsSearchQuery } from '@/features/catalog/clinics/hooks/useClinicsQueries';
 import { useDoctorsQuery, useDoctorSpecialties } from '@/features/catalog/doctors/hooks/useDoctorsQueries';
 import { Row } from '@/shared/components/layout/Row';
@@ -103,6 +104,8 @@ export function DoctorSearchScreen() {
         leadingIcon={<Icon name="search" size={18} color="#94A3B8" />}
       />
 
+      <SpecialtyShortcuts specialties={specialties} selected={specialty} onSelect={setSpecialty} />
+
       <View className="flex-1">
         {mode === 'clinics' ? (
           <ClinicList
@@ -119,7 +122,6 @@ export function DoctorSearchScreen() {
             doctors={doctorsQuery.data?.data ?? []}
             specialties={specialties}
             selectedSpecialty={specialty}
-            onSelectSpecialty={setSpecialty}
             isLoading={doctorsQuery.isLoading}
             isError={doctorsQuery.isError}
             isRefetching={doctorsQuery.isRefetching}

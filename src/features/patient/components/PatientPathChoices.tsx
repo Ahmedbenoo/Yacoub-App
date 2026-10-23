@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 
 import { Icon, type AppIconName } from '@/shared/components/ui/Icon';
 import { Text } from '@/shared/components/ui/Text';
+import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
 import { getPatientSearchHref } from '@/shared/navigation/routes';
 import { useLocaleStore } from '@/shared/stores';
 
@@ -16,26 +17,22 @@ const PATHS: {
   key: 'search' | 'nursing' | 'homeDoctor';
   icon: AppIconName;
   titleKey: string;
-  descriptionKey: string;
   frozen?: boolean;
 }[] = [
   {
     key: 'search',
     icon: 'search',
     titleKey: 'guest.searchCardTitle',
-    descriptionKey: 'guest.searchCardDescription',
   },
   {
     key: 'nursing',
     icon: 'home',
     titleKey: 'guest.pathNursingTitle',
-    descriptionKey: 'guest.pathNursingDescription',
   },
   {
     key: 'homeDoctor',
     icon: 'doctors',
     titleKey: 'guest.pathHomeDoctorTitle',
-    descriptionKey: 'guest.pathHomeDoctorDescription',
     frozen: true,
   },
 ];
@@ -46,13 +43,26 @@ function PathRow({
   description,
   isRtl,
   frozen,
+  stacked,
 }: {
   icon: AppIconName;
   title: string;
-  description: string;
+  description?: string;
   isRtl: boolean;
   frozen?: boolean;
+  stacked?: boolean;
 }) {
+  if (stacked) {
+    return (
+      <View className="items-center gap-3">
+        <Icon name={icon} size={26} color="#FFFFFF" />
+        <Text variant="titleSm" className="text-center text-white">
+          {title}
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-row items-center gap-3">
       <View className="h-12 w-12 items-center justify-center bg-white/20" style={{ borderRadius: 6 }}>
@@ -62,9 +72,11 @@ function PathRow({
         <Text variant="titleSm" className="text-white">
           {title}
         </Text>
-        <Text variant="bodySm" className="text-white/80">
-          {description}
-        </Text>
+        {description ? (
+          <Text variant="bodySm" className="text-white/80">
+            {description}
+          </Text>
+        ) : null}
         {frozen ? (
           <Text variant="caption" className="text-white">
             Coming soon
@@ -79,6 +91,8 @@ function PathRow({
 export function PatientPathChoices({ isAuthenticated }: PatientPathChoicesProps) {
   const { t } = useTranslation('patient');
   const isRtl = useLocaleStore((s) => s.isRtl);
+  const { rowStyle } = useLayoutDirection();
+  const [search, nursing, homeDoctor] = PATHS;
 
   const open = (key: 'nursing' | 'search' | 'homeDoctor', frozen?: boolean) => {
     if (frozen) {
@@ -97,26 +111,40 @@ export function PatientPathChoices({ isAuthenticated }: PatientPathChoicesProps)
       <Text variant="titleSm">{t('dashboard.pathsTitle')}</Text>
 
       <View className="overflow-hidden bg-primary-600" style={{ borderRadius: 6 }}>
-        {PATHS.map((option, index) => (
-          <Pressable
-            key={option.key}
-            accessibilityRole="button"
-            onPress={() => open(option.key, option.frozen)}
-          >
-            <View
-              className="p-4"
-              style={index > 0 ? { borderTopWidth: 2, borderTopColor: '#FFFFFF' } : undefined}
-            >
-              <PathRow
-                icon={option.icon}
-                title={t(option.titleKey)}
-                description={t(option.descriptionKey)}
-                isRtl={isRtl}
-                frozen={option.frozen}
-              />
+        <View style={[rowStyle, { alignItems: 'stretch' }]}>
+          {[search, nursing].map((option, index) => (
+            <View key={option.key} style={{ flex: 1, flexDirection: 'row' }}>
+              {index > 0 ? <View style={{ width: 2, backgroundColor: '#FFFFFF' }} /> : null}
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => open(option.key, option.frozen)}
+                style={{ flex: 1 }}
+              >
+                <View className="h-full justify-center p-4">
+                  <PathRow
+                    icon={option.icon}
+                    title={t(option.titleKey)}
+                    isRtl={isRtl}
+                    frozen={option.frozen}
+                    stacked
+                  />
+                </View>
+              </Pressable>
             </View>
-          </Pressable>
-        ))}
+          ))}
+        </View>
+
+        <Pressable accessibilityRole="button" onPress={() => open(homeDoctor.key, homeDoctor.frozen)}>
+          <View className="p-4" style={{ borderTopWidth: 2, borderTopColor: '#FFFFFF' }}>
+            <PathRow
+              icon={homeDoctor.icon}
+              title={t(homeDoctor.titleKey)}
+              description={t('guest.pathHomeDoctorDescription')}
+              isRtl={isRtl}
+              frozen={homeDoctor.frozen}
+            />
+          </View>
+        </Pressable>
       </View>
     </View>
   );

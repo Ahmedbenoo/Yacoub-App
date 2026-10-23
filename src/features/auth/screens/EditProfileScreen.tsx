@@ -1,11 +1,11 @@
-import { Image, Pressable, View } from 'react-native';
+import { Alert, Image, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser';
-import { useUpdateProfileMutation } from '@/features/auth/hooks/useAuthMutations';
+import { useDeleteAccountMutation, useUpdateProfileMutation } from '@/features/auth/hooks/useAuthMutations';
 import {
   updateProfileSchema,
   type UpdateProfileFormData,
@@ -34,9 +34,11 @@ const AVATAR_PRESETS = [
 
 export function EditProfileScreen() {
   const { t } = useTranslation('auth');
+  const { t: tc } = useTranslation('common');
   const { user, isLoading } = useCurrentUser();
   const activeRole = useAuthStore((s) => s.activeRole);
   const updateProfile = useUpdateProfileMutation();
+  const deleteAccount = useDeleteAccountMutation();
 
   const { control, handleSubmit, reset, setValue } = useForm<UpdateProfileFormData>({
     resolver: zodResolver(updateProfileSchema),
@@ -64,6 +66,7 @@ export function EditProfileScreen() {
   const signatureUrl = useWatch({ control, name: 'signatureUrl' });
   const stampUrl = useWatch({ control, name: 'stampUrl' });
   const isDoctor = user?.roles.includes(UserRole.DOCTOR);
+  const accountPhoto = activeRole !== UserRole.ADMIN;
 
   if (isLoading && !user) {
     return (
@@ -75,7 +78,12 @@ export function EditProfileScreen() {
 
   const onSubmit = (data: UpdateProfileFormData) => {
     updateProfile.mutate(
-      isDoctor ? data : { ...data, signatureUrl: undefined, stampUrl: undefined },
+      {
+        ...data,
+        avatarUrl: accountPhoto ? data.avatarUrl : undefined,
+        signatureUrl: isDoctor ? data.signatureUrl : undefined,
+        stampUrl: isDoctor ? data.stampUrl : undefined,
+      },
       { onSuccess: () => router.back() },
     );
   };
@@ -84,11 +92,12 @@ export function EditProfileScreen() {
     <Screen scroll className="px-5">
       <Header showBack title={t('editProfile.title')} />
 
-      <View className="gap-4 py-4">
+      <View className="gap-4 pb-10 pt-4">
         <Text variant="body" muted>
           {t('editProfile.subtitle')}
         </Text>
 
+        {accountPhoto ? (
         <Card className="items-center gap-4 py-4">
           <Avatar
             firstName={user?.firstName ?? ''}
@@ -123,6 +132,7 @@ export function EditProfileScreen() {
             ))}
           </Row>
         </Card>
+        ) : null}
 
         {isDoctor ? (
           <Card className="gap-4">
@@ -221,6 +231,25 @@ export function EditProfileScreen() {
           }}
           fullWidth
         />
+
+        {activeRole === UserRole.PATIENT ? (
+          <Button
+            title={t('editProfile.deleteAccount')}
+            variant="danger"
+            loading={deleteAccount.isPending}
+            onPress={() => {
+              Alert.alert(t('editProfile.deleteTitle'), t('editProfile.deleteMessage'), [
+                { text: tc('cancel'), style: 'cancel' },
+                {
+                  text: t('editProfile.deleteAccount'),
+                  style: 'destructive',
+                  onPress: () => deleteAccount.mutate(),
+                },
+              ]);
+            }}
+            fullWidth
+          />
+        ) : null}
       </View>
     </Screen>
   );

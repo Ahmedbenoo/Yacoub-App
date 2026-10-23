@@ -12,8 +12,9 @@ interface FormInputProps<T extends FieldValues> {
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address' | 'phone-pad' | 'number-pad';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-  autoComplete?: 'email' | 'password' | 'name' | 'tel' | 'off';
+  autoComplete?: 'email' | 'password' | 'name' | 'tel' | 'off' | 'username';
   editable?: boolean;
+  maxLength?: number;
 }
 
 export function FormInput<T extends FieldValues>({

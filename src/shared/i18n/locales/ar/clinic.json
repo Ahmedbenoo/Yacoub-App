@@ -4,13 +4,5 @@
   "active": "العيادة الحالية",
   "switch": "تبديل العيادة",
   "switchSuccess": "تم تبديل العيادة بنجاح",
-  "empty": "لا توجد عيادات متاحة",
-  "apiMode": "وضع الاتصال",
-  "mockApi": "بيانات تجريبية",
-  "realApi": "API حقيقي",
-  "mockCacheHint": "لو عدّلت ملفات mock في الكود، اضغط تحديث البيانات التجريبية.",
-  "mockCacheReset": "تحديث البيانات التجريبية",
-  "mockCacheResetting": "جاري التحديث...",
-  "mockCacheResetSuccess": "تم تحديث البيانات التجريبية",
-  "mockCacheResetFailed": "تعذر تحديث البيانات التجريبية"
+  "empty": "لا توجد عيادات متاحة"
 }

@@ -28,7 +28,7 @@ const SEED_PATIENTS: PatientProfile[] = [
     firstName: 'Ahmed',
     lastName: 'Fathy',
     email: 'patient@clinic.com',
-    phone: '+201092313486',
+    phone: '+201000000001',
     dateOfBirth: '1995-06-08',
     gender: Gender.MALE,
     bloodType: 'A+',

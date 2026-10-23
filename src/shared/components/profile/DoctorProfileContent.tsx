@@ -1,4 +1,4 @@
-import { Image, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { getBranchByName } from '@/features/admin/lib/branches';
@@ -71,7 +71,15 @@ function ContactRow({
   );
 }
 
-export function DoctorProfileContent({ doctor }: { doctor: DoctorProfile }) {
+export function DoctorProfileContent({
+  doctor,
+  onChangePhoto,
+  changingPhoto = false,
+}: {
+  doctor: DoctorProfile;
+  onChangePhoto?: () => void;
+  changingPhoto?: boolean;
+}) {
   const { t } = useTranslation('admin');
   const { t: tPatient } = useTranslation('patient');
   const arabic = useLocaleStore((s) => s.locale) === Locale.AR;
@@ -131,18 +139,37 @@ export function DoctorProfileContent({ doctor }: { doctor: DoctorProfile }) {
               backgroundColor: '#2DD4BF',
             }}
           />
-          <Image
-            source={doctor.avatarUrl ? { uri: doctor.avatarUrl } : getDoctorPortrait(doctor.gender, doctor.firstName)}
-            style={{
-              width: 144,
-              height: 144,
-              borderRadius: 72,
-              borderWidth: 4,
-              borderColor: '#FFFFFF',
-              marginBottom: 10,
-            }}
-            accessibilityIgnoresInvertColors
-          />
+          <Pressable
+            onPress={onChangePhoto}
+            disabled={!onChangePhoto || changingPhoto}
+            accessibilityRole={onChangePhoto ? 'button' : undefined}
+            accessibilityLabel={onChangePhoto ? t('doctors.changePhoto') : undefined}
+            className="mb-2 items-center"
+          >
+            <View>
+              <Image
+                source={doctor.avatarUrl ? { uri: doctor.avatarUrl } : getDoctorPortrait(doctor.gender, doctor.firstName)}
+                style={{
+                  width: 144,
+                  height: 144,
+                  borderRadius: 72,
+                  borderWidth: 4,
+                  borderColor: '#FFFFFF',
+                }}
+                accessibilityIgnoresInvertColors
+              />
+              {onChangePhoto ? (
+                <View className="absolute -bottom-0.5 -end-0.5 h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-primary-600">
+                  <Icon name="camera" size={16} color="#FFFFFF" />
+                </View>
+              ) : null}
+            </View>
+            {onChangePhoto ? (
+              <Text variant="label" className="mt-2 text-center text-primary-600">
+                {changingPhoto ? t('doctors.saving') : t('doctors.changePhoto')}
+              </Text>
+            ) : null}
+          </Pressable>
           <View className="items-center gap-1">
             {!isActive ? <Badge label={t('doctors.inactive')} variant="warning" className="self-center" /> : null}
             <RatingStars rating={doctor.rating} />
@@ -168,7 +195,6 @@ export function DoctorProfileContent({ doctor }: { doctor: DoctorProfile }) {
           value={t('doctors.years', { years: doctor.yearsExperience })}
         />
         <ContactRow icon="clinic" label={t('doctors.branch')} value={branchLabel} />
-        <ContactRow icon="mail" label={t('doctors.email')} value={doctor.email} latin />
         {doctor.phone ? (
           <ContactRow icon="phone" label={t('doctors.phone')} value={formatPhoneForDisplay(doctor.phone)} latin />
         ) : null}

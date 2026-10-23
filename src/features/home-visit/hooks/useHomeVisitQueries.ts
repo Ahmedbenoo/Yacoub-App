@@ -20,6 +20,23 @@ export function usePatientHomeVisitsQuery(patientUserId?: string) {
   });
 }
 
+export function useHomeVisitSettingQuery() {
+  return useQuery({
+    queryKey: queryKeys.homeVisits.setting,
+    queryFn: () => homeVisitService.setting(),
+  });
+}
+
+export function useEnableHomeVisitsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => homeVisitService.enable(),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.homeVisits.setting });
+    },
+  });
+}
+
 export function useDoctorHomeVisitsQuery(doctorId?: string) {
   return useQuery({
     queryKey: queryKeys.homeVisits.list(`doctor:${doctorId ?? ''}`),

@@ -4,8 +4,8 @@ import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import Toast from 'react-native-toast-message';
 
+import { useRequestLoginOtpMutation, useRegisterDoctorMutation, useVerifyLoginOtpMutation } from '@/features/auth/hooks/useAuthMutations';
 import { useGuestGuard } from '@/shared/navigation/guards';
 import { Header } from '@/shared/components/layout/Header';
 import { Screen } from '@/shared/components/layout/Screen';
@@ -14,17 +14,17 @@ import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
 import { Card } from '@/shared/components/ui/Card';
 import { Text } from '@/shared/components/ui/Text';
 import { FormInput } from '@/shared/components/form/FormInput';
-import { Input } from '@/shared/components/ui/Input';
 import { Logo } from '@/shared/components/brand/Logo';
 import { useSpecialtyOptions } from '@/features/admin/hooks';
 import { FormSelect } from '@/shared/components/form/FormSelect';
 import {
+  loginOtpSchema,
+  patientRegisterSchema,
   registerDoctorSchema,
-  registerSchema,
+  type LoginOtpFormData,
+  type PatientRegisterFormData,
   type RegisterDoctorFormData,
-  type RegisterFormData,
 } from '@/features/auth/schemas/auth.schemas';
-import { useRegisterDoctorMutation, useRegisterMutation } from '@/features/auth/hooks/useAuthMutations';
 
 type AccountKind = 'doctor' | 'clinic' | 'center' | 'patient' | 'nurse';
 type RegisterStep = 'choose' | 'doctor' | 'patient';
@@ -227,19 +227,21 @@ function PatientRegisterForm({
   onPhaseChange: (phase: 'details' | 'otp') => void;
 }) {
   const { t } = useTranslation('auth');
-  const registerMutation = useRegisterMutation();
-  const [otp, setOtp] = useState('');
-  const [pending, setPending] = useState<RegisterFormData | null>(null);
+  const requestOtp = useRequestLoginOtpMutation();
+  const verifyOtp = useVerifyLoginOtpMutation();
+  const [pending, setPending] = useState<PatientRegisterFormData | null>(null);
 
-  const { control, handleSubmit } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+  const detailsForm = useForm<PatientRegisterFormData>({
+    resolver: zodResolver(patientRegisterSchema),
     defaultValues: {
       firstName: '',
       lastName: '',
       phone: '',
-      password: '',
-      confirmPassword: '',
     },
+  });
+  const otpForm = useForm<LoginOtpFormData>({
+    resolver: zodResolver(loginOtpSchema),
+    defaultValues: { otp: '' },
   });
 
   if (phase === 'otp' && pending) {
@@ -248,23 +250,25 @@ function PatientRegisterForm({
         <Text variant="body" muted className="text-center">
           {t('register.otpHint')}
         </Text>
-        <Input
+        <FormInput
+          control={otpForm.control}
+          name="otp"
           label={t('register.otp')}
-          value={otp}
-          onChangeText={setOtp}
+          placeholder={t('login.otpPlaceholder')}
           keyboardType="number-pad"
           maxLength={6}
         />
         <Button
           title={t('register.verify')}
-          onPress={() => {
-            if (otp.trim() !== '123456') {
-              Toast.show({ type: 'error', text1: t('register.otpInvalid') });
-              return;
-            }
-            registerMutation.mutate(pending);
-          }}
-          loading={registerMutation.isPending}
+          onPress={otpForm.handleSubmit((data) =>
+            verifyOtp.mutate({
+              phone: pending.phone,
+              otp: data.otp,
+              firstName: pending.firstName,
+              lastName: pending.lastName,
+            }),
+          )}
+          loading={verifyOtp.isPending}
           fullWidth
           size="lg"
         />
@@ -275,48 +279,42 @@ function PatientRegisterForm({
   return (
     <View className="gap-4">
       <FormInput
-        control={control}
+        control={detailsForm.control}
         name="firstName"
         label={t('register.firstName')}
         placeholder={t('register.firstNamePlaceholder')}
         autoCapitalize="words"
       />
       <FormInput
-        control={control}
+        control={detailsForm.control}
         name="lastName"
         label={t('register.lastName')}
         placeholder={t('register.lastNamePlaceholder')}
         autoCapitalize="words"
       />
       <FormInput
-        control={control}
+        control={detailsForm.control}
         name="phone"
         label={t('register.phone')}
         placeholder={t('register.phonePlaceholder')}
         keyboardType="phone-pad"
         autoComplete="tel"
       />
-      <FormInput
-        control={control}
-        name="password"
-        label={t('register.password')}
-        placeholder={t('register.passwordPlaceholder')}
-        secureTextEntry
-      />
-      <FormInput
-        control={control}
-        name="confirmPassword"
-        label={t('register.confirmPassword')}
-        placeholder={t('register.confirmPasswordPlaceholder')}
-        secureTextEntry
-      />
 
       <Button
-        title={t('register.continue')}
-        onPress={handleSubmit((data) => {
-          setPending(data);
-          onPhaseChange('otp');
-        })}
+        title={t('register.sendCode')}
+        onPress={detailsForm.handleSubmit((data) =>
+          requestOtp.mutate(
+            { phone: data.phone, intent: 'signup' },
+            {
+              onSuccess: () => {
+                setPending(data);
+                onPhaseChange('otp');
+              },
+            },
+          ),
+        )}
+        loading={requestOtp.isPending}
         fullWidth
         size="lg"
       />

@@ -132,7 +132,7 @@ export function BookAppointmentScreen() {
             size="lg"
           />
         ) : (
-          <BookingAuthCard />
+          <BookingAuthCard clinicId={doctor.clinicId} />
         )}
       </ScrollView>
     </Screen>

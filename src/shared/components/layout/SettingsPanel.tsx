@@ -8,7 +8,6 @@ import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations';
 import { ClinicSwitcher } from '@/features/clinic/components/ClinicSwitcher';
 import { resolvePostAuthNavigation } from '@/features/clinic/lib/navigation';
 import { EditableAvatar } from '@/shared/components/profile/EditableAvatar';
-import { ApiModeSetting } from '@/shared/components/settings/ApiModeSetting';
 import { PushNotificationSetting } from '@/shared/components/settings/PushNotificationSetting';
 import { NotificationCategoryPreferences } from '@/shared/components/settings/NotificationCategoryPreferences';
 import { Spinner } from '@/shared/components/feedback/Spinner';
@@ -74,7 +73,7 @@ export function SettingsPanel({ showAvatar = true, showAccountCard = true }: Set
 
       {user && showAccountCard && (
         <Card className="gap-3">
-          {showAvatar ? (
+          {showAvatar && activeRole !== UserRole.ADMIN ? (
             <View className="items-center">
               <EditableAvatar size="xl" />
             </View>
@@ -155,15 +154,11 @@ export function SettingsPanel({ showAvatar = true, showAccountCard = true }: Set
         <NotificationCategoryPreferences />
       </Card>
 
-      {activeRole !== UserRole.NURSE && activeRole !== UserRole.NURSING_ADMIN ? (
+      {activeRole !== UserRole.PATIENT && activeRole !== UserRole.NURSE && activeRole !== UserRole.NURSING_ADMIN ? (
         <Card>
           <ClinicSwitcher compact />
         </Card>
       ) : null}
-
-      <Card>
-        <ApiModeSetting />
-      </Card>
 
       <Card>
         <Text variant="label" className="mb-3">

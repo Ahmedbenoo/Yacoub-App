@@ -1,4 +1,6 @@
 import { env } from '@/config/env';
+import { apiClient } from '@/shared/api/client';
+import { endpoints } from '@/shared/api/endpoints';
 import { mockObgynService } from '@/shared/api/mock/obgyn.mock';
 import {
   addVaccinationDose,
@@ -6,82 +8,120 @@ import {
   readChildChart,
 } from '@/shared/api/mock/newborn.mock';
 import { getPatientIdsForUser } from '@/shared/api/mock/patients.mock';
-import { useAuthStore } from '@/shared/stores/auth-store';
+import { getAuthToken, useAuthStore } from '@/shared/stores/auth-store';
 import { UserRole } from '@/shared/types/enums';
-import type { AddClinicalAttachmentInput } from '@/shared/types/models/clinical-attachment';
-import type { AddVaccinationDoseInput } from '@/shared/types/models/newborn';
-import type { ClosePregnancyInput, CreatePregnancyInput, SaveObgynEncounterInput } from '@/shared/types/models/obgyn';
-import type { SaveUltrasoundInput } from '@/shared/types/models/ultrasound-report';
+import type { ApiResponse } from '@/shared/types/models';
+import type { AddClinicalAttachmentInput, ClinicalAttachment } from '@/shared/types/models/clinical-attachment';
+import type { AddVaccinationDoseInput, ChildChart, NewbornLink } from '@/shared/types/models/newborn';
+import type {
+  ClosePregnancyInput,
+  CreatePregnancyInput,
+  ObgynEncounter,
+  ObgynVisitSummary,
+  PregnancyRecord,
+  PriorObgynMeasurement,
+  SaveObgynEncounterInput,
+} from '@/shared/types/models/obgyn';
+import type { SaveUltrasoundInput, UltrasoundReport } from '@/shared/types/models/ultrasound-report';
 
-function liveUnsupported(): never {
-  throw { code: 'NOT_SUPPORTED', message: 'Obstetrics records are not available on the live API yet' };
+function usesRealSession(): boolean {
+  const token = getAuthToken();
+  return !env.useMockApi || Boolean(token && !token.startsWith('mock-'));
 }
 
 export const obgynService = {
-  listPregnancies: (patientId: string) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.listPregnancies(patientId);
+  listPregnancies: async (patientId: string): Promise<PregnancyRecord[]> => {
+    if (!usesRealSession()) return mockObgynService.listPregnancies(patientId);
+    const response = await apiClient.get<ApiResponse<PregnancyRecord[]>>(endpoints.obgyn.pregnancies, {
+      params: { patientId },
+    });
+    return response.data.data;
   },
-  createPregnancy: (patientId: string, input: CreatePregnancyInput) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.createPregnancy(patientId, input);
+  createPregnancy: async (patientId: string, input: CreatePregnancyInput): Promise<PregnancyRecord> => {
+    if (!usesRealSession()) return mockObgynService.createPregnancy(patientId, input);
+    const response = await apiClient.post<ApiResponse<PregnancyRecord>>(endpoints.obgyn.pregnancies, {
+      patientId,
+      ...input,
+    });
+    return response.data.data;
   },
-  closePregnancy: (id: string, input: ClosePregnancyInput) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.closePregnancy(id, input);
+  closePregnancy: async (id: string, input: ClosePregnancyInput): Promise<PregnancyRecord> => {
+    if (!usesRealSession()) return mockObgynService.closePregnancy(id, input);
+    const response = await apiClient.post<ApiResponse<PregnancyRecord>>(endpoints.obgyn.closePregnancy(id), input);
+    return response.data.data;
   },
-  childLink: (pregnancyId: string) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.childLink(pregnancyId);
+  childLink: async (pregnancyId: string): Promise<NewbornLink | null> => {
+    if (!usesRealSession()) return mockObgynService.childLink(pregnancyId);
+    const response = await apiClient.get<ApiResponse<NewbornLink | null>>(endpoints.obgyn.childLink(pregnancyId));
+    return response.data.data;
   },
-  getEncounter: (visitId: string) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.getEncounter(visitId);
+  getEncounter: async (visitId: string): Promise<ObgynEncounter | null> => {
+    if (!usesRealSession()) return mockObgynService.getEncounter(visitId);
+    const response = await apiClient.get<ApiResponse<ObgynEncounter | null>>(endpoints.obgyn.encounter(visitId));
+    return response.data.data;
   },
-  saveEncounter: (visitId: string, input: SaveObgynEncounterInput) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.saveEncounter(visitId, input);
+  saveEncounter: async (visitId: string, input: SaveObgynEncounterInput): Promise<ObgynEncounter> => {
+    if (!usesRealSession()) return mockObgynService.saveEncounter(visitId, input);
+    const response = await apiClient.put<ApiResponse<ObgynEncounter>>(endpoints.obgyn.encounter(visitId), input);
+    return response.data.data;
   },
-  priorMeasurements: (pregnancyId: string, beforeIso: string) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.priorMeasurements(pregnancyId, beforeIso);
+  priorMeasurements: async (pregnancyId: string, beforeIso: string): Promise<PriorObgynMeasurement[]> => {
+    if (!usesRealSession()) return mockObgynService.priorMeasurements(pregnancyId, beforeIso);
+    const response = await apiClient.get<ApiResponse<PriorObgynMeasurement[]>>(endpoints.obgyn.prior(pregnancyId), {
+      params: { pregnancyId, before: beforeIso },
+    });
+    return response.data.data;
   },
-  visitSummary: (visitId: string) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.visitSummary(visitId);
+  visitSummary: async (visitId: string): Promise<ObgynVisitSummary | null> => {
+    if (!usesRealSession()) return mockObgynService.visitSummary(visitId);
+    const response = await apiClient.get<ApiResponse<ObgynVisitSummary | null>>(endpoints.obgyn.summary(visitId));
+    return response.data.data;
   },
-  saveUltrasound: (labRequestId: string, input: SaveUltrasoundInput) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.saveUltrasound(labRequestId, input);
+  saveUltrasound: async (labRequestId: string, input: SaveUltrasoundInput): Promise<UltrasoundReport> => {
+    if (!usesRealSession()) return mockObgynService.saveUltrasound(labRequestId, input);
+    const response = await apiClient.put<ApiResponse<UltrasoundReport>>(endpoints.obgyn.ultrasound(labRequestId), input);
+    return response.data.data;
   },
-  getUltrasound: (labRequestId: string) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.getUltrasound(labRequestId);
+  getUltrasound: async (labRequestId: string): Promise<UltrasoundReport | null> => {
+    if (!usesRealSession()) return mockObgynService.getUltrasound(labRequestId);
+    const response = await apiClient.get<ApiResponse<UltrasoundReport | null>>(endpoints.obgyn.ultrasound(labRequestId));
+    return response.data.data;
   },
-  addAttachment: (input: AddClinicalAttachmentInput) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.addAttachment(input);
+  addAttachment: async (input: AddClinicalAttachmentInput): Promise<ClinicalAttachment> => {
+    if (!usesRealSession()) return mockObgynService.addAttachment(input);
+    const response = await apiClient.post<ApiResponse<ClinicalAttachment>>(endpoints.clinical.attachments, input);
+    return response.data.data;
   },
-  listAttachments: (visitId: string) => {
-    if (!env.useMockApi) liveUnsupported();
-    return mockObgynService.listAttachments(visitId);
+  listAttachments: async (visitId: string): Promise<ClinicalAttachment[]> => {
+    if (!usesRealSession()) return mockObgynService.listAttachments(visitId);
+    const response = await apiClient.get<ApiResponse<ClinicalAttachment[]>>(endpoints.clinical.attachments, {
+      params: { visitId },
+    });
+    return response.data.data;
   },
-  childChart: (childPatientId: string) => {
-    if (!env.useMockApi) liveUnsupported();
-    return readChildChart(childPatientId);
+  childChart: async (childPatientId: string): Promise<ChildChart> => {
+    if (!usesRealSession()) return readChildChart(childPatientId);
+    const response = await apiClient.get<ApiResponse<ChildChart>>(endpoints.obgyn.child(childPatientId));
+    return response.data.data;
   },
-  listMyChildren: () => {
-    if (!env.useMockApi) liveUnsupported();
-    const userId = useAuthStore.getState().user?.id;
-    if (!userId || useAuthStore.getState().activeRole !== UserRole.PATIENT) return Promise.resolve([]);
-    return Promise.resolve(listNewbornsForMother(getPatientIdsForUser(userId)));
-  },
-  addDose: async (childPatientId: string, input: AddVaccinationDoseInput) => {
-    if (!env.useMockApi) liveUnsupported();
-    if (useAuthStore.getState().activeRole !== UserRole.DOCTOR) {
-      throw { code: 'FORBIDDEN', message: 'Only the treating doctor can update doses' };
+  listMyChildren: async (): Promise<ChildChart[]> => {
+    if (!usesRealSession()) {
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId || useAuthStore.getState().activeRole !== UserRole.PATIENT) return [];
+      return listNewbornsForMother(getPatientIdsForUser(userId));
     }
-    await readChildChart(childPatientId);
-    return addVaccinationDose(childPatientId, input);
+    const response = await apiClient.get<ApiResponse<ChildChart[]>>(endpoints.obgyn.myChildren);
+    return response.data.data;
+  },
+  addDose: async (childPatientId: string, input: AddVaccinationDoseInput): Promise<ChildChart> => {
+    if (!usesRealSession()) {
+      if (useAuthStore.getState().activeRole !== UserRole.DOCTOR) {
+        throw { code: 'FORBIDDEN', message: 'Only the treating doctor can update doses' };
+      }
+      await readChildChart(childPatientId);
+      return addVaccinationDose(childPatientId, input);
+    }
+    const response = await apiClient.post<ApiResponse<ChildChart>>(endpoints.obgyn.doses(childPatientId), input);
+    return response.data.data;
   },
 };

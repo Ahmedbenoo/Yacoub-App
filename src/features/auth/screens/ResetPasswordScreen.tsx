@@ -28,7 +28,7 @@ export function ResetPasswordScreen() {
   const { control, handleSubmit, setValue } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      email: resetEmail ?? '',
+      phone: resetEmail ?? '',
       resetToken: resetToken ?? '',
       password: '',
       confirmPassword: '',
@@ -36,7 +36,7 @@ export function ResetPasswordScreen() {
   });
 
   useEffect(() => {
-    if (resetEmail) setValue('email', resetEmail);
+    if (resetEmail) setValue('phone', resetEmail);
     if (resetToken) setValue('resetToken', resetToken);
   }, [resetEmail, resetToken, setValue]);
 
@@ -82,7 +82,7 @@ export function ResetPasswordScreen() {
             title={t('resetPassword.reset')}
             onPress={handleSubmit((data) =>
               mutation.mutate({
-                email: resetEmail,
+                phone: resetEmail,
                 resetToken,
                 password: data.password,
                 confirmPassword: data.confirmPassword,

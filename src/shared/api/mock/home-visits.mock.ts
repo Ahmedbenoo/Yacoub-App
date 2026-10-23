@@ -11,7 +11,7 @@ const requests: HomeVisitRequest[] = [
     id: 'hv-001',
     patientUserId: 'user-patient-001',
     patientName: 'Ahmed Fathy',
-    patientPhone: '+201092313486',
+    patientPhone: '+201000000001',
     specialty: 'General Medicine',
     address: 'مدينة نصر، القاهرة',
     scheduledAt: '2026-10-06 18:00',

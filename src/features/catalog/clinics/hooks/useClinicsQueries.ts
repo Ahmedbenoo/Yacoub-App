@@ -22,5 +22,9 @@ export function useClinicDetailQuery(id: string) {
 }
 
 export function useClinicCities() {
-  return clinicsService.getCities();
+  return useQuery({
+    queryKey: queryKeys.clinics.search({ cities: true }),
+    queryFn: () => clinicsService.getCities(),
+    staleTime: 1000 * 60 * 10,
+  });
 }

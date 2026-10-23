@@ -4,20 +4,17 @@ import { useTranslation } from 'react-i18next';
 
 import { ClinicAppointmentsPreview } from '@/features/admin/components/ClinicAppointmentsPreview';
 import { ClinicStatsGrid } from '@/features/admin/components/ClinicStatsGrid';
-import { ReportsList } from '@/features/admin/components/ReportsList';
-import { useClinicReportsQuery, useClinicStatsQuery } from '@/features/admin/hooks';
+import { useClinicStatsQuery } from '@/features/admin/hooks';
 import { DoctorAdminRoleToggle } from '@/features/auth/components/DoctorAdminRoleToggle';
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser';
 import { useActiveClinicQuery } from '@/features/clinic/hooks';
 import { getClinicName } from '@/features/clinic/lib/formatters';
-import { SectionHeader } from '@/shared/components/layout/SectionHeader';
 import { Screen } from '@/shared/components/layout/Screen';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { Text } from '@/shared/components/ui/Text';
 import { Spinner } from '@/shared/components/feedback/Spinner';
 import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
-import { getAdminReportsListHref } from '@/shared/navigation/routes';
 import { useLocaleStore } from '@/shared/stores';
 
 export function AdminDashboardScreen() {
@@ -28,7 +25,6 @@ export function AdminDashboardScreen() {
   const { rowStyle } = useLayoutDirection();
   const { data: activeClinic } = useActiveClinicQuery();
   const { data: stats, isLoading: statsLoading } = useClinicStatsQuery();
-  const { data: reports, isLoading: reportsLoading } = useClinicReportsQuery();
 
   return (
     <Screen scroll>
@@ -63,16 +59,6 @@ export function AdminDashboardScreen() {
             fullWidth
             onPress={() => router.push('/(admin)/day-close')}
           />
-        </View>
-
-        <View className="gap-3">
-          <SectionHeader
-            title={t('reports.title')}
-            actionLabel={t('dashboard.viewAll')}
-            onAction={() => router.push(getAdminReportsListHref(), { withAnchor: true })}
-          />
-          {reportsLoading && <Spinner />}
-          {reports && <ReportsList reports={reports} />}
         </View>
       </View>
     </Screen>

@@ -130,7 +130,7 @@ export function useForgotPasswordMutation() {
   return useMutation({
     mutationFn: (data: ForgotPasswordFormData) => authService.forgotPassword(data),
     onSuccess: (_result, variables) => {
-      setResetEmail(variables.email);
+      setResetEmail(variables.phone);
       Toast.show({
         type: 'success',
         text1: t('toast.codeSent'),
@@ -203,7 +203,26 @@ export function useResetPasswordMutation() {
   });
 }
 
-export function useBookingAuthMutation() {
+export function useRequestLoginOtpMutation() {
+  const { t } = useTranslation('auth');
+
+  return useMutation({
+    mutationFn: (data: { phone: string; intent: 'login' | 'signup' }) => authService.requestLoginOtp(data),
+    onSuccess: () => {
+      Toast.show({
+        type: 'success',
+        text1: t('toast.codeSent'),
+        text2: t('toast.codeSentHint'),
+      });
+    },
+    onError: (error) => {
+      const apiError = normalizeApiError(error);
+      Toast.show({ type: 'error', text1: t('toast.error'), text2: apiError.message });
+    },
+  });
+}
+
+export function usePhoneAuthMutation() {
   const setSession = useAuthStore((s) => s.setSession);
   const setActiveRole = useAuthStore((s) => s.setActiveRole);
   const { t } = useTranslation('auth');
@@ -212,8 +231,41 @@ export function useBookingAuthMutation() {
     mutationFn: (data: BookingAuthFormData) => authService.loginOrRegisterByPhone(data),
     onSuccess: async (session) => {
       await setSession(session);
+      queryClient.setQueryData(queryKeys.auth.me, session.user);
+      const isStaff = session.user.roles.some((role) => role !== UserRole.PATIENT);
+      if (isStaff) {
+        await handlePostLogin(session.user);
+        return;
+      }
+      await setActiveRole(UserRole.PATIENT);
+    },
+    onError: (error) => {
+      const apiError = normalizeApiError(error);
+      if (apiError.code === 'NAME_REQUIRED') return;
+      Toast.show({ type: 'error', text1: t('toast.loginFailed'), text2: apiError.message });
+    },
+  });
+}
+
+export function useVerifyLoginOtpMutation(options?: { redirect?: boolean }) {
+  const setSession = useAuthStore((s) => s.setSession);
+  const setActiveRole = useAuthStore((s) => s.setActiveRole);
+  const { t } = useTranslation('auth');
+  const redirect = options?.redirect !== false;
+
+  return useMutation({
+    mutationFn: (data: {
+      phone: string;
+      otp: string;
+      firstName?: string;
+      lastName?: string;
+      clinicId?: string;
+    }) => authService.verifyLoginOtp(data),
+    onSuccess: async (session) => {
+      await setSession(session);
       await setActiveRole(UserRole.PATIENT);
       queryClient.setQueryData(queryKeys.auth.me, session.user);
+      if (redirect) handlePostLogin(session.user);
     },
     onError: (error) => {
       const apiError = normalizeApiError(error);
@@ -247,6 +299,27 @@ export function useLogoutMutation() {
   });
 }
 
+export function useDeleteAccountMutation() {
+  const clearSession = useAuthStore((s) => s.clearSession);
+  const clearResetFlow = useAuthFlowStore((s) => s.clearResetFlow);
+  const { t } = useTranslation('auth');
+
+  return useMutation({
+    mutationFn: () => authService.deleteAccount(),
+    onSuccess: async () => {
+      await clearSession();
+      clearResetFlow();
+      queryClient.clear();
+      Toast.show({ type: 'success', text1: t('editProfile.deleted') });
+      router.replace('/(auth)/login');
+    },
+    onError: (error) => {
+      const apiError = normalizeApiError(error);
+      Toast.show({ type: 'error', text1: t('editProfile.deleteFailed'), text2: apiError.message });
+    },
+  });
+}
+
 export function useUpdateProfileMutation() {
   const updateUser = useAuthStore((s) => s.updateUser);
   const { t } = useTranslation('auth');
@@ -258,6 +331,7 @@ export function useUpdateProfileMutation() {
       queryClient.setQueryData(queryKeys.auth.me, user);
       invalidateAuthQueries();
       queryClient.invalidateQueries({ queryKey: queryKeys.patients.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.doctors.all });
       Toast.show({ type: 'success', text1: t('toast.profileUpdated') });
     },
     onError: (error) => {

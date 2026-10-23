@@ -1,35 +1,36 @@
-import { View } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
 
-import { useBookingAuthMutation } from '@/features/auth/hooks';
+import { usePhoneAuthMutation } from '@/features/auth/hooks';
 import { bookingAuthSchema, type BookingAuthFormData } from '@/features/auth/schemas/auth.schemas';
 import { normalizeApiError } from '@/shared/api/client';
 import { FormInput } from '@/shared/components/form/FormInput';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { Text } from '@/shared/components/ui/Text';
+import { UserRole } from '@/shared/types/enums';
 
 interface BookingAuthCardProps {
+  clinicId?: string;
   onAuthenticated?: () => void;
 }
 
-export function BookingAuthCard({ onAuthenticated }: BookingAuthCardProps) {
+export function BookingAuthCard({ clinicId, onAuthenticated }: BookingAuthCardProps) {
   const { t } = useTranslation('auth');
-  const mutation = useBookingAuthMutation();
-
-  const { control, handleSubmit, setError } = useForm<BookingAuthFormData>({
+  const phoneAuth = usePhoneAuthMutation();
+  const form = useForm<BookingAuthFormData>({
     resolver: zodResolver(bookingAuthSchema),
-    defaultValues: { firstName: '', lastName: '', phone: '', password: '' },
+    defaultValues: { firstName: '', lastName: '', phone: '', password: '', clinicId },
   });
 
   const askForName = (data: BookingAuthFormData) => {
     const firstName = data.firstName?.trim() ?? '';
     const lastName = data.lastName?.trim() ?? '';
     if (firstName.length >= 2 && lastName.length >= 2) return false;
-    if (firstName.length < 2) setError('firstName', { message: 'firstNameMin' });
-    if (lastName.length < 2) setError('lastName', { message: 'lastNameMin' });
+    if (firstName.length < 2) form.setError('firstName', { message: 'firstNameMin' });
+    if (lastName.length < 2) form.setError('lastName', { message: 'lastNameMin' });
     return true;
   };
 
@@ -43,7 +44,7 @@ export function BookingAuthCard({ onAuthenticated }: BookingAuthCardProps) {
       </View>
 
       <FormInput
-        control={control}
+        control={form.control}
         name="firstName"
         label={t('register.firstName')}
         placeholder={t('register.firstNamePlaceholder')}
@@ -51,7 +52,7 @@ export function BookingAuthCard({ onAuthenticated }: BookingAuthCardProps) {
         autoComplete="name"
       />
       <FormInput
-        control={control}
+        control={form.control}
         name="lastName"
         label={t('register.lastName')}
         placeholder={t('register.lastNamePlaceholder')}
@@ -59,7 +60,7 @@ export function BookingAuthCard({ onAuthenticated }: BookingAuthCardProps) {
         autoComplete="name"
       />
       <FormInput
-        control={control}
+        control={form.control}
         name="phone"
         label={t('bookingAuth.phone')}
         placeholder={t('bookingAuth.phonePlaceholder')}
@@ -67,25 +68,32 @@ export function BookingAuthCard({ onAuthenticated }: BookingAuthCardProps) {
         autoComplete="tel"
       />
       <FormInput
-        control={control}
+        control={form.control}
         name="password"
         label={t('bookingAuth.password')}
         placeholder={t('bookingAuth.passwordPlaceholder')}
         secureTextEntry
+        autoComplete="password"
       />
 
       <Button
         title={t('bookingAuth.submit')}
-        onPress={handleSubmit((data) =>
-          mutation.mutate(data, {
-            onSuccess: () => onAuthenticated?.(),
-            onError: (error) => {
-              if (normalizeApiError(error).code !== 'NAME_REQUIRED') return;
-              askForName(data);
+        onPress={form.handleSubmit((data) =>
+          phoneAuth.mutate(
+            { ...data, clinicId },
+            {
+              onSuccess: (session) => {
+                const isPatient = session.user.roles.includes(UserRole.PATIENT) && session.user.roles.length === 1;
+                if (isPatient) onAuthenticated?.();
+              },
+              onError: (error) => {
+                if (normalizeApiError(error).code !== 'NAME_REQUIRED') return;
+                askForName(data);
+              },
             },
-          }),
+          ),
         )}
-        loading={mutation.isPending}
+        loading={phoneAuth.isPending}
         fullWidth
         size="lg"
       />

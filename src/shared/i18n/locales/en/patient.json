@@ -129,13 +129,7 @@
     "feeValue": "{{value}} EGP",
     "openMap": "Open map",
     "doctors": "Doctors at this clinic",
-    "error": "Could not load clinic profile",
-    "delete": "Delete clinic",
-    "deleteTitle": "Delete clinic",
-    "deleteMessage": "{{name}} will be removed from search and hidden from patients.",
-    "deleteDenied": "Only the clinic manager can delete it. Sign in with the clinic manager account.",
-    "deleteFailed": "Could not delete the clinic",
-    "deleted": "Clinic deleted"
+    "error": "Could not load clinic profile"
   },
   "search": {
     "title": "Find a Doctor",

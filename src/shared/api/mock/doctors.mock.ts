@@ -253,6 +253,7 @@ export const mockDoctorsService = {
       branchId: branch?.id ?? mockDoctors[index].branchId,
       branchName: payload.branchName,
       languages: payload.languages,
+      avatarUrl: payload.avatarUrl ?? mockDoctors[index].avatarUrl,
       sharePercent:
         payload.sharePercent == null
           ? mockDoctors[index].sharePercent

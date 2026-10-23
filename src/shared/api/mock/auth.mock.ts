@@ -69,12 +69,12 @@ const SEED_CREDENTIALS: MockCredential[] = [
   },
   {
     email: 'patient@clinic.com',
-    phone: '+201092313486',
+    phone: '+201000000001',
     password: 'password123',
     user: {
       id: 'user-patient-001',
       email: 'patient@clinic.com',
-      phone: '+201092313486',
+      phone: '+201000000001',
       firstName: 'Ahmed',
       lastName: 'Fathy',
       roles: [UserRole.PATIENT],

@@ -7,7 +7,7 @@ import { endpoints } from './endpoints';
 import { mockAuthService } from './mock/auth.mock';
 
 export async function refreshAuthSession(refreshToken: string): Promise<AuthSession> {
-  if (env.useMockApi) {
+  if (env.useMockApi && refreshToken.startsWith('mock-')) {
     return mockAuthService.refresh(refreshToken);
   }
 

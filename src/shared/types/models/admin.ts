@@ -41,6 +41,7 @@ export interface UpdateDoctorPayload {
   branchName: string;
   languages: string[];
   sharePercent?: number;
+  avatarUrl?: string;
 }
 
 export interface UpdatePatientPayload {

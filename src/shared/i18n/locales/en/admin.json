@@ -49,6 +49,7 @@
     "specialtyPlaceholder": "Select specialty",
     "schedule": "Manage schedule",
     "editTitle": "Edit Doctor",
+    "changePhoto": "Change photo",
     "createTitle": "Add Doctor",
     "createAction": "Create Doctor",
     "creating": "Creating...",
@@ -149,7 +150,12 @@
     "street": "Address",
     "locationUrl": "Location link (optional)",
     "add": "Add a clinic to the center",
-    "addSecretary": "Add secretary"
+    "addSecretary": "Add secretary",
+    "delete": "Delete clinic",
+    "deleteTitle": "Delete clinic",
+    "deleteMessage": "{{name}} will be removed from search and hidden from patients.",
+    "deleted": "Clinic deleted",
+    "deleteFailed": "Could not delete the clinic"
   },
   "branches": {
     "main": "Main Clinic",

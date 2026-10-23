@@ -131,6 +131,7 @@ type DoctorRow = {
   languages: string;
   share_percent: number | null;
   is_active: boolean;
+  avatar_url?: string | null;
 };
 
 function toDoctor(row: DoctorRow) {
@@ -151,6 +152,7 @@ function toDoctor(row: DoctorRow) {
     languages: JSON.parse(row.languages) as string[],
     sharePercent: row.share_percent ?? undefined,
     isActive: row.is_active,
+    avatarUrl: row.avatar_url ?? undefined,
   };
 }
 
@@ -282,18 +284,27 @@ export async function updateDoctor(
   actorId: string,
   clinicId: string,
   id: string,
-  input: { specialty: string; phone?: string; bio?: string; branchName: string; languages: string[]; sharePercent?: number },
+  input: {
+    specialty: string;
+    phone?: string;
+    bio?: string;
+    branchName: string;
+    languages: string[];
+    sharePercent?: number;
+    avatarUrl?: string;
+  },
 ) {
   await requireAdmin(actorId, clinicId);
   const phone = input.phone ? normalizePhone(input.phone) : null;
   const share = input.sharePercent == null ? null : Math.min(100, Math.max(0, Math.round(input.sharePercent)));
+  const avatar = input.avatarUrl?.trim() ? input.avatarUrl.trim() : null;
   const result = await db.query<DoctorRow>(
     `UPDATE doctors
      SET specialty = $2, phone = COALESCE($3, phone), bio = $4, branch_name = $5, languages = $6,
-         share_percent = $7, updated_at = now()
+         share_percent = $7, avatar_url = COALESCE($9, avatar_url), updated_at = now()
      WHERE (id = $1 OR user_id = $1) AND clinic_id = $8
      RETURNING *`,
-    [id, input.specialty, phone, input.bio?.trim() || null, input.branchName, JSON.stringify(input.languages), share, clinicId],
+    [id, input.specialty, phone, input.bio?.trim() || null, input.branchName, JSON.stringify(input.languages), share, clinicId, avatar],
   );
   if (!result.rows[0]) throw httpError(404, 'NOT_FOUND', 'Doctor not found');
   return toDoctor(result.rows[0]);

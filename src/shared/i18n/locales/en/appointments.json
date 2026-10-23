@@ -169,12 +169,15 @@
   },
   "whatsapp": {
     "title": "WhatsApp",
-    "hint": "Two messages: a confirmation when the secretary confirms, and a reminder one day before.",
+    "hint": "Booking request, confirmation, reminder, cancellation, and a new time. Check-in sends nothing.",
     "sent": "Sent",
     "scheduled": "Scheduled",
     "kinds": {
+      "request": "Booking request",
       "confirmation": "Appointment confirmation",
-      "reminder": "Reminder"
+      "reminder": "Reminder",
+      "cancellation": "Cancellation",
+      "reschedule": "New time"
     }
   },
   "queue": {

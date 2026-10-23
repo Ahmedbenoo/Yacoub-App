@@ -10,6 +10,8 @@
     "welcome": "مرحباً، د. {{name}}",
     "homeVisitsTitle": "زيارات منزلية",
     "homeVisitsHint": "طلبات المرضى في تخصصك، منفصلة عن مواعيد العيادة",
+    "homeVisitsEnable": "تحويل للكشف المنزلي",
+    "homeVisitsEnableHint": "لو عايز تستقبل طلبات الكشف في بيت المريض",
     "openHomeVisits": "عرض الطلبات"
   },
   "patients": {

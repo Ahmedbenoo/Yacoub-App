@@ -2,17 +2,23 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { ClinicCoverCard } from '@/features/admin/components/ClinicCoverCard';
+import { ReportsList } from '@/features/admin/components/ReportsList';
+import { useClinicReportsQuery } from '@/features/admin/hooks';
 import { useUserClinicsQuery } from '@/features/clinic/hooks/useClinicQueries';
 import { clinicsService } from '@/features/clinic/services/clinics.service';
+import { Spinner } from '@/shared/components/feedback/Spinner';
+import { SectionHeader } from '@/shared/components/layout/SectionHeader';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { Icon, type AppIconName } from '@/shared/components/ui/Icon';
 import { Input } from '@/shared/components/ui/Input';
 import { Text } from '@/shared/components/ui/Text';
 import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
+import { getAdminReportsListHref } from '@/shared/navigation/routes';
 import { useAuthStore } from '@/shared/stores';
 
 const SETTINGS: { title: string; subtitle: string; href: string; icon: AppIconName }[] = [
@@ -62,7 +68,9 @@ const extraStaff: { id: string; name: string; role: string }[] = [
 ];
 
 export function ClinicRulesPanel() {
+  const { t } = useTranslation('admin');
   const userId = useAuthStore((s) => s.user?.id);
+  const { data: reports, isLoading: reportsLoading } = useClinicReportsQuery();
   const queryClient = useQueryClient();
   const clinicsQuery = useUserClinicsQuery();
   const [staffName, setStaffName] = useState('');
@@ -90,6 +98,16 @@ export function ClinicRulesPanel() {
       {SETTINGS.map((item) => (
         <SettingsRow key={item.href} {...item} />
       ))}
+
+      <View className="gap-3">
+        <SectionHeader
+          title={t('reports.title')}
+          actionLabel={t('dashboard.viewAll')}
+          onAction={() => router.push(getAdminReportsListHref(), { withAnchor: true })}
+        />
+        {reportsLoading ? <Spinner /> : null}
+        {reports ? <ReportsList reports={reports} /> : null}
+      </View>
 
       {(pendingQuery.data ?? []).map((clinic) => (
         <Card key={clinic.id} className="gap-2">

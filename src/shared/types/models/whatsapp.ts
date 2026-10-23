@@ -1,4 +1,4 @@
-export type WhatsAppMessageKind = 'confirmation' | 'reminder';
+export type WhatsAppMessageKind = 'request' | 'confirmation' | 'reminder' | 'cancellation' | 'reschedule';
 export type WhatsAppMessageStatus = 'scheduled' | 'sent';
 
 export interface WhatsAppMessage {

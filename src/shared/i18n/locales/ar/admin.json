@@ -49,6 +49,7 @@
     "specialtyPlaceholder": "اختر التخصص",
     "schedule": "إدارة الجدول",
     "editTitle": "تعديل الطبيب",
+    "changePhoto": "تغيير الصورة",
     "createTitle": "إضافة طبيب",
     "createAction": "إنشاء طبيب",
     "creating": "جاري الإنشاء...",
@@ -149,7 +150,12 @@
     "street": "العنوان",
     "locationUrl": "لينك اللوكيشن (اختياري)",
     "add": "إضافة عيادة للمركز",
-    "addSecretary": "إضافة سكرتيرة"
+    "addSecretary": "إضافة سكرتيرة",
+    "delete": "حذف العيادة",
+    "deleteTitle": "حذف العيادة",
+    "deleteMessage": "هتتشال {{name}} من البحث ومش هتظهر للمرضى.",
+    "deleted": "العيادة اتحذفت",
+    "deleteFailed": "تعذر حذف العيادة"
   },
   "branches": {
     "main": "العيادة الرئيسية",

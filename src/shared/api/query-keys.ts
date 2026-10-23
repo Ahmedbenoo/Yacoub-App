@@ -84,6 +84,7 @@ export const queryKeys = {
     all: ['home-visits'] as const,
     list: (scope: string) => [...queryKeys.homeVisits.all, 'list', scope] as const,
     detail: (id: string) => [...queryKeys.homeVisits.all, 'detail', id] as const,
+    setting: ['home-visits', 'setting'] as const,
   },
   nursing: {
     all: ['nursing'] as const,

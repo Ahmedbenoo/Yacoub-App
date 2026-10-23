@@ -58,6 +58,7 @@ export interface Clinic extends TenantEntity {
   photoUrls?: string[];
   organizationId?: string;
   ownerUserId?: string;
+  placeKind?: 'clinic' | 'center';
 }
 
 export interface PaginatedResponse<T> {

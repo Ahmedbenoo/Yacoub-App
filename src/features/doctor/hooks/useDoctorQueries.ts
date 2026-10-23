@@ -39,6 +39,7 @@ export function useStartVisitMutation() {
     mutationFn: (payload: StartVisitPayload) => visitsService.start(payload),
     onSuccess: (visit) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.visits.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       queryClient.setQueryData(queryKeys.visits.detail(visit.id), visit);
     },
     onError: (error) => {

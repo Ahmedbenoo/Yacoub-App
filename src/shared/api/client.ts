@@ -13,6 +13,9 @@ let refreshPromise: Promise<string | null> | null = null;
 const AUTH_PATHS = [
   endpoints.auth.login,
   endpoints.auth.register,
+  endpoints.auth.registerOwner,
+  endpoints.auth.registerDoctor,
+  endpoints.auth.phone,
   endpoints.auth.refresh,
   endpoints.auth.forgotPassword,
   endpoints.auth.verifyOtp,

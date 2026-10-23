@@ -1,6 +1,5 @@
 import { Linking, Platform, Share } from 'react-native';
 
-import { normalizePhone } from '@/shared/lib/phone';
 import type { Prescription } from '@/shared/types/models/prescription';
 
 import { clinicDisplayName, prescriptionFileUrl } from './prescription-document';
@@ -52,14 +51,15 @@ export async function sharePrescription(
   return 'shared';
 }
 
+const WHATSAPP_TO = '201068592701';
+
 export async function openPrescriptionWhatsApp(prescription: Prescription, arabic: boolean) {
   const message = prescriptionWhatsAppMessage(prescription, arabic);
-  await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(message)}`);
+  await Linking.openURL(`https://wa.me/${WHATSAPP_TO}?text=${encodeURIComponent(message)}`);
 }
 
-export async function sendPrescriptionOnWhatsApp(phone: string, prescription: Prescription, arabic: boolean) {
-  const digits = normalizePhone(phone).replace(/\D/g, '');
+export async function sendPrescriptionOnWhatsApp(_phone: string, prescription: Prescription, arabic: boolean) {
   const message = prescriptionWhatsAppMessage(prescription, arabic);
-  const url = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+  const url = `https://wa.me/${WHATSAPP_TO}?text=${encodeURIComponent(message)}`;
   await Linking.openURL(url);
 }

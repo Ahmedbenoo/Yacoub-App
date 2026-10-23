@@ -10,6 +10,8 @@
     "welcome": "Welcome, Dr. {{name}}",
     "homeVisitsTitle": "Home visits",
     "homeVisitsHint": "Patient requests in your specialty, separate from clinic appointments",
+    "homeVisitsEnable": "Switch to home visits",
+    "homeVisitsEnableHint": "Receive visits at the patient's home",
     "openHomeVisits": "View requests"
   },
   "patients": {

@@ -2,6 +2,7 @@ import { env } from '@/config/env';
 import { apiClient } from '@/shared/api/client';
 import { mockPatientsService } from '@/shared/api/mock/patients.mock';
 import { endpoints } from '@/shared/api/endpoints';
+import { getAuthToken } from '@/shared/stores';
 import type { ApiResponse, PaginatedResponse } from '@/shared/types/models';
 import type {
   MedicalHistoryEntry,
@@ -11,7 +12,6 @@ import type {
 
 export const patientsService = {
   list: async (filters: PatientFilters = {}): Promise<PaginatedResponse<PatientProfile>> => {
-    if (env.useMockApi) return mockPatientsService.list(filters);
     const response = await apiClient.get<ApiResponse<PaginatedResponse<PatientProfile>>>(
       endpoints.patients.list,
       { params: filters },
@@ -20,7 +20,6 @@ export const patientsService = {
   },
 
   getById: async (id: string): Promise<PatientProfile> => {
-    if (env.useMockApi) return mockPatientsService.getById(id);
     const response = await apiClient.get<ApiResponse<PatientProfile>>(
       endpoints.patients.detail(id),
     );
@@ -28,7 +27,9 @@ export const patientsService = {
   },
 
   getHistory: async (id: string): Promise<MedicalHistoryEntry[]> => {
-    if (env.useMockApi) return mockPatientsService.getHistory(id);
+    const token = getAuthToken();
+    const real = !env.useMockApi || Boolean(token && !token.startsWith('mock-'));
+    if (!real) return mockPatientsService.getHistory(id);
     const response = await apiClient.get<ApiResponse<MedicalHistoryEntry[]>>(
       endpoints.patients.history(id),
     );

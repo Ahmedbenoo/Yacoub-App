@@ -2,8 +2,10 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 
-import { env } from '@/config/env';
+import { apiClient } from '@/shared/api/client';
+import { endpoints } from '@/shared/api/endpoints';
 import { captureException } from '@/shared/lib/monitoring';
+import { getAuthToken } from '@/shared/stores';
 import { useNotificationPreferencesStore } from '@/shared/stores/notification-preferences-store';
 import { NotificationType } from '@/shared/types/enums';
 
@@ -94,12 +96,16 @@ export async function registerPushToken(userId: string): Promise<string | null> 
   const token = await getExpoPushToken();
   if (!token) return null;
 
-  if (env.useMockApi) {
+  const auth = getAuthToken();
+  if (!auth || auth.startsWith('mock-')) {
     console.info('[push] Registered mock device token for user', userId);
     return token;
   }
 
-  // Real API: POST /devices/register { token, platform }
+  await apiClient.post(endpoints.notifications.registerDevice, {
+    token,
+    platform: Platform.OS,
+  });
   return token;
 }
 

@@ -4,13 +4,5 @@
   "active": "Current clinic",
   "switch": "Switch clinic",
   "switchSuccess": "Clinic switched successfully",
-  "empty": "No clinics available",
-  "apiMode": "API mode",
-  "mockApi": "Mock data",
-  "realApi": "Live API",
-  "mockCacheHint": "After editing mock files in code, tap reload mock data.",
-  "mockCacheReset": "Reload mock data",
-  "mockCacheResetting": "Reloading...",
-  "mockCacheResetSuccess": "Mock data reloaded",
-  "mockCacheResetFailed": "Could not reload mock data"
+  "empty": "No clinics available"
 }

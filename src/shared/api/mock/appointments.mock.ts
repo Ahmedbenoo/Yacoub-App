@@ -337,6 +337,8 @@ export const mockAppointmentsService = {
     };
     const { voidOpenInvoice } = await import('./invoices.mock');
     voidOpenInvoice(appointment.id);
+    const { notifyAppointmentCancelled } = await import('./whatsapp.mock');
+    notifyAppointmentCancelled(mockAppointments[index]);
     await notifyOthers(
       mockAppointments[index],
       actorUserId,
@@ -377,7 +379,7 @@ export const mockAppointmentsService = {
       'The secretary confirmed the appointment.',
     );
     const { queueAppointmentWhatsApp } = await import('./whatsapp.mock');
-    queueAppointmentWhatsApp(mockAppointments[index]);
+    queueAppointmentWhatsApp(mockAppointments[index], true);
 
     return mockAppointments[index];
   },
@@ -515,6 +517,8 @@ export const mockAppointmentsService = {
         ? 'The secretary proposed another time.'
         : 'The patient sent the time back to the secretary.',
     );
+    const { notifyAppointmentRescheduled } = await import('./whatsapp.mock');
+    notifyAppointmentRescheduled(mockAppointments[index]);
 
     return mockAppointments[index];
   },
@@ -574,10 +578,9 @@ export const mockAppointmentsService = {
       desk ? 'Desk booking' : 'New appointment',
       desk ? 'A walk-in was booked at reception.' : 'A patient booked online and is waiting for the secretary.',
     );
-    if (desk) {
-      const { queueAppointmentWhatsApp } = await import('./whatsapp.mock');
-      queueAppointmentWhatsApp(appointment);
-    }
+    const { queueAppointmentRequest, queueAppointmentWhatsApp } = await import('./whatsapp.mock');
+    if (desk) queueAppointmentWhatsApp(appointment, true);
+    else queueAppointmentRequest(appointment);
     return appointment;
   },
 };
