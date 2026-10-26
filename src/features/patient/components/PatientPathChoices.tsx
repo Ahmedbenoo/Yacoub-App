@@ -5,7 +5,7 @@ import Toast from 'react-native-toast-message';
 
 import { Icon, type AppIconName } from '@/shared/components/ui/Icon';
 import { Text } from '@/shared/components/ui/Text';
-import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
+import { nativeLayoutMatchesLocale } from '@/shared/hooks/useLayoutDirection';
 import { getPatientSearchHref } from '@/shared/navigation/routes';
 import { useLocaleStore } from '@/shared/stores';
 
@@ -91,7 +91,6 @@ function PathRow({
 export function PatientPathChoices({ isAuthenticated }: PatientPathChoicesProps) {
   const { t } = useTranslation('patient');
   const isRtl = useLocaleStore((s) => s.isRtl);
-  const { rowStyle } = useLayoutDirection();
   const [search, nursing, homeDoctor] = PATHS;
 
   const open = (key: 'nursing' | 'search' | 'homeDoctor', frozen?: boolean) => {
@@ -106,29 +105,30 @@ export function PatientPathChoices({ isAuthenticated }: PatientPathChoicesProps)
     router.push(getPatientSearchHref({ tab: 'clinics' }));
   };
 
+  const topCards =
+    isRtl && !nativeLayoutMatchesLocale(isRtl) ? [nursing, search] : [search, nursing];
+
   return (
     <View className="gap-3">
       <Text variant="titleSm">{t('dashboard.pathsTitle')}</Text>
 
       <View className="overflow-hidden bg-primary-600" style={{ borderRadius: 6 }}>
-        <View style={[rowStyle, { alignItems: 'stretch' }]}>
-          {[search, nursing].map((option, index) => (
+        <View style={{ flexDirection: 'row', minHeight: 112 }}>
+          {topCards.map((option, index) => (
             <View key={option.key} style={{ flex: 1, flexDirection: 'row' }}>
               {index > 0 ? <View style={{ width: 2, backgroundColor: '#FFFFFF' }} /> : null}
               <Pressable
                 accessibilityRole="button"
                 onPress={() => open(option.key, option.frozen)}
-                style={{ flex: 1 }}
+                style={{ flex: 1, minHeight: 112, justifyContent: 'center', padding: 16 }}
               >
-                <View className="flex-1 justify-center p-4">
-                  <PathRow
-                    icon={option.icon}
-                    title={t(option.titleKey)}
-                    isRtl={isRtl}
-                    frozen={option.frozen}
-                    stacked
-                  />
-                </View>
+                <PathRow
+                  icon={option.icon}
+                  title={t(option.titleKey)}
+                  isRtl={isRtl}
+                  frozen={option.frozen}
+                  stacked
+                />
               </Pressable>
             </View>
           ))}
