@@ -9,12 +9,11 @@ export function BootScreen() {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FFFFFF',
-        gap: 28,
+        backgroundColor: '#F8FAFC',
       }}
     >
-      <Logo maxVisibleHeight={96} />
-      <ActivityIndicator color="#0D9488" />
+      <Logo maxVisibleHeight={48} />
+      <ActivityIndicator color="#0D9488" style={{ marginTop: 18 }} />
     </View>
   );
 }
