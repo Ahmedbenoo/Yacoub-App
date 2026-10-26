@@ -18,15 +18,12 @@ import {
 } from '@expo-google-fonts/cairo';
 
 import { AppProviders } from '@/shared/providers/AppProviders';
-import { BootScreen } from '@/shared/components/brand/BootScreen';
-import { i18n } from '@/shared/i18n';
-import { I18nextProvider } from 'react-i18next';
 
 export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 SplashScreen.setOptions({
-  duration: 400,
+  duration: 250,
   fade: true,
 });
 
@@ -46,7 +43,7 @@ export default function RootLayout() {
   const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setTimedOut(true), 2500);
+    const timeout = setTimeout(() => setTimedOut(true), 8000);
     return () => clearTimeout(timeout);
   }, []);
 
@@ -58,11 +55,7 @@ export default function RootLayout() {
   }, [ready]);
 
   if (!ready) {
-    return (
-      <I18nextProvider i18n={i18n}>
-        <BootScreen />
-      </I18nextProvider>
-    );
+    return null;
   }
 
   return (
