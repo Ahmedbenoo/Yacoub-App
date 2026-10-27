@@ -69,19 +69,19 @@ export function PatientGuestHome() {
 
       <PatientPathChoices isAuthenticated={false} />
 
-      {(clinicsQuery.isLoading || clinics.length > 0) && (
+      {(clinics.length > 0 || clinicsQuery.isFetching) && (
         <View className="gap-3">
           <SectionHeader
             title={t('guest.nearbyClinics')}
             actionLabel={t('guest.viewAll')}
             onAction={() => router.push(getPatientSearchHref({ tab: 'clinics' }))}
           />
-          {clinicsQuery.isLoading ? (
-            <SkeletonCard />
-          ) : (
+          {clinics.length > 0 ? (
             clinics.map((clinic) => (
               <ClinicCard key={clinic.id} clinic={clinic} href={getPatientClinicHref(clinic.id)} />
             ))
+          ) : (
+            <SkeletonCard />
           )}
         </View>
       )}
@@ -92,16 +92,16 @@ export function PatientGuestHome() {
           actionLabel={t('guest.viewAll')}
           onAction={() => router.push(getPatientSearchHref({ tab: 'doctors' }))}
         />
-        {doctorsQuery.isLoading ? (
+        {doctors.length > 0 ? (
+          doctors.map((doctor) => (
+            <DoctorCard key={doctor.id} doctor={doctor} href={getPatientDoctorHref(doctor.id)} />
+          ))
+        ) : doctorsQuery.isFetching ? (
           <View className="gap-3">
             <SkeletonCard />
             <SkeletonCard />
           </View>
-        ) : (
-          doctors.map((doctor) => (
-            <DoctorCard key={doctor.id} doctor={doctor} href={getPatientDoctorHref(doctor.id)} />
-          ))
-        )}
+        ) : null}
       </View>
 
       <Card elevated className="gap-4">
