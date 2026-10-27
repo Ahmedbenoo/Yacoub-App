@@ -41,6 +41,9 @@ type UserRow = {
   avatar_url: string | null;
   signature_url: string | null;
   stamp_url: string | null;
+  is_platform_admin?: boolean;
+  is_blocked?: boolean;
+  platform_role?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -265,7 +268,7 @@ function toPublicUser(row: UserRow, memberships: MembershipRow[]): PublicUser {
   };
 }
 
-function normalizePhone(input: string): string {
+export function normalizePhone(input: string): string {
   const digits = input.replace(/\D/g, '');
   if (!digits) return '';
   if (digits.startsWith('00')) return `+${digits.slice(2)}`;
@@ -306,7 +309,32 @@ export async function sessionForUser(userId: string) {
   return issueSession(row);
 }
 
+function assertAccountUsable(row: UserRow) {
+  if (row.is_blocked) {
+    throw httpError(403, 'ACCOUNT_BLOCKED', 'هذا الحساب موقف من إدارة المنصة');
+  }
+}
+
+export type PlatformRole = 'super_admin' | 'admin';
+
+export async function userPlatformRole(userId: string): Promise<PlatformRole | null> {
+  const result = await db.query<{ is_platform_admin: boolean; platform_role: string | null }>(
+    'SELECT is_platform_admin, platform_role FROM users WHERE id = $1',
+    [userId],
+  );
+  const row = result.rows[0];
+  if (!row) return null;
+  if (row.platform_role === 'super_admin' || row.platform_role === 'admin') return row.platform_role;
+  if (row.is_platform_admin) return 'super_admin';
+  return null;
+}
+
+export async function userIsPlatformAdmin(userId: string): Promise<boolean> {
+  return (await userPlatformRole(userId)) != null;
+}
+
 async function issueSession(row: UserRow) {
+  assertAccountUsable(row);
   const memberships = await membershipsFor(row.id);
   const user = toPublicUser(row, memberships);
   const accessToken = jwt.sign({ sub: user.id, clinicId: user.clinicId }, jwtSecret(), {
@@ -370,6 +398,7 @@ export async function userFromAccessToken(token: string): Promise<PublicUser> {
   if (!row) {
     throw Object.assign(new Error('Not authenticated'), { status: 401, code: 'UNAUTHORIZED' });
   }
+  assertAccountUsable(row);
 
   return toPublicUser(row, await membershipsFor(row.id));
 }

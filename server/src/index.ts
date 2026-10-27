@@ -1,5 +1,8 @@
 import 'dotenv/config';
 
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import cors from 'cors';
 import express from 'express';
 import { z } from 'zod';
@@ -116,6 +119,7 @@ import {
 import { createReview, listReviews, reviewForAppointment } from './reviews.js';
 import { registerDoctorAccount, registerOwnerAccount } from './registration.js';
 import { createDoctor, createSecretary, setDoctorActive, updateDoctor } from './staff.js';
+import { ensurePlatformAdmin, opsRouter } from './ops.js';
 
 const loginBody = z.object({
   identifier: z.string().min(3),
@@ -361,17 +365,25 @@ async function requireUser(req: express.Request, res: express.Response) {
   return userFromAccessToken(token);
 }
 
+const here = path.dirname(fileURLToPath(import.meta.url));
+const opsDir = path.join(here, '..', 'public', 'ops');
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '12mb' }));
 app.use('/uploads', express.static(uploadsRoot));
+app.use('/api/v1/ops', opsRouter);
+app.use('/ops', express.static(opsDir));
+app.get('/ops', (_req, res) => {
+  res.sendFile(path.join(opsDir, 'index.html'));
+});
 
 app.get('/api/v1', (_req, res) => {
   res.json({
     success: true,
     data: {
       name: 'Yacoub API',
-      message: 'السيرفر شغال. الدخول من POST /api/v1/auth/login',
+      message: 'السيرفر شغال. الدخول من POST /api/v1/auth/login — لوحة المنصة على /ops',
     },
   });
 });
@@ -2092,8 +2104,10 @@ app.post('/api/v1/children/:id/doses', async (req, res) => {
 const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
+await ensurePlatformAdmin();
 if (seedDemo) await seedDemoClinics();
 
 app.listen(port, () => {
   console.log(`Yacoub API listening on http://localhost:${port}/api/v1`);
+  console.log(`Platform dashboard: http://localhost:${port}/ops`);
 });

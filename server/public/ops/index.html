@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>يعقوب — إدارة المنصة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f0fdfa;
+        --card: #ffffff;
+        --ink: #134e4a;
+        --muted: #5b7a77;
+        --line: #ccfbf1;
+        --teal: #0d9488;
+        --teal-dark: #0f766e;
+        --danger: #dc2626;
+        --warn: #d97706;
+        --ok: #059669;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Cairo, Tahoma, sans-serif;
+        background: linear-gradient(180deg, #ccfbf1 0%, var(--bg) 180px);
+        color: var(--ink);
+        min-height: 100vh;
+      }
+      button, input, select { font-family: inherit; }
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+      header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+      h1 { font-size: 22px; margin: 0; }
+      h2 { font-size: 16px; margin: 18px 0 10px; }
+      .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 8px 24px rgba(13, 148, 136, 0.06);
+      }
+      .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+      .tabs button, .ghost, .btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 8px 14px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .tabs button { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+      .tabs button.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+      .btn { background: var(--teal); color: #fff; }
+      .btn:hover { background: var(--teal-dark); }
+      .btn.danger { background: var(--danger); }
+      .btn.ok { background: var(--ok); }
+      .ghost { background: #fff; border: 1px solid var(--line); color: var(--ink); }
+      .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+      input, select {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        min-width: 180px;
+        background: #fff;
+      }
+      .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+      .stat { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+      .stat b { display: block; font-size: 24px; }
+      .stat span { color: var(--muted); font-size: 13px; }
+      .up { color: var(--ok); font-size: 13px; font-weight: 700; }
+      .down { color: var(--danger); font-size: 13px; font-weight: 700; }
+      .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+      .chart { border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+      .bars { display: flex; align-items: flex-end; gap: 3px; height: 88px; }
+      .bars i {
+        flex: 1;
+        min-height: 2px;
+        background: var(--teal);
+        border-radius: 3px 3px 0 0;
+        opacity: 0.85;
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: right; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { color: var(--muted); font-weight: 600; }
+      .tag { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 700; }
+      .on { background: #d1fae5; color: #065f46; }
+      .off { background: #fee2e2; color: #991b1b; }
+      .pending { background: #fef3c7; color: #92400e; }
+      .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+      .hidden { display: none !important; }
+      .login { max-width: 420px; margin: 12vh auto; padding: 24px; }
+      .login h1 { margin-bottom: 8px; }
+      .login form { display: grid; gap: 10px; margin-top: 16px; }
+      .login input { min-width: 0; width: 100%; }
+      .err { color: var(--danger); font-size: 13px; min-height: 18px; }
+      .empty { color: var(--muted); padding: 20px 0; }
+      @media (max-width: 720px) {
+        table, thead, tbody, th, td, tr { display: block; }
+        th { display: none; }
+        td { border: 0; padding: 4px 0; }
+        tr { border-bottom: 1px solid var(--line); padding: 12px 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="login" class="card login">
+      <h1>إدارة منصة يعقوب</h1>
+      <div class="sub">لوحة لصاحب التطبيق: النمو، كل العيادات، وكل المرضى. مش لأصحاب العيادات ولا للدكاترة.</div>
+      <form id="login-form">
+        <input name="phone" inputmode="tel" placeholder="رقم الموبايل" autocomplete="username" required />
+        <input name="password" type="password" placeholder="كلمة المرور" autocomplete="current-password" required />
+        <button class="btn" type="submit">دخول</button>
+        <div class="err" id="login-error"></div>
+      </form>
+    </div>
+
+    <div id="app" class="wrap hidden">
+      <header>
+        <div>
+          <h1>إدارة المنصة</h1>
+          <div class="sub" id="who"></div>
+        </div>
+        <button class="ghost" id="logout" type="button">خروج</button>
+      </header>
+      <div class="tabs" id="tabs"></div>
+      <div class="card">
+        <div class="row" id="toolbar"></div>
+        <div id="content"></div>
+      </div>
+    </div>
+
+    <script>
+      const TOKEN_KEY = 'yacoub-ops-token';
+      const REFRESH_KEY = 'yacoub-ops-refresh';
+      const USER_KEY = 'yacoub-ops-user';
+      const API = '/api/v1/ops';
+      const tabs = [
+        ['overview', 'النمو'],
+        ['clinics', 'العيادات'],
+        ['patients', 'المرضى'],
+        ['users', 'المستخدمين'],
+        ['appointments', 'الحجوزات'],
+        ['doctors', 'الدكاترة'],
+        ['nurses', 'التمريض'],
+        ['nursing', 'طلبات تمريض'],
+        ['home', 'زيارات منزلية'],
+      ];
+      const roleLabel = { super_admin: 'سوبر أدمن', admin: 'أدمن' };
+      let tab = 'overview';
+      let q = '';
+      let status = '';
+
+      function token() { return localStorage.getItem(TOKEN_KEY) || ''; }
+      function user() {
+        try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch { return null; }
+      }
+      function isSuper() { return user()?.role === 'super_admin'; }
+      function fmt(value) {
+        if (!value) return '—';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return String(value);
+        return date.toLocaleString('ar-EG');
+      }
+      function tag(on, yes, no) {
+        return `<span class="tag ${on ? 'on' : 'off'}">${on ? yes : no}</span>`;
+      }
+      function statusTag(value) {
+        const pending = value === 'pending' || value === 'scheduled' || value === 'requested';
+        return `<span class="tag ${pending ? 'pending' : value === 'approved' || value === 'completed' ? 'on' : 'off'}">${value}</span>`;
+      }
+      function changeHtml(value) {
+        const cls = value >= 0 ? 'up' : 'down';
+        return `<div class="${cls}">${value >= 0 ? '+' : ''}${value}% عن الأسبوع السابق</div>`;
+      }
+      function chart(title, series) {
+        const max = Math.max(1, ...series.map((item) => item.count));
+        const bars = series.map((item) => `<i title="${item.day}: ${item.count}" style="height:${Math.round((item.count / max) * 100)}%"></i>`).join('');
+        return `<div class="chart"><div class="sub">${title}</div><div class="bars">${bars}</div></div>`;
+      }
+
+      async function refreshAccess() {
+        const refreshToken = localStorage.getItem(REFRESH_KEY);
+        if (!refreshToken) return false;
+        const res = await fetch('/api/v1/auth/refresh', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok || !body.data?.accessToken) return false;
+        localStorage.setItem(TOKEN_KEY, body.data.accessToken);
+        if (body.data.refreshToken) localStorage.setItem(REFRESH_KEY, body.data.refreshToken);
+        return true;
+      }
+
+      async function api(path, options = {}, retried = false) {
+        const res = await fetch(API + path, {
+          ...options,
+          headers: {
+            'content-type': 'application/json',
+            ...(token() ? { authorization: 'Bearer ' + token() } : {}),
+            ...(options.headers || {}),
+          },
+        });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 401 && !retried && path !== '/login' && (await refreshAccess())) {
+          return api(path, options, true);
+        }
+        if (!res.ok) {
+          if (res.status === 401) logout();
+          throw new Error(body.message || 'حصل خطأ');
+        }
+        return body.data;
+      }
+
+      function logout() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(REFRESH_KEY);
+        localStorage.removeItem(USER_KEY);
+        document.getElementById('app').classList.add('hidden');
+        document.getElementById('login').classList.remove('hidden');
+      }
+
+      function showApp() {
+        const me = user();
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('who').textContent = me
+          ? `${me.firstName} ${me.lastName} — ${roleLabel[me.role] || ''} — ${me.phone || ''}`
+          : '';
+        document.getElementById('tabs').innerHTML = tabs
+          .map(([id, label]) => `<button type="button" data-tab="${id}" class="${id === tab ? 'active' : ''}">${label}</button>`)
+          .join('');
+        load();
+      }
+
+      function toolbar(html) {
+        document.getElementById('toolbar').innerHTML = html;
+      }
+
+      function searchBox(placeholder) {
+        return `<input id="q" value="${q.replace(/"/g, '&quot;')}" placeholder="${placeholder}" /><button class="btn" id="search" type="button">بحث</button>`;
+      }
+
+      function bindSearch() {
+        const run = () => {
+          q = document.getElementById('q').value.trim();
+          load();
+        };
+        document.getElementById('search')?.addEventListener('click', run);
+        document.getElementById('q')?.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') run();
+        });
+      }
+
+      async function load() {
+        const content = document.getElementById('content');
+        content.innerHTML = '<div class="empty">جاري التحميل...</div>';
+        const superUser = isSuper();
+        try {
+          if (tab === 'overview') {
+            toolbar('');
+            const data = await api('/overview');
+            const g = data.growth || {};
+            const growth = [
+              [g.usersThisWeek ?? 0, 'مستخدمين الأسبوع', g.usersChange ?? 0],
+              [g.clinicsThisWeek ?? 0, 'عيادات الأسبوع', g.clinicsChange ?? 0],
+              [g.patientsThisWeek ?? 0, 'مرضى الأسبوع', g.patientsChange ?? 0],
+              [g.appointmentsThisWeek ?? 0, 'حجوزات الأسبوع', g.appointmentsChange ?? 0],
+            ];
+            const items = [
+              [data.users, 'كل المستخدمين'],
+              [data.clinics, 'كل العيادات'],
+              [data.patients, 'كل ملفات المرضى'],
+              [data.doctors, 'كل الدكاترة'],
+              [data.clinicsActive, 'عيادات ظاهرة'],
+              [data.clinicsPending, 'عيادات تنتظر اعتماد'],
+              [data.appointmentsToday, 'حجوزات اليوم'],
+              [data.appointmentsOpen, 'حجوزات مفتوحة'],
+              [data.usersBlocked, 'حسابات موقوفة'],
+              [data.nursesPending, 'تمريض ينتظر موافقة'],
+              [data.nursingOpen, 'طلبات تمريض مفتوحة'],
+              [data.homeVisitsOpen, 'زيارات منزلية مفتوحة'],
+            ];
+            content.innerHTML = `
+              <h2>معدل النمو (آخر 30 يوم)</h2>
+              <div class="stats">${growth.map(([n, l, c]) => `<div class="stat"><b>${n}</b><span>${l}</span>${changeHtml(c)}</div>`).join('')}</div>
+              <div class="charts" style="margin-top:12px">
+                ${chart('مستخدمين جدد', g.usersDaily || [])}
+                ${chart('عيادات جديدة', g.clinicsDaily || [])}
+                ${chart('مرضى جدد', g.patientsDaily || [])}
+                ${chart('حجوزات', g.appointmentsDaily || [])}
+              </div>
+              <h2>حجم التطبيق</h2>
+              <div class="stats">${items.map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('')}</div>`;
+            return;
+          }
+          if (tab === 'clinics') {
+            toolbar(searchBox('اسم أو مدينة أو موبايل'));
+            bindSearch();
+            const rows = await api('/clinics?q=' + encodeURIComponent(q));
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد عيادات</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>العيادة</th><th>المالك</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
+              <tr>
+                <td><b>${row.name}</b><div class="sub">${row.city || ''} ${row.specialty || ''} · ${row.doctors} دكتور<br>${row.phone || ''}</div></td>
+                <td>${row.ownerName || '—'}<div class="sub">${row.ownerPhone || ''}</div></td>
+                <td>${tag(row.isActive, 'ظاهرة', 'مخفية')} ${row.approvalStatus === 'pending' ? statusTag('pending') : ''}</td>
+                <td class="actions">
+                  ${row.approvalStatus === 'pending' ? `<button class="btn ok" data-act="/clinics/${row.id}/approve" data-msg="اعتماد العيادة وإظهارها للمرضى؟">اعتماد</button>` : ''}
+                  ${superUser ? (row.isActive
+                    ? `<button class="btn danger" data-act="/clinics/${row.id}/deactivate" data-msg="إخفاء العيادة من التطبيق؟">إيقاف</button>`
+                    : `<button class="btn" data-act="/clinics/${row.id}/activate">تفعيل</button>`) : ''}
+                </td>
+              </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          if (tab === 'patients') {
+            toolbar(searchBox('اسم أو موبايل أو عيادة'));
+            bindSearch();
+            const rows = await api('/patients?q=' + encodeURIComponent(q));
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا يوجد مرضى</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>المريض</th><th>العيادة</th><th>الحالة</th></tr></thead><tbody>${rows.map((row) => `
+              <tr>
+                <td><b>${row.name}</b><div class="sub">${row.phone || ''} · ${row.gender || ''}</div></td>
+                <td>${row.clinicName || ''}</td>
+                <td>${tag(row.isActive, 'نشط', 'موقوف')}<div class="sub">${fmt(row.createdAt)}</div></td>
+              </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          if (tab === 'users') {
+            toolbar(searchBox('اسم أو موبايل أو إيميل'));
+            bindSearch();
+            const rows = await api('/users?q=' + encodeURIComponent(q));
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا يوجد مستخدمين</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>المستخدم</th><th>الأدوار</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
+              <tr>
+                <td><b>${row.name}</b><div class="sub">${row.phone || ''}<br>${row.email || ''}</div></td>
+                <td>${(row.roles || []).join(' · ') || '—'}${row.platformRole ? ' · ' + (roleLabel[row.platformRole] || row.platformRole) : ''}</td>
+                <td>${tag(!row.isBlocked, 'نشط', 'موقوف')}</td>
+                <td class="actions">
+                  ${!superUser || row.platformRole ? '' : row.isBlocked
+                    ? `<button class="btn" data-act="/users/${row.id}/unblock">فتح</button>`
+                    : `<button class="btn danger" data-act="/users/${row.id}/block" data-msg="إيقاف الحساب من دخول التطبيق؟">إيقاف</button>`}
+                </td>
+              </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          if (tab === 'appointments') {
+            toolbar(`${searchBox('مريض أو دكتور')}
+              <select id="status">
+                <option value="">كل الحالات</option>
+                <option value="scheduled">scheduled</option>
+                <option value="confirmed">confirmed</option>
+                <option value="in_progress">in_progress</option>
+                <option value="completed">completed</option>
+                <option value="cancelled">cancelled</option>
+                <option value="no_show">no_show</option>
+              </select>`);
+            document.getElementById('status').value = status;
+            bindSearch();
+            document.getElementById('status').addEventListener('change', () => {
+              status = document.getElementById('status').value;
+              load();
+            });
+            const rows = await api('/appointments?q=' + encodeURIComponent(q) + '&status=' + encodeURIComponent(status));
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد حجوزات</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>الموعد</th><th>المريض</th><th>الدكتور</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
+              <tr>
+                <td>${fmt(row.scheduledAt)}<div class="sub">${row.clinicName || ''}</div></td>
+                <td>${row.patientName}<div class="sub">${row.patientPhone || ''}</div></td>
+                <td>${row.doctorName}</td>
+                <td>${statusTag(row.status)}</td>
+                <td class="actions">
+                  ${superUser && row.status !== 'cancelled' && row.status !== 'completed'
+                    ? `<button class="btn danger" data-act="/appointments/${row.id}/cancel" data-msg="إلغاء الحجز؟">إلغاء</button>`
+                    : ''}
+                </td>
+              </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          if (tab === 'doctors') {
+            toolbar(searchBox('اسم أو تخصص أو موبايل'));
+            bindSearch();
+            const rows = await api('/doctors?q=' + encodeURIComponent(q));
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا يوجد دكاترة</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>الدكتور</th><th>العيادة</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
+              <tr>
+                <td><b>${row.name}</b><div class="sub">${row.specialty || ''} · ${row.phone || ''}</div></td>
+                <td>${row.clinicName || ''}</td>
+                <td>${tag(row.isActive, 'ظاهر', 'مخفي')}</td>
+                <td class="actions">
+                  ${superUser ? (row.isActive
+                    ? `<button class="btn danger" data-act="/doctors/${row.id}/deactivate" data-msg="إخفاء الدكتور من الحجز؟">إيقاف</button>`
+                    : `<button class="btn" data-act="/doctors/${row.id}/activate">تفعيل</button>`) : ''}
+                </td>
+              </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          if (tab === 'nurses') {
+            toolbar('');
+            const rows = await api('/nurses');
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا يوجد تمريض</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>الممرض</th><th>التحقق</th><th></th></tr></thead><tbody>${rows.map((row) => `
+              <tr>
+                <td><b>${row.name}</b><div class="sub">${row.phone || ''}</div></td>
+                <td>${statusTag(row.verification)}</td>
+                <td class="actions">
+                  <button class="btn ok" data-act="/nurses/${row.userId}/verify" data-body='{"verification":"approved"}'>موافقة</button>
+                  <button class="btn danger" data-act="/nurses/${row.userId}/verify" data-body='{"verification":"rejected"}' data-msg="رفض الممرض؟">رفض</button>
+                </td>
+              </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          if (tab === 'nursing') {
+            toolbar('');
+            const rows = await api('/nursing');
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد طلبات</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>الطلب</th><th>المريض</th><th>الحالة</th></tr></thead><tbody>${rows.map((row) => `
+              <tr>
+                <td>${fmt(row.scheduled_at)}<div class="sub">${row.service_id} · ${row.address || ''}</div></td>
+                <td>${row.patient_name}<div class="sub">${row.patient_phone || ''}</div></td>
+                <td>${statusTag(row.status)}${row.price ? ' · ' + row.price + ' ج.م' : ''}<div class="sub">${row.nurse_name || ''}</div></td>
+              </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          toolbar('');
+          const rows = await api('/home-visits');
+          if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد زيارات منزلية</div>'; return; }
+          content.innerHTML = `<table><thead><tr><th>الزيارة</th><th>المريض</th><th>الحالة</th></tr></thead><tbody>${rows.map((row) => `
+            <tr>
+              <td>${fmt(row.scheduled_at)}<div class="sub">${row.specialty || ''} · ${row.address || ''}</div></td>
+              <td>${row.patient_name}<div class="sub">${row.patient_phone || ''}</div></td>
+              <td>${statusTag(row.status)}${row.price ? ' · ' + row.price + ' ج.م' : ''}<div class="sub">${row.doctor_name || ''}</div></td>
+            </tr>`).join('')}</tbody></table>`;
+        } catch (error) {
+          content.innerHTML = `<div class="err">${error.message}</div>`;
+        }
+      }
+
+      document.getElementById('tabs').addEventListener('click', (event) => {
+        const id = event.target.dataset.tab;
+        if (!id) return;
+        tab = id;
+        q = '';
+        status = '';
+        showApp();
+      });
+      document.getElementById('content').addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-act]');
+        if (!button) return;
+        if (button.dataset.msg && !confirm(button.dataset.msg)) return;
+        await api(button.dataset.act, { method: 'POST', body: button.dataset.body || '{}' });
+        await load();
+      });
+      document.getElementById('logout').addEventListener('click', logout);
+      document.getElementById('login-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const err = document.getElementById('login-error');
+        err.textContent = '';
+        const form = new FormData(event.target);
+        try {
+          const data = await api('/login', {
+            method: 'POST',
+            body: JSON.stringify({ phone: form.get('phone'), password: form.get('password') }),
+          });
+          localStorage.setItem(TOKEN_KEY, data.accessToken);
+          if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
+          localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+          showApp();
+        } catch (error) {
+          err.textContent = error.message;
+        }
+      });
+      if (token()) showApp();
+    </script>
+  </body>
+</html>
