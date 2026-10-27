@@ -39,7 +39,7 @@
         flex-shrink: 0;
         background: rgba(255, 255, 255, 0.28);
         backdrop-filter: blur(14px);
-        border-left: 1px solid rgba(13, 148, 136, 0.12);
+        border-left: 1px solid rgba(13, 148, 136, 0.22);
         padding: 12px 10px 16px;
         display: flex;
         flex-direction: column;
@@ -48,6 +48,7 @@
         top: 0;
         height: 100vh;
         transition: width 0.2s ease;
+        overflow: visible;
       }
       .shell.collapsed .sidebar { width: 72px; }
       .brand {
@@ -63,20 +64,25 @@
       }
       .shell.collapsed .brand img { max-width: 44px; }
       .collapse {
-        width: 34px;
-        height: 34px;
-        border: 1px solid rgba(13, 148, 136, 0.18);
-        background: rgba(255, 255, 255, 0.7);
-        border-radius: 10px;
+        position: absolute;
+        left: 0;
+        top: 52px;
+        z-index: 6;
+        width: 22px;
+        height: 22px;
+        border: 1px solid rgba(13, 148, 136, 0.28);
+        background: #fff;
+        border-radius: 999px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: var(--ink);
-        align-self: flex-start;
+        color: var(--teal-dark);
         padding: 0;
+        transform: translateX(-50%);
+        box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
       }
-      .collapse svg { width: 18px; height: 18px; }
+      .collapse svg { width: 12px; height: 12px; }
       .shell.collapsed .icon-expanded { display: none; }
       .shell:not(.collapsed) .icon-collapsed { display: none; }
       .main {
@@ -189,6 +195,7 @@
         .tabs button { width: auto; border-radius: 999px; }
         .shell.collapsed .sidebar { width: 100%; }
         .shell.collapsed .tab-label { display: inline; }
+        .collapse { top: auto; bottom: -11px; left: 50%; }
         table, thead, tbody, th, td, tr { display: block; }
         th { display: none; }
         td { border: 0; padding: 4px 0; }
