@@ -39,7 +39,7 @@
         flex-shrink: 0;
         background: rgba(255, 255, 255, 0.28);
         backdrop-filter: blur(14px);
-        border-left: 1px solid rgba(13, 148, 136, 0.22);
+        border-left: 1px solid rgba(13, 148, 136, 0.12);
         padding: 12px 10px 16px;
         display: flex;
         flex-direction: column;
@@ -47,10 +47,7 @@
         position: sticky;
         top: 0;
         height: 100vh;
-        transition: width 0.2s ease;
-        overflow: visible;
       }
-      .shell.collapsed .sidebar { width: 72px; }
       .brand {
         display: flex;
         justify-content: center;
@@ -62,29 +59,6 @@
         height: auto;
         object-fit: contain;
       }
-      .shell.collapsed .brand img { max-width: 44px; }
-      .collapse {
-        position: absolute;
-        left: 0;
-        top: 52px;
-        z-index: 6;
-        width: 22px;
-        height: 22px;
-        border: 1px solid rgba(13, 148, 136, 0.28);
-        background: #fff;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: var(--teal-dark);
-        padding: 0;
-        transform: translateX(-50%);
-        box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
-      }
-      .collapse svg { width: 12px; height: 12px; }
-      .shell.collapsed .icon-expanded { display: none; }
-      .shell:not(.collapsed) .icon-collapsed { display: none; }
       .main {
         flex: 1;
         min-width: 0;
@@ -128,8 +102,6 @@
       .tabs button svg { width: 18px; height: 18px; flex-shrink: 0; }
       .tabs button:hover { background: #f0fdfa; }
       .tabs button.active { background: var(--teal); color: #fff; }
-      .shell.collapsed .tab-label { display: none; }
-      .shell.collapsed .tabs button { justify-content: center; padding: 10px 8px; }
       .btn { background: var(--teal); color: #fff; }
       .btn:hover { background: var(--teal-dark); }
       .btn.danger { background: var(--danger); }
@@ -193,9 +165,6 @@
         }
         .tabs { flex-direction: row; flex-wrap: wrap; }
         .tabs button { width: auto; border-radius: 999px; }
-        .shell.collapsed .sidebar { width: 100%; }
-        .shell.collapsed .tab-label { display: inline; }
-        .collapse { top: auto; bottom: -11px; left: 50%; }
         table, thead, tbody, th, td, tr { display: block; }
         th { display: none; }
         td { border: 0; padding: 4px 0; }
@@ -220,10 +189,6 @@
         <div class="brand">
           <img src="/ops/logo-yacoub.png" alt="يعقوب" />
         </div>
-        <button type="button" class="collapse" id="collapse" aria-label="طي القائمة">
-          <svg class="icon-expanded" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          <svg class="icon-collapsed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
         <nav class="tabs" id="tabs"></nav>
       </aside>
       <main class="main">
@@ -343,15 +308,7 @@
         document.getElementById('tabs').innerHTML = tabs
           .map(([id, label, icon]) => `<button type="button" data-tab="${id}" class="${id === tab ? 'active' : ''}" title="${label}">${icon}<span class="tab-label">${label}</span></button>`)
           .join('');
-        applySidebar();
         load();
-      }
-
-      const SIDEBAR_KEY = 'yacoub-ops-sidebar';
-      function applySidebar() {
-        const collapsed = localStorage.getItem(SIDEBAR_KEY) === '1';
-        document.getElementById('app').classList.toggle('collapsed', collapsed);
-        document.getElementById('collapse').setAttribute('aria-label', collapsed ? 'فتح القائمة' : 'طي القائمة');
       }
 
       function toolbar(html) {
@@ -604,11 +561,6 @@
         await load();
       });
       document.getElementById('logout').addEventListener('click', logout);
-      document.getElementById('collapse').addEventListener('click', () => {
-        const collapsed = !document.getElementById('app').classList.contains('collapsed');
-        localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
-        applySidebar();
-      });
       document.getElementById('login-form').addEventListener('submit', async (event) => {
         event.preventDefault();
         const err = document.getElementById('login-error');
