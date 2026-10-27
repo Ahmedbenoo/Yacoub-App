@@ -29,8 +29,33 @@
         min-height: 100vh;
       }
       button, input, select { font-family: inherit; }
-      .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
-      header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+      .shell {
+        display: flex;
+        min-height: 100vh;
+        align-items: stretch;
+      }
+      .sidebar {
+        width: 220px;
+        flex-shrink: 0;
+        background: #fff;
+        border-left: 1px solid var(--line);
+        padding: 20px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+      }
+      .brand { padding: 0 8px; }
+      .brand h1 { font-size: 18px; }
+      .main {
+        flex: 1;
+        min-width: 0;
+        padding: 24px 20px 48px;
+        max-width: 1180px;
+      }
+      header { margin-bottom: 16px; }
       h1 { font-size: 22px; margin: 0; }
       h2 { font-size: 16px; margin: 18px 0 10px; }
       .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
@@ -41,21 +66,23 @@
         padding: 16px;
         box-shadow: 0 8px 24px rgba(13, 148, 136, 0.06);
       }
-      .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+      .tabs { display: flex; flex-direction: column; gap: 6px; flex: 1; }
       .tabs button, .ghost, .btn {
         border: 0;
-        border-radius: 999px;
-        padding: 8px 14px;
+        border-radius: 12px;
+        padding: 10px 12px;
         cursor: pointer;
         font-weight: 600;
+        text-align: right;
       }
-      .tabs button { background: #fff; color: var(--ink); border: 1px solid var(--line); }
-      .tabs button.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+      .tabs button { background: transparent; color: var(--ink); width: 100%; }
+      .tabs button:hover { background: #f0fdfa; }
+      .tabs button.active { background: var(--teal); color: #fff; }
       .btn { background: var(--teal); color: #fff; }
       .btn:hover { background: var(--teal-dark); }
       .btn.danger { background: var(--danger); }
       .btn.ok { background: var(--ok); }
-      .ghost { background: #fff; border: 1px solid var(--line); color: var(--ink); }
+      .ghost { background: #fff; border: 1px solid var(--line); color: var(--ink); width: 100%; }
       .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
       input, select {
         border: 1px solid var(--line);
@@ -96,6 +123,16 @@
       .err { color: var(--danger); font-size: 13px; min-height: 18px; }
       .empty { color: var(--muted); padding: 20px 0; }
       @media (max-width: 720px) {
+        .shell { flex-direction: column; }
+        .sidebar {
+          width: 100%;
+          height: auto;
+          position: relative;
+          border-left: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .tabs { flex-direction: row; flex-wrap: wrap; }
+        .tabs button { width: auto; border-radius: 999px; }
         table, thead, tbody, th, td, tr { display: block; }
         th { display: none; }
         td { border: 0; padding: 4px 0; }
@@ -115,19 +152,23 @@
       </form>
     </div>
 
-    <div id="app" class="wrap hidden">
-      <header>
-        <div>
+    <div id="app" class="shell hidden">
+      <aside class="sidebar">
+        <div class="brand">
           <h1>إدارة المنصة</h1>
-          <div class="sub" id="who"></div>
         </div>
+        <nav class="tabs" id="tabs"></nav>
         <button class="ghost" id="logout" type="button">خروج</button>
-      </header>
-      <div class="tabs" id="tabs"></div>
-      <div class="card">
-        <div class="row" id="toolbar"></div>
-        <div id="content"></div>
-      </div>
+      </aside>
+      <main class="main">
+        <header>
+          <div class="sub" id="who"></div>
+        </header>
+        <div class="card">
+          <div class="row" id="toolbar"></div>
+          <div id="content"></div>
+        </div>
+      </main>
     </div>
 
     <script>
