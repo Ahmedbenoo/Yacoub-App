@@ -37,8 +37,9 @@
       .sidebar {
         width: 220px;
         flex-shrink: 0;
-        background: #fff;
-        border-left: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.28);
+        backdrop-filter: blur(14px);
+        border-left: 1px solid rgba(13, 148, 136, 0.12);
         padding: 20px 14px;
         display: flex;
         flex-direction: column;
@@ -47,15 +48,30 @@
         top: 0;
         height: 100vh;
       }
-      .brand { padding: 0 8px; }
-      .brand h1 { font-size: 18px; }
+      .brand {
+        display: flex;
+        justify-content: center;
+        padding: 8px 6px 12px;
+      }
+      .brand img {
+        width: 100%;
+        max-width: 168px;
+        height: auto;
+        object-fit: contain;
+      }
       .main {
         flex: 1;
         min-width: 0;
         padding: 24px 20px 48px;
         max-width: 1180px;
       }
-      header { margin-bottom: 16px; }
+      header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
       h1 { font-size: 22px; margin: 0; }
       h2 { font-size: 16px; margin: 18px 0 10px; }
       .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
@@ -82,7 +98,15 @@
       .btn:hover { background: var(--teal-dark); }
       .btn.danger { background: var(--danger); }
       .btn.ok { background: var(--ok); }
-      .ghost { background: #fff; border: 1px solid var(--line); color: var(--ink); width: 100%; }
+      .ghost {
+        background: #fff;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        width: auto;
+        border-radius: 999px;
+        padding: 8px 14px;
+        white-space: nowrap;
+      }
       .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
       input, select {
         border: 1px solid var(--line);
@@ -155,14 +179,17 @@
     <div id="app" class="shell hidden">
       <aside class="sidebar">
         <div class="brand">
-          <h1>إدارة المنصة</h1>
+          <img src="/ops/logo-yacoub.png" alt="يعقوب" />
         </div>
         <nav class="tabs" id="tabs"></nav>
-        <button class="ghost" id="logout" type="button">خروج</button>
       </aside>
       <main class="main">
         <header>
-          <div class="sub" id="who"></div>
+          <div>
+            <h1>إدارة المنصة</h1>
+            <div class="sub" id="who"></div>
+          </div>
+          <button class="ghost" id="logout" type="button">خروج</button>
         </header>
         <div class="card">
           <div class="row" id="toolbar"></div>
