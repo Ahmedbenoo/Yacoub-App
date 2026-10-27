@@ -311,18 +311,34 @@
         return `<input id="q" value="${q.replace(/"/g, '&quot;')}" placeholder="${placeholder}" /><button class="btn" id="search" type="button">بحث</button>`;
       }
 
+      let searchTimer;
+      let searchSeq = 0;
+
       function bindSearch() {
+        const input = document.getElementById('q');
+        if (!input) return;
         const run = () => {
-          q = document.getElementById('q').value.trim();
-          load();
+          q = input.value.trim();
+          load(true);
         };
-        document.getElementById('search')?.addEventListener('click', run);
-        document.getElementById('q')?.addEventListener('keydown', (event) => {
-          if (event.key === 'Enter') run();
+        input.addEventListener('input', () => {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(run, 350);
+        });
+        document.getElementById('search')?.addEventListener('click', () => {
+          clearTimeout(searchTimer);
+          run();
+        });
+        input.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter') return;
+          event.preventDefault();
+          clearTimeout(searchTimer);
+          run();
         });
       }
 
-      async function load() {
+      async function load(fromSearch = false) {
+        const seq = ++searchSeq;
         const content = document.getElementById('content');
         content.innerHTML = '<div class="empty">جاري التحميل...</div>';
         const superUser = isSuper();
@@ -365,9 +381,12 @@
             return;
           }
           if (tab === 'clinics') {
-            toolbar(searchBox('اسم أو مدينة أو موبايل'));
-            bindSearch();
+            if (!fromSearch) {
+              toolbar(searchBox('اسم أو مدينة أو موبايل'));
+              bindSearch();
+            }
             const rows = await api('/clinics?q=' + encodeURIComponent(q));
+            if (seq !== searchSeq) return;
             if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد عيادات</div>'; return; }
             content.innerHTML = `<table><thead><tr><th>العيادة</th><th>المالك</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
               <tr>
@@ -384,9 +403,12 @@
             return;
           }
           if (tab === 'patients') {
-            toolbar(searchBox('اسم أو موبايل أو عيادة'));
-            bindSearch();
+            if (!fromSearch) {
+              toolbar(searchBox('اسم أو موبايل أو عيادة'));
+              bindSearch();
+            }
             const rows = await api('/patients?q=' + encodeURIComponent(q));
+            if (seq !== searchSeq) return;
             if (!rows.length) { content.innerHTML = '<div class="empty">لا يوجد مرضى</div>'; return; }
             content.innerHTML = `<table><thead><tr><th>المريض</th><th>العيادة</th><th>الحالة</th></tr></thead><tbody>${rows.map((row) => `
               <tr>
@@ -397,9 +419,12 @@
             return;
           }
           if (tab === 'users') {
-            toolbar(searchBox('اسم أو موبايل أو إيميل'));
-            bindSearch();
+            if (!fromSearch) {
+              toolbar(searchBox('اسم أو موبايل أو إيميل'));
+              bindSearch();
+            }
             const rows = await api('/users?q=' + encodeURIComponent(q));
+            if (seq !== searchSeq) return;
             if (!rows.length) { content.innerHTML = '<div class="empty">لا يوجد مستخدمين</div>'; return; }
             content.innerHTML = `<table><thead><tr><th>المستخدم</th><th>الأدوار</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
               <tr>
@@ -415,7 +440,8 @@
             return;
           }
           if (tab === 'appointments') {
-            toolbar(`${searchBox('مريض أو دكتور')}
+            if (!fromSearch) {
+              toolbar(`${searchBox('مريض أو دكتور')}
               <select id="status">
                 <option value="">كل الحالات</option>
                 <option value="scheduled">scheduled</option>
@@ -425,13 +451,15 @@
                 <option value="cancelled">cancelled</option>
                 <option value="no_show">no_show</option>
               </select>`);
-            document.getElementById('status').value = status;
-            bindSearch();
-            document.getElementById('status').addEventListener('change', () => {
-              status = document.getElementById('status').value;
-              load();
-            });
+              document.getElementById('status').value = status;
+              bindSearch();
+              document.getElementById('status').addEventListener('change', () => {
+                status = document.getElementById('status').value;
+                load();
+              });
+            }
             const rows = await api('/appointments?q=' + encodeURIComponent(q) + '&status=' + encodeURIComponent(status));
+            if (seq !== searchSeq) return;
             if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد حجوزات</div>'; return; }
             content.innerHTML = `<table><thead><tr><th>الموعد</th><th>المريض</th><th>الدكتور</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
               <tr>
@@ -448,9 +476,12 @@
             return;
           }
           if (tab === 'doctors') {
-            toolbar(searchBox('اسم أو تخصص أو موبايل'));
-            bindSearch();
+            if (!fromSearch) {
+              toolbar(searchBox('اسم أو تخصص أو موبايل'));
+              bindSearch();
+            }
             const rows = await api('/doctors?q=' + encodeURIComponent(q));
+            if (seq !== searchSeq) return;
             if (!rows.length) { content.innerHTML = '<div class="empty">لا يوجد دكاترة</div>'; return; }
             content.innerHTML = `<table><thead><tr><th>الدكتور</th><th>العيادة</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
               <tr>
