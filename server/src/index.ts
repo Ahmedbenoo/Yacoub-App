@@ -373,9 +373,20 @@ app.use(cors());
 app.use(express.json({ limit: '12mb' }));
 app.use('/uploads', express.static(uploadsRoot));
 app.use('/api/v1/ops', opsRouter);
-app.use('/ops', express.static(opsDir));
+app.use(
+  '/ops',
+  express.static(opsDir, {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+      else res.setHeader('Cache-Control', 'public, max-age=86400');
+    },
+  }),
+);
 app.get('/ops', (_req, res) => {
   res.sendFile(path.join(opsDir, 'index.html'));
+});
+app.get('/favicon.ico', (_req, res) => {
+  res.sendFile(path.join(opsDir, 'logo-medlinq.png'));
 });
 
 app.get('/api/v1', (_req, res) => {

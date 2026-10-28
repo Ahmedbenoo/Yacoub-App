@@ -92,7 +92,7 @@ async function dailySeries(sql: string) {
 }
 
 async function overview() {
-  const [usersDaily, clinicsDaily, patientsDaily, appointmentsDaily] = await Promise.all([
+  const [usersDaily, clinicsDaily, patientsDaily, appointmentsDaily, totals] = await Promise.all([
     dailySeries(
       `SELECT to_char((created_at AT TIME ZONE 'Africa/Cairo')::date, 'YYYY-MM-DD') AS day, count(*) AS n
        FROM users WHERE created_at >= now() - interval '30 days' GROUP BY 1 ORDER BY 1`,
@@ -109,33 +109,55 @@ async function overview() {
       `SELECT to_char((scheduled_at AT TIME ZONE 'Africa/Cairo')::date, 'YYYY-MM-DD') AS day, count(*) AS n
        FROM appointments WHERE scheduled_at >= now() - interval '30 days' GROUP BY 1 ORDER BY 1`,
     ),
+    db.query<{
+      clinics: string | number;
+      clinics_active: string | number;
+      clinics_pending: string | number;
+      users: string | number;
+      users_blocked: string | number;
+      doctors: string | number;
+      patients: string | number;
+      appointments_today: string | number;
+      appointments_open: string | number;
+      nursing_open: string | number;
+      nurses_pending: string | number;
+      home_visits_open: string | number;
+    }>(
+      `SELECT
+         (SELECT count(*) FROM clinics) AS clinics,
+         (SELECT count(*) FROM clinics WHERE is_active = true) AS clinics_active,
+         (SELECT count(*) FROM clinics WHERE approval_status = 'pending') AS clinics_pending,
+         (SELECT count(*) FROM users) AS users,
+         (SELECT count(*) FROM users WHERE is_blocked = true) AS users_blocked,
+         (SELECT count(*) FROM doctors) AS doctors,
+         (SELECT count(*) FROM patients) AS patients,
+         (SELECT count(*) FROM appointments
+           WHERE (scheduled_at AT TIME ZONE 'Africa/Cairo')::date = (now() AT TIME ZONE 'Africa/Cairo')::date) AS appointments_today,
+         (SELECT count(*) FROM appointments WHERE status IN ('scheduled', 'confirmed', 'in_progress')) AS appointments_open,
+         (SELECT count(*) FROM nursing_requests WHERE status IN ('requested', 'priced', 'assigned', 'accepted')) AS nursing_open,
+         (SELECT count(*) FROM nurse_profiles WHERE verification = 'pending') AS nurses_pending,
+         (SELECT count(*) FROM home_visit_requests WHERE status IN ('requested', 'accepted')) AS home_visits_open`,
+    ),
   ]);
 
   const sumLast = (series: { count: number }[], from: number, to: number) =>
     series.slice(from, to).reduce((total, item) => total + item.count, 0);
+  const row = totals.rows[0];
+  const n = (value: string | number | undefined) => Number(value ?? 0);
 
   return {
-    clinics: await count('SELECT count(*) AS n FROM clinics'),
-    clinicsActive: await count('SELECT count(*) AS n FROM clinics WHERE is_active = true'),
-    clinicsPending: await count(`SELECT count(*) AS n FROM clinics WHERE approval_status = 'pending'`),
-    users: await count('SELECT count(*) AS n FROM users'),
-    usersBlocked: await count('SELECT count(*) AS n FROM users WHERE is_blocked = true'),
-    doctors: await count('SELECT count(*) AS n FROM doctors'),
-    patients: await count('SELECT count(*) AS n FROM patients'),
-    appointmentsToday: await count(
-      `SELECT count(*) AS n FROM appointments
-       WHERE (scheduled_at AT TIME ZONE 'Africa/Cairo')::date = (now() AT TIME ZONE 'Africa/Cairo')::date`,
-    ),
-    appointmentsOpen: await count(
-      `SELECT count(*) AS n FROM appointments WHERE status IN ('scheduled', 'confirmed', 'in_progress')`,
-    ),
-    nursingOpen: await count(
-      `SELECT count(*) AS n FROM nursing_requests WHERE status IN ('requested', 'priced', 'assigned', 'accepted')`,
-    ),
-    nursesPending: await count(`SELECT count(*) AS n FROM nurse_profiles WHERE verification = 'pending'`),
-    homeVisitsOpen: await count(
-      `SELECT count(*) AS n FROM home_visit_requests WHERE status IN ('requested', 'accepted')`,
-    ),
+    clinics: n(row?.clinics),
+    clinicsActive: n(row?.clinics_active),
+    clinicsPending: n(row?.clinics_pending),
+    users: n(row?.users),
+    usersBlocked: n(row?.users_blocked),
+    doctors: n(row?.doctors),
+    patients: n(row?.patients),
+    appointmentsToday: n(row?.appointments_today),
+    appointmentsOpen: n(row?.appointments_open),
+    nursingOpen: n(row?.nursing_open),
+    nursesPending: n(row?.nurses_pending),
+    homeVisitsOpen: n(row?.home_visits_open),
     growth: {
       usersThisWeek: sumLast(usersDaily, 23, 30),
       usersChange: weekChange(sumLast(usersDaily, 23, 30), sumLast(usersDaily, 16, 23)),
