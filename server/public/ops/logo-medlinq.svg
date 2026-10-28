@@ -1,23 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" fill="none">
   <defs>
-    <linearGradient id="med" x1="20" y1="30" x2="700" y2="150" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2DD4BF"/>
+    <linearGradient id="med" x1="8" y1="16" x2="510" y2="104" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14B8A6"/>
       <stop offset="1" stop-color="#0F766E"/>
     </linearGradient>
   </defs>
   <text
-    x="18"
-    y="118"
+    x="6"
+    y="84"
     fill="url(#med)"
     font-family="Segoe UI, Arial, sans-serif"
-    font-size="96"
-    font-weight="700"
-    letter-spacing="2"
+    font-size="78"
+    font-weight="800"
+    letter-spacing="-1"
+    textLength="348"
+    lengthAdjust="spacingAndGlyphs"
   >MEDLIN</text>
-  <g transform="translate(568 42)" fill="url(#med)">
-    <circle cx="48" cy="48" r="40" stroke="url(#med)" stroke-width="12" fill="none"/>
-    <path d="M76 76 L98 104" stroke="url(#med)" stroke-width="12" stroke-linecap="round"/>
-    <rect x="41" y="28" width="14" height="40" rx="2"/>
-    <rect x="28" y="41" width="40" height="14" rx="2"/>
+  <g transform="translate(348 22)" fill="url(#med)" stroke="url(#med)">
+    <circle cx="38" cy="40" r="28" fill="none" stroke-width="10"/>
+    <path d="M58 58 L72 74" fill="none" stroke-width="10" stroke-linecap="round"/>
+    <rect x="33" y="28" width="10" height="24" rx="1.5" stroke="none"/>
+    <rect x="26" y="35" width="24" height="10" rx="1.5" stroke="none"/>
   </g>
 </svg>
