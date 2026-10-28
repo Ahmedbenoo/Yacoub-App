@@ -30,30 +30,26 @@
       }
       button, input, select { font-family: inherit; }
       .shell {
-        display: flex;
+        display: grid;
+        grid-template-columns: 200px minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
         min-height: 100vh;
-        align-items: stretch;
       }
-      .sidebar {
-        width: 200px;
-        flex-shrink: 0;
+      .rail {
+        grid-column: 1;
+        grid-row: 1 / -1;
         background: rgba(255, 255, 255, 0.28);
         backdrop-filter: blur(14px);
         border-left: 1px solid rgba(13, 148, 136, 0.12);
-        padding: 18px 10px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        position: sticky;
-        top: 0;
-        height: 100vh;
       }
       .brand {
+        grid-column: 1;
+        grid-row: 1;
+        z-index: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 72px;
-        padding: 0 4px;
+        padding: 18px 10px 16px;
       }
       .brand img {
         width: 100%;
@@ -61,19 +57,31 @@
         height: auto;
         object-fit: contain;
       }
-      .main {
-        flex: 1;
-        min-width: 0;
-        padding: 18px 10px 48px 20px;
-        max-width: 1180px;
-      }
       header {
+        grid-column: 2;
+        grid-row: 1;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        min-height: 72px;
-        margin-bottom: 16px;
+        padding: 18px 20px 16px 10px;
+      }
+      .tabs {
+        grid-column: 1;
+        grid-row: 2;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 0 10px 16px;
+        align-self: start;
+      }
+      .panel {
+        grid-column: 2;
+        grid-row: 2;
+        min-width: 0;
+        padding: 0 20px 48px 10px;
+        max-width: 1180px;
       }
       h1 { font-size: 22px; margin: 0; }
       h2 { font-size: 16px; margin: 18px 0 10px; }
@@ -85,7 +93,6 @@
         padding: 16px;
         box-shadow: 0 8px 24px rgba(13, 148, 136, 0.06);
       }
-      .tabs { display: flex; flex-direction: column; gap: 4px; flex: 1; }
       .tabs button, .ghost, .btn {
         border: 0;
         border-radius: 12px;
@@ -170,14 +177,12 @@
       .err { color: var(--danger); font-size: 13px; min-height: 18px; }
       .empty { color: var(--muted); padding: 20px 0; }
       @media (max-width: 720px) {
-        .shell { flex-direction: column; }
-        .sidebar {
-          width: 100%;
-          height: auto;
-          position: relative;
-          border-left: 0;
-          border-bottom: 1px solid var(--line);
+        .shell {
+          display: flex;
+          flex-direction: column;
         }
+        .rail { display: none; }
+        .brand, header, .tabs, .panel { padding: 12px 16px; }
         .tabs { flex-direction: row; flex-wrap: wrap; }
         .tabs button { width: auto; border-radius: 999px; }
         table, thead, tbody, th, td, tr { display: block; }
@@ -200,25 +205,24 @@
     </div>
 
     <div id="app" class="shell hidden">
-      <aside class="sidebar">
-        <div class="brand">
-          <img src="/ops/logo-medlinq.png" alt="MedLinq" />
+      <div class="rail" aria-hidden="true"></div>
+      <div class="brand">
+        <img src="/ops/logo-medlinq.png" alt="MedLinq" />
+      </div>
+      <header>
+        <div>
+          <h1>إدارة المنصة</h1>
+          <div class="sub" id="who"></div>
         </div>
-        <nav class="tabs" id="tabs"></nav>
-      </aside>
-      <main class="main">
-        <header>
-          <div>
-            <h1>إدارة المنصة</h1>
-            <div class="sub" id="who"></div>
-          </div>
-          <button class="ghost" id="logout" type="button">خروج</button>
-        </header>
+        <button class="ghost" id="logout" type="button">خروج</button>
+      </header>
+      <nav class="tabs" id="tabs"></nav>
+      <div class="panel">
         <div class="card">
           <div class="row" id="toolbar"></div>
           <div id="content"></div>
         </div>
-      </main>
+      </div>
     </div>
 
     <script>
