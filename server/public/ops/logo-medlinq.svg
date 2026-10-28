@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180" fill="none">
+  <defs>
+    <linearGradient id="med" x1="20" y1="30" x2="700" y2="150" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2DD4BF"/>
+      <stop offset="1" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+  <text
+    x="18"
+    y="118"
+    fill="url(#med)"
+    font-family="Segoe UI, Arial, sans-serif"
+    font-size="96"
+    font-weight="700"
+    letter-spacing="2"
+  >MEDLIN</text>
+  <g transform="translate(568 42)" fill="url(#med)">
+    <circle cx="48" cy="48" r="40" stroke="url(#med)" stroke-width="12" fill="none"/>
+    <path d="M76 76 L98 104" stroke="url(#med)" stroke-width="12" stroke-linecap="round"/>
+    <rect x="41" y="28" width="14" height="40" rx="2"/>
+    <rect x="28" y="41" width="40" height="14" rx="2"/>
+  </g>
+</svg>
