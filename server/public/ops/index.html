@@ -141,6 +141,28 @@
         min-width: 180px;
         background: #fff;
       }
+      .status-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+      }
+      .status-tabs button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 7px 12px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .status-tabs button:hover { border-color: #99f6e4; background: #f0fdfa; }
+      .status-tabs button.active {
+        background: var(--teal);
+        border-color: var(--teal);
+        color: #fff;
+      }
       .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
       .stat {
         background: #fff;
@@ -370,6 +392,12 @@
         return `<input id="q" value="${q.replace(/"/g, '&quot;')}" placeholder="${placeholder}" /><button class="btn" id="search" type="button">بحث</button>`;
       }
 
+      function statusTabs(items) {
+        return `<div class="status-tabs">${items.map(([value, label]) =>
+          `<button type="button" class="${status === value ? 'active' : ''}" data-status="${value}">${label}</button>`
+        ).join('')}</div>`;
+      }
+
       let searchTimer;
       let searchSeq = 0;
 
@@ -509,21 +537,16 @@
           if (tab === 'appointments') {
             if (!fromSearch) {
               toolbar(`${searchBox('مريض أو دكتور')}
-              <select id="status">
-                <option value="">كل الحالات</option>
-                <option value="scheduled">scheduled</option>
-                <option value="confirmed">confirmed</option>
-                <option value="in_progress">in_progress</option>
-                <option value="completed">completed</option>
-                <option value="cancelled">cancelled</option>
-                <option value="no_show">no_show</option>
-              </select>`);
-              document.getElementById('status').value = status;
+              ${statusTabs([
+                ['', 'كل الحالات'],
+                ['scheduled', 'مجدول'],
+                ['confirmed', 'مؤكد'],
+                ['in_progress', 'جاري'],
+                ['completed', 'مكتمل'],
+                ['cancelled', 'ملغي'],
+                ['no_show', 'لم يحضر'],
+              ])}`);
               bindSearch();
-              document.getElementById('status').addEventListener('change', () => {
-                status = document.getElementById('status').value;
-                load();
-              });
             }
             const rows = await api('/appointments?q=' + encodeURIComponent(q) + '&status=' + encodeURIComponent(status));
             if (seq !== searchSeq) return;
@@ -640,6 +663,12 @@
         }
       }
 
+      document.getElementById('toolbar').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-status]');
+        if (!button) return;
+        status = button.dataset.status;
+        load();
+      });
       document.getElementById('tabs').addEventListener('click', (event) => {
         const id = event.target.closest('[data-tab]')?.dataset.tab;
         if (!id) return;
