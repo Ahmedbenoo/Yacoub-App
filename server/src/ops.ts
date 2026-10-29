@@ -122,6 +122,9 @@ async function overview() {
       nursing_open: string | number;
       nurses_pending: string | number;
       home_visits_open: string | number;
+      invoices_paid: string | number;
+      invoices_open: string | number;
+      invoices_paid_today: string | number;
     }>(
       `SELECT
          (SELECT count(*) FROM clinics) AS clinics,
@@ -136,7 +139,13 @@ async function overview() {
          (SELECT count(*) FROM appointments WHERE status IN ('scheduled', 'confirmed', 'in_progress')) AS appointments_open,
          (SELECT count(*) FROM nursing_requests WHERE status IN ('requested', 'priced', 'assigned', 'accepted')) AS nursing_open,
          (SELECT count(*) FROM nurse_profiles WHERE verification = 'pending') AS nurses_pending,
-         (SELECT count(*) FROM home_visit_requests WHERE status IN ('requested', 'accepted')) AS home_visits_open`,
+         (SELECT count(*) FROM home_visit_requests WHERE status IN ('requested', 'accepted')) AS home_visits_open,
+         (SELECT coalesce(sum(amount), 0) FROM invoices WHERE status = 'paid') AS invoices_paid,
+         (SELECT coalesce(sum(amount), 0) FROM invoices WHERE status <> 'paid') AS invoices_open,
+         (SELECT coalesce(sum(amount), 0) FROM invoices
+           WHERE status = 'paid'
+             AND paid_at IS NOT NULL
+             AND (paid_at AT TIME ZONE 'Africa/Cairo')::date = (now() AT TIME ZONE 'Africa/Cairo')::date) AS invoices_paid_today`,
     ),
   ]);
 
@@ -158,6 +167,9 @@ async function overview() {
     nursingOpen: n(row?.nursing_open),
     nursesPending: n(row?.nurses_pending),
     homeVisitsOpen: n(row?.home_visits_open),
+    invoicesPaid: n(row?.invoices_paid),
+    invoicesOpen: n(row?.invoices_open),
+    invoicesPaidToday: n(row?.invoices_paid_today),
     growth: {
       usersThisWeek: sumLast(usersDaily, 23, 30),
       usersChange: weekChange(sumLast(usersDaily, 23, 30), sumLast(usersDaily, 16, 23)),
@@ -471,6 +483,110 @@ async function listNursingOps() {
   return result.rows;
 }
 
+async function priceNursingOps(id: string, price: number) {
+  if (!Number.isFinite(price) || price <= 0) throw httpError(400, 'INVALID_PRICE', 'أدخل سعر صحيح');
+  const row = await db.query<{ id: string; status: string }>('SELECT id, status FROM nursing_requests WHERE id = $1', [id]);
+  if (!row.rows[0]) throw httpError(404, 'NOT_FOUND', 'الطلب غير موجود');
+  if (!['requested', 'priced'].includes(row.rows[0].status)) {
+    throw httpError(400, 'INVALID_STATUS', 'الطلب ده مش قابل للتسعير');
+  }
+  await db.query(
+    `UPDATE nursing_requests SET price = $2, patient_notified = true, status = 'priced', updated_at = now() WHERE id = $1`,
+    [id, Math.round(price)],
+  );
+  return { id, status: 'priced', price: Math.round(price) };
+}
+
+async function completeNursingOps(id: string) {
+  const row = await db.query<{ id: string }>('SELECT id FROM nursing_requests WHERE id = $1', [id]);
+  if (!row.rows[0]) throw httpError(404, 'NOT_FOUND', 'الطلب غير موجود');
+  await db.query(
+    `UPDATE nursing_requests SET status = 'completed', updated_at = now() WHERE id = $1`,
+    [id],
+  );
+  return { id, status: 'completed' };
+}
+
+async function completeHomeVisitOps(id: string) {
+  const row = await db.query<{ id: string }>('SELECT id FROM home_visit_requests WHERE id = $1', [id]);
+  if (!row.rows[0]) throw httpError(404, 'NOT_FOUND', 'الزيارة غير موجودة');
+  await db.query(
+    `UPDATE home_visit_requests SET status = 'completed', updated_at = now() WHERE id = $1`,
+    [id],
+  );
+  return { id, status: 'completed' };
+}
+
+async function cancelHomeVisitOps(id: string) {
+  const row = await db.query<{ id: string; status: string }>('SELECT id, status FROM home_visit_requests WHERE id = $1', [id]);
+  if (!row.rows[0]) throw httpError(404, 'NOT_FOUND', 'الزيارة غير موجودة');
+  if (row.rows[0].status === 'completed') throw httpError(400, 'INVALID_STATUS', 'الزيارة المكتملة ماينفعش تتلغي');
+  await db.query(
+    `UPDATE home_visit_requests SET status = 'cancelled', updated_at = now() WHERE id = $1`,
+    [id],
+  );
+  return { id, status: 'cancelled' };
+}
+
+async function setPatientActiveOps(id: string, active: boolean) {
+  const row = await db.query<{ id: string }>('SELECT id FROM patients WHERE id = $1', [id]);
+  if (!row.rows[0]) throw httpError(404, 'NOT_FOUND', 'المريض غير موجود');
+  await db.query('UPDATE patients SET is_active = $2, updated_at = now() WHERE id = $1', [id, active]);
+  return { id, isActive: active };
+}
+
+async function listInvoicesOps() {
+  const totals = await db.query<{
+    paid: string | number;
+    open: string | number;
+    today: string | number;
+  }>(
+    `SELECT
+       coalesce(sum(amount) FILTER (WHERE status = 'paid'), 0) AS paid,
+       coalesce(sum(amount) FILTER (WHERE status <> 'paid'), 0) AS open,
+       coalesce(sum(amount) FILTER (
+         WHERE status = 'paid' AND paid_at IS NOT NULL
+           AND (paid_at AT TIME ZONE 'Africa/Cairo')::date = (now() AT TIME ZONE 'Africa/Cairo')::date
+       ), 0) AS today
+     FROM invoices`,
+  );
+  const rows = await db.query<{
+    id: string;
+    amount: number;
+    status: string;
+    payment_method: string | null;
+    patient_name: string;
+    doctor_name: string;
+    clinic_name: string | null;
+    paid_at: string | null;
+    created_at: string;
+  }>(
+    `SELECT i.id, i.amount, i.status, i.payment_method, i.patient_name, i.doctor_name, i.paid_at, i.created_at,
+            coalesce(c.name_ar, c.name) AS clinic_name
+     FROM invoices i
+     JOIN clinics c ON c.id = i.clinic_id
+     ORDER BY i.created_at DESC
+     LIMIT 200`,
+  );
+  const t = totals.rows[0];
+  return {
+    paid: Number(t?.paid ?? 0),
+    open: Number(t?.open ?? 0),
+    today: Number(t?.today ?? 0),
+    invoices: rows.rows.map((row) => ({
+      id: row.id,
+      amount: Number(row.amount),
+      status: row.status,
+      paymentMethod: row.payment_method,
+      patientName: row.patient_name,
+      doctorName: row.doctor_name,
+      clinicName: row.clinic_name,
+      paidAt: iso(row.paid_at),
+      createdAt: iso(row.created_at),
+    })),
+  };
+}
+
 async function listHomeVisitsOps() {
   const result = await db.query(
     `SELECT id, patient_name, patient_phone, specialty, address, scheduled_at, status, price, doctor_name, created_at
@@ -713,10 +829,70 @@ opsRouter.get('/nursing', async (_req, res) => {
   }
 });
 
+opsRouter.post('/nursing/:id/price', async (req, res) => {
+  const price = Number(req.body?.price);
+  try {
+    res.json({ success: true, data: await priceNursingOps(req.params.id, price) });
+  } catch (error) {
+    sendError(res, error, 'تعذر تسعير الطلب');
+  }
+});
+
+opsRouter.post('/nursing/:id/complete', async (req, res) => {
+  try {
+    res.json({ success: true, data: await completeNursingOps(req.params.id) });
+  } catch (error) {
+    sendError(res, error, 'تعذر إنهاء الطلب');
+  }
+});
+
 opsRouter.get('/home-visits', async (_req, res) => {
   try {
     res.json({ success: true, data: await listHomeVisitsOps() });
   } catch (error) {
     sendError(res, error, 'تعذر تحميل الزيارات المنزلية');
+  }
+});
+
+opsRouter.post('/home-visits/:id/complete', async (req, res) => {
+  try {
+    res.json({ success: true, data: await completeHomeVisitOps(req.params.id) });
+  } catch (error) {
+    sendError(res, error, 'تعذر إنهاء الزيارة');
+  }
+});
+
+opsRouter.post('/home-visits/:id/cancel', async (req, res) => {
+  if (!requireSuper(res)) return;
+  try {
+    res.json({ success: true, data: await cancelHomeVisitOps(req.params.id) });
+  } catch (error) {
+    sendError(res, error, 'تعذر إلغاء الزيارة');
+  }
+});
+
+opsRouter.post('/patients/:id/activate', async (req, res) => {
+  if (!requireSuper(res)) return;
+  try {
+    res.json({ success: true, data: await setPatientActiveOps(req.params.id, true) });
+  } catch (error) {
+    sendError(res, error, 'تعذر تفعيل الملف');
+  }
+});
+
+opsRouter.post('/patients/:id/deactivate', async (req, res) => {
+  if (!requireSuper(res)) return;
+  try {
+    res.json({ success: true, data: await setPatientActiveOps(req.params.id, false) });
+  } catch (error) {
+    sendError(res, error, 'تعذر إيقاف الملف');
+  }
+});
+
+opsRouter.get('/invoices', async (_req, res) => {
+  try {
+    res.json({ success: true, data: await listInvoicesOps() });
+  } catch (error) {
+    sendError(res, error, 'تعذر تحميل الفواتير');
   }
 });

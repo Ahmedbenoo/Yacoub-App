@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MedLinq — إدارة المنصة</title>
-    <link rel="icon" type="image/png" href="/ops/logo-medlinq.png" />
+    <title>يعقوب — إدارة المنصة</title>
+    <link rel="icon" type="image/png" href="/ops/logo-yacoub.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -51,13 +51,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100px;
-        padding: 0;
+        padding: 18px 10px 16px;
       }
       .brand img {
         width: 100%;
         max-width: 180px;
-        max-height: 100px;
         height: auto;
         object-fit: contain;
       }
@@ -71,8 +69,7 @@
         width: 100%;
         max-width: 1180px;
         justify-self: start;
-        height: 100px;
-        padding: 0 20px 0 10px;
+        padding: 18px 20px 16px 10px;
       }
       .tabs {
         grid-column: 1;
@@ -218,7 +215,7 @@
     <div id="app" class="shell hidden">
       <div class="rail" aria-hidden="true"></div>
       <div class="brand">
-        <img src="/ops/logo-medlinq.png" alt="MedLinq" />
+        <img src="/ops/logo-yacoub.png" alt="يعقوب" />
       </div>
       <header>
         <div>
@@ -247,6 +244,7 @@
         ['patients', 'المرضى', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 11h6"/><path d="M19 8v6"/></svg>'],
         ['users', 'المستخدمين', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'],
         ['appointments', 'الحجوزات', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>'],
+        ['money', 'الفلوس', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>'],
         ['doctors', 'الدكاترة', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>'],
         ['nurses', 'التمريض', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1 2-3 2-5a7 7 0 0 0-14 0c0 2 .5 4 2 5"/><path d="M12 13v8"/><path d="M8 18h8"/></svg>'],
         ['nursing', 'طلبات تمريض', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>'],
@@ -386,28 +384,31 @@
             const data = await api('/overview');
             const g = data.growth || {};
             const growth = [
-              [g.usersThisWeek ?? 0, 'مستخدمين الأسبوع', g.usersChange ?? 0],
-              [g.clinicsThisWeek ?? 0, 'عيادات الأسبوع', g.clinicsChange ?? 0],
-              [g.patientsThisWeek ?? 0, 'مرضى الأسبوع', g.patientsChange ?? 0],
-              [g.appointmentsThisWeek ?? 0, 'حجوزات الأسبوع', g.appointmentsChange ?? 0],
+              [g.usersThisWeek ?? 0, 'مستخدمين الأسبوع', g.usersChange ?? 0, 'users'],
+              [g.clinicsThisWeek ?? 0, 'عيادات الأسبوع', g.clinicsChange ?? 0, 'clinics'],
+              [g.patientsThisWeek ?? 0, 'مرضى الأسبوع', g.patientsChange ?? 0, 'patients'],
+              [g.appointmentsThisWeek ?? 0, 'حجوزات الأسبوع', g.appointmentsChange ?? 0, 'appointments'],
             ];
             const items = [
-              [data.users, 'كل المستخدمين'],
-              [data.clinics, 'كل العيادات'],
-              [data.patients, 'كل ملفات المرضى'],
-              [data.doctors, 'كل الدكاترة'],
-              [data.clinicsActive, 'عيادات ظاهرة'],
-              [data.clinicsPending, 'عيادات تنتظر اعتماد'],
-              [data.appointmentsToday, 'حجوزات اليوم'],
-              [data.appointmentsOpen, 'حجوزات مفتوحة'],
-              [data.usersBlocked, 'حسابات موقوفة'],
-              [data.nursesPending, 'تمريض ينتظر موافقة'],
-              [data.nursingOpen, 'طلبات تمريض مفتوحة'],
-              [data.homeVisitsOpen, 'زيارات منزلية مفتوحة'],
+              [data.users, 'كل المستخدمين', 'users'],
+              [data.clinics, 'كل العيادات', 'clinics'],
+              [data.patients, 'كل ملفات المرضى', 'patients'],
+              [data.doctors, 'كل الدكاترة', 'doctors'],
+              [data.clinicsActive, 'عيادات ظاهرة', 'clinics'],
+              [data.clinicsPending, 'عيادات تنتظر اعتماد', 'clinics'],
+              [data.appointmentsToday, 'حجوزات اليوم', 'appointments'],
+              [data.appointmentsOpen, 'حجوزات مفتوحة', 'appointments'],
+              [data.usersBlocked, 'حسابات موقوفة', 'users'],
+              [data.nursesPending, 'تمريض ينتظر موافقة', 'nurses'],
+              [data.nursingOpen, 'طلبات تمريض مفتوحة', 'nursing'],
+              [data.homeVisitsOpen, 'زيارات منزلية مفتوحة', 'home'],
+              [data.invoicesPaidToday ?? 0, 'تحصيل اليوم (ج.م)', 'money'],
+              [data.invoicesPaid ?? 0, 'فواتير مدفوعة (ج.م)', 'money'],
+              [data.invoicesOpen ?? 0, 'فواتير مفتوحة (ج.م)', 'money'],
             ];
             content.innerHTML = `
               <h2>معدل النمو (آخر 30 يوم)</h2>
-              <div class="stats">${growth.map(([n, l, c]) => `<div class="stat"><b>${n}</b><span>${l}</span>${changeHtml(c)}</div>`).join('')}</div>
+              <div class="stats">${growth.map(([n, l, c, go]) => `<div class="stat" data-go="${go}"><b>${n}</b><span>${l}</span>${changeHtml(c)}</div>`).join('')}</div>
               <div class="charts" style="margin-top:12px">
                 ${chart('مستخدمين جدد', g.usersDaily || [])}
                 ${chart('عيادات جديدة', g.clinicsDaily || [])}
@@ -415,7 +416,7 @@
                 ${chart('حجوزات', g.appointmentsDaily || [])}
               </div>
               <h2>حجم التطبيق</h2>
-              <div class="stats">${items.map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('')}</div>`;
+              <div class="stats">${items.map(([n, l, go]) => `<div class="stat" data-go="${go}"><b>${n}</b><span>${l}</span></div>`).join('')}</div>`;
             return;
           }
           if (tab === 'clinics') {
@@ -448,11 +449,16 @@
             const rows = await api('/patients?q=' + encodeURIComponent(q));
             if (seq !== searchSeq) return;
             if (!rows.length) { content.innerHTML = '<div class="empty">لا يوجد مرضى</div>'; return; }
-            content.innerHTML = `<table><thead><tr><th>المريض</th><th>العيادة</th><th>الحالة</th></tr></thead><tbody>${rows.map((row) => `
+            content.innerHTML = `<table><thead><tr><th>المريض</th><th>العيادة</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
               <tr>
                 <td><b>${row.name}</b><div class="sub">${row.phone || ''} · ${row.gender || ''}</div></td>
                 <td>${row.clinicName || ''}</td>
                 <td>${tag(row.isActive, 'نشط', 'موقوف')}<div class="sub">${fmt(row.createdAt)}</div></td>
+                <td class="actions">
+                  ${superUser ? (row.isActive
+                    ? `<button class="btn danger" data-act="/patients/${row.id}/deactivate" data-msg="إيقاف ملف المريض؟">إيقاف</button>`
+                    : `<button class="btn" data-act="/patients/${row.id}/activate">تفعيل</button>`) : ''}
+                </td>
               </tr>`).join('')}</tbody></table>`;
             return;
           }
@@ -553,22 +559,58 @@
             toolbar('');
             const rows = await api('/nursing');
             if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد طلبات</div>'; return; }
-            content.innerHTML = `<table><thead><tr><th>الطلب</th><th>المريض</th><th>الحالة</th></tr></thead><tbody>${rows.map((row) => `
+            content.innerHTML = `<table><thead><tr><th>الطلب</th><th>المريض</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
               <tr>
                 <td>${fmt(row.scheduled_at)}<div class="sub">${row.service_id} · ${row.address || ''}</div></td>
                 <td>${row.patient_name}<div class="sub">${row.patient_phone || ''}</div></td>
                 <td>${statusTag(row.status)}${row.price ? ' · ' + row.price + ' ج.م' : ''}<div class="sub">${row.nurse_name || ''}</div></td>
+                <td class="actions">
+                  ${row.status === 'requested' || row.status === 'priced'
+                    ? `<button class="btn" data-act="/nursing/${row.id}/price" data-prompt="سعر الطلب بالجنيه">تسعير</button>` : ''}
+                  ${row.status !== 'completed'
+                    ? `<button class="btn ok" data-act="/nursing/${row.id}/complete" data-msg="إنهاء الطلب؟">إنهاء</button>` : ''}
+                </td>
               </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          if (tab === 'money') {
+            toolbar('');
+            const data = await api('/invoices');
+            content.innerHTML = `
+              <div class="stats">
+                <div class="stat"><b>${data.today ?? 0}</b><span>تحصيل اليوم</span></div>
+                <div class="stat"><b>${data.paid ?? 0}</b><span>مدفوع</span></div>
+                <div class="stat"><b>${data.open ?? 0}</b><span>مفتوح</span></div>
+              </div>
+              ${(data.invoices || []).length
+                ? `<table style="margin-top:16px"><thead><tr><th>الفاتورة</th><th>العيادة</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody>${data.invoices.map((row) => `
+                    <tr>
+                      <td>${row.patientName}<div class="sub">${row.doctorName} · ${fmt(row.createdAt)}</div></td>
+                      <td>${row.clinicName || ''}</td>
+                      <td>${row.amount} ج.م</td>
+                      <td>${statusTag(row.status)}${row.paymentMethod ? ' · ' + row.paymentMethod : ''}</td>
+                    </tr>`).join('')}</tbody></table>`
+                : '<div class="empty">لا توجد فواتير</div>'}`;
+            return;
+          }
+          if (tab !== 'home') {
+            content.innerHTML = '<div class="empty">التبويب غير موجود</div>';
             return;
           }
           toolbar('');
           const rows = await api('/home-visits');
           if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد زيارات منزلية</div>'; return; }
-          content.innerHTML = `<table><thead><tr><th>الزيارة</th><th>المريض</th><th>الحالة</th></tr></thead><tbody>${rows.map((row) => `
+          content.innerHTML = `<table><thead><tr><th>الزيارة</th><th>المريض</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
             <tr>
               <td>${fmt(row.scheduled_at)}<div class="sub">${row.specialty || ''} · ${row.address || ''}</div></td>
               <td>${row.patient_name}<div class="sub">${row.patient_phone || ''}</div></td>
               <td>${statusTag(row.status)}${row.price ? ' · ' + row.price + ' ج.م' : ''}<div class="sub">${row.doctor_name || ''}</div></td>
+              <td class="actions">
+                ${row.status !== 'completed' && row.status !== 'cancelled'
+                  ? `<button class="btn ok" data-act="/home-visits/${row.id}/complete" data-msg="إنهاء الزيارة؟">إنهاء</button>` : ''}
+                ${superUser && row.status !== 'completed' && row.status !== 'cancelled'
+                  ? `<button class="btn danger" data-act="/home-visits/${row.id}/cancel" data-msg="إلغاء الزيارة؟">إلغاء</button>` : ''}
+              </td>
             </tr>`).join('')}</tbody></table>`;
         } catch (error) {
           content.innerHTML = `<div class="err">${error.message}</div>`;
@@ -584,11 +626,29 @@
         showApp();
       });
       document.getElementById('content').addEventListener('click', async (event) => {
+        const go = event.target.closest('[data-go]');
+        if (go?.dataset.go) {
+          tab = go.dataset.go;
+          q = '';
+          status = '';
+          showApp();
+          return;
+        }
         const button = event.target.closest('[data-act]');
         if (!button) return;
         if (button.dataset.msg && !confirm(button.dataset.msg)) return;
-        await api(button.dataset.act, { method: 'POST', body: button.dataset.body || '{}' });
-        await load();
+        let body = button.dataset.body || '{}';
+        if (button.dataset.prompt) {
+          const value = window.prompt(button.dataset.prompt);
+          if (value == null || value.trim() === '') return;
+          body = JSON.stringify({ price: Number(value) });
+        }
+        try {
+          await api(button.dataset.act, { method: 'POST', body });
+          await load();
+        } catch (error) {
+          document.getElementById('content').innerHTML = `<div class="err">${error.message}</div>`;
+        }
       });
       document.getElementById('logout').addEventListener('click', logout);
       document.getElementById('login-form').addEventListener('submit', async (event) => {

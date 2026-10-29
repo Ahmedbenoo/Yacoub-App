@@ -386,7 +386,7 @@ app.get('/ops', (_req, res) => {
   res.sendFile(path.join(opsDir, 'index.html'));
 });
 app.get('/favicon.ico', (_req, res) => {
-  res.sendFile(path.join(opsDir, 'logo-medlinq.png'));
+  res.sendFile(path.join(opsDir, 'logo-yacoub.png'));
 });
 
 app.get('/api/v1', (_req, res) => {
