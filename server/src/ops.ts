@@ -68,47 +68,64 @@ export async function ensurePlatformAdmin(): Promise<void> {
   }
 }
 
-function cairoDay(offset: number): string {
-  const date = new Date(Date.now() + offset * 24 * 60 * 60 * 1000);
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(date);
-}
-
-function fillSeries(rows: { day: string; n: string | number }[], days = 30) {
-  const map = new Map(rows.map((row) => [String(row.day).slice(0, 10), Number(row.n)]));
-  return Array.from({ length: days }, (_, index) => {
-    const day = cairoDay(index - (days - 1));
-    return { day, count: map.get(day) ?? 0 };
-  });
-}
-
 function weekChange(current: number, previous: number) {
   if (previous === 0) return current > 0 ? 100 : 0;
   return Math.round(((current - previous) / previous) * 100);
 }
 
-async function dailySeries(sql: string) {
-  const result = await db.query<{ day: string; n: string | number }>(sql);
-  return fillSeries(result.rows);
+const dailySources = {
+  users: {
+    table: 'users',
+    column: 'created_at',
+    extra: `AND t.id NOT LIKE 'user-demo-%'`,
+  },
+  clinics: {
+    table: 'clinics',
+    column: 'created_at',
+    extra: `AND t.id NOT LIKE 'clinic-test-%'`,
+  },
+  patients: {
+    table: 'patients',
+    column: 'created_at',
+    extra: `AND t.id NOT LIKE 'user-demo-%'`,
+  },
+  appointments: {
+    table: 'appointments',
+    column: 'created_at',
+    extra: `AND t.id NOT LIKE 'appt-int-%' AND t.id NOT LIKE 'appt-ob-%' AND t.id NOT LIKE 'appt-ur-%'`,
+  },
+} as const;
+
+async function dailySeries(source: keyof typeof dailySources) {
+  const spec = dailySources[source];
+  const result = await db.query<{ day: string; n: string | number }>(
+    `WITH days AS (
+       SELECT generate_series(
+         ((now() AT TIME ZONE 'Africa/Cairo')::date - 29),
+         (now() AT TIME ZONE 'Africa/Cairo')::date,
+         interval '1 day'
+       )::date AS day
+     )
+     SELECT to_char(d.day, 'YYYY-MM-DD') AS day, count(t.id)::int AS n
+     FROM days d
+     LEFT JOIN ${spec.table} t
+       ON (t.${spec.column} AT TIME ZONE 'Africa/Cairo')::date = d.day
+       ${spec.extra}
+     GROUP BY d.day
+     ORDER BY d.day`,
+  );
+  return result.rows.map((row) => ({
+    day: String(row.day).slice(0, 10),
+    count: Number(row.n ?? 0),
+  }));
 }
 
 async function overview() {
   const [usersDaily, clinicsDaily, patientsDaily, appointmentsDaily, totals] = await Promise.all([
-    dailySeries(
-      `SELECT to_char((created_at AT TIME ZONE 'Africa/Cairo')::date, 'YYYY-MM-DD') AS day, count(*) AS n
-       FROM users WHERE created_at >= now() - interval '30 days' GROUP BY 1 ORDER BY 1`,
-    ),
-    dailySeries(
-      `SELECT to_char((created_at AT TIME ZONE 'Africa/Cairo')::date, 'YYYY-MM-DD') AS day, count(*) AS n
-       FROM clinics WHERE created_at >= now() - interval '30 days' GROUP BY 1 ORDER BY 1`,
-    ),
-    dailySeries(
-      `SELECT to_char((created_at AT TIME ZONE 'Africa/Cairo')::date, 'YYYY-MM-DD') AS day, count(*) AS n
-       FROM patients WHERE created_at >= now() - interval '30 days' GROUP BY 1 ORDER BY 1`,
-    ),
-    dailySeries(
-      `SELECT to_char((scheduled_at AT TIME ZONE 'Africa/Cairo')::date, 'YYYY-MM-DD') AS day, count(*) AS n
-       FROM appointments WHERE scheduled_at >= now() - interval '30 days' GROUP BY 1 ORDER BY 1`,
-    ),
+    dailySeries('users'),
+    dailySeries('clinics'),
+    dailySeries('patients'),
+    dailySeries('appointments'),
     db.query<{
       clinics: string | number;
       clinics_active: string | number;
