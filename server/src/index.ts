@@ -2130,12 +2130,13 @@ app.post('/api/v1/children/:id/doses', async (req, res) => {
 const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
-await seedDemoClinics();
 await ensurePlatformAdmin();
-await ensureClinicPhotos();
 
 app.listen(port, () => {
   console.log(`Yacoub API listening on http://localhost:${port}/api/v1`);
   console.log(`Website: http://localhost:${port}/`);
   console.log(`Platform dashboard: http://localhost:${port}/ops`);
 });
+
+await seedDemoClinics();
+await ensureClinicPhotos();
