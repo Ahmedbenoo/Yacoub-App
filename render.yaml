@@ -20,6 +20,6 @@ services:
           name: yacoub-db
           property: connectionString
       - key: SEED_DEMO
-        value: "false"
+        value: "true"
       - key: JWT_SECRET
         generateValue: true

@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import express from 'express';
 
 import { db } from './db.js';
+import { seedDemoClinics } from './demo-clinics.js';
 import { login, normalizePhone, userFromAccessToken, userPlatformRole, type PlatformRole } from './users.js';
 
 function httpError(status: number, code: string, message: string): Error {
@@ -77,22 +78,22 @@ const dailySources = {
   users: {
     table: 'users',
     column: 'created_at',
-    extra: `AND t.id NOT LIKE 'user-demo-%'`,
+    extra: `AND t.id NOT LIKE 'user-demo-%' AND t.id NOT LIKE 'user-spec-%'`,
   },
   clinics: {
     table: 'clinics',
     column: 'created_at',
-    extra: `AND t.id NOT LIKE 'clinic-test-%'`,
+    extra: `AND t.id NOT LIKE 'clinic-test-%' AND t.id NOT LIKE 'clinic-spec-%'`,
   },
   patients: {
     table: 'patients',
     column: 'created_at',
-    extra: `AND t.id NOT LIKE 'user-demo-%'`,
+    extra: `AND t.id NOT LIKE 'user-demo-%' AND t.id NOT LIKE 'user-spec-%'`,
   },
   appointments: {
     table: 'appointments',
     column: 'created_at',
-    extra: `AND t.id NOT LIKE 'appt-int-%' AND t.id NOT LIKE 'appt-ob-%' AND t.id NOT LIKE 'appt-ur-%'`,
+    extra: `AND t.id NOT LIKE 'appt-int-%' AND t.id NOT LIKE 'appt-ob-%' AND t.id NOT LIKE 'appt-ur-%' AND t.id NOT LIKE 'appt-%'`,
   },
 } as const;
 
@@ -903,6 +904,22 @@ opsRouter.post('/patients/:id/deactivate', async (req, res) => {
     res.json({ success: true, data: await setPatientActiveOps(req.params.id, false) });
   } catch (error) {
     sendError(res, error, 'تعذر إيقاف الملف');
+  }
+});
+
+opsRouter.post('/reseed-demo', async (_req, res) => {
+  if (!requireSuper(res)) return;
+  try {
+    await seedDemoClinics({ force: true });
+    const counts = await db.query<{ clinics: number; users: number; appointments: number }>(
+      `SELECT
+         (SELECT count(*)::int FROM clinics) AS clinics,
+         (SELECT count(*)::int FROM users) AS users,
+         (SELECT count(*)::int FROM appointments) AS appointments`,
+    );
+    res.json({ success: true, data: counts.rows[0] });
+  } catch (error) {
+    sendError(res, error, 'تعذر إعادة تجهيز البيانات التجريبية');
   }
 });
 

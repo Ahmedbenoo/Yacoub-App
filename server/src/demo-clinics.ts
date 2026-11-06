@@ -1,12 +1,122 @@
+import { writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import bcrypt from 'bcryptjs';
 
+import { clinicCoverList } from './clinic-covers.js';
 import { db } from './db.js';
 
 const PASSWORD = 'password123';
-const FEE = { internal: 300, obgyn: 450, urology: 400 } as const;
 const SHARE = 60;
+const SEED_MARKER = 'clinic-spec-generalMedicine';
 
 type Gender = 'male' | 'female';
+
+const SPECIALTIES: { id: string; nameEn: string; nameAr: string }[] = [
+  { id: 'generalMedicine', nameEn: 'General Medicine', nameAr: 'طب عام' },
+  { id: 'familyMedicine', nameEn: 'Family Medicine', nameAr: 'طب الأسرة' },
+  { id: 'internalMedicine', nameEn: 'Internal Medicine', nameAr: 'باطنة' },
+  { id: 'cardiology', nameEn: 'Cardiology', nameAr: 'قلب' },
+  { id: 'pediatricCardiology', nameEn: 'Pediatric Cardiology', nameAr: 'قلب أطفال' },
+  { id: 'dermatology', nameEn: 'Dermatology', nameAr: 'جلدية' },
+  { id: 'dermatologyCosmetology', nameEn: 'Dermatology and Cosmetology', nameAr: 'جلدية وتجميل' },
+  { id: 'pediatrics', nameEn: 'Pediatrics', nameAr: 'أطفال' },
+  { id: 'neonatology', nameEn: 'Neonatology', nameAr: 'حديثي الولادة' },
+  { id: 'orthopedics', nameEn: 'Orthopedics', nameAr: 'عظام' },
+  { id: 'obstetricsGynecology', nameEn: 'Obstetrics and Gynecology', nameAr: 'نساء وتوليد' },
+  { id: 'fertility', nameEn: 'Fertility', nameAr: 'خصوبة' },
+  { id: 'ent', nameEn: 'ENT', nameAr: 'أنف وأذن وحنجرة' },
+  { id: 'ophthalmology', nameEn: 'Ophthalmology', nameAr: 'عيون' },
+  { id: 'optometry', nameEn: 'Optometry', nameAr: 'بصريات' },
+  { id: 'dentistry', nameEn: 'Dentistry', nameAr: 'أسنان' },
+  { id: 'orthodontics', nameEn: 'Orthodontics', nameAr: 'تقويم أسنان' },
+  { id: 'pediatricDentistry', nameEn: 'Pediatric Dentistry', nameAr: 'أسنان أطفال' },
+  { id: 'oralSurgery', nameEn: 'Oral and Maxillofacial Surgery', nameAr: 'جراحة وجه وفكين' },
+  { id: 'neurology', nameEn: 'Neurology', nameAr: 'مخ وأعصاب' },
+  { id: 'neurosurgery', nameEn: 'Neurosurgery', nameAr: 'جراحة مخ وأعصاب' },
+  { id: 'psychiatry', nameEn: 'Psychiatry', nameAr: 'طب نفسي' },
+  { id: 'clinicalPsychology', nameEn: 'Clinical Psychology', nameAr: 'علم نفس' },
+  { id: 'urology', nameEn: 'Urology', nameAr: 'مسالك بولية' },
+  { id: 'andrology', nameEn: 'Andrology', nameAr: 'ذكورة' },
+  { id: 'gastroenterology', nameEn: 'Gastroenterology', nameAr: 'جهاز هضمي' },
+  { id: 'hepatology', nameEn: 'Hepatology', nameAr: 'كبد' },
+  { id: 'pulmonology', nameEn: 'Pulmonology', nameAr: 'صدر' },
+  { id: 'endocrinology', nameEn: 'Endocrinology', nameAr: 'غدد صماء' },
+  { id: 'nephrology', nameEn: 'Nephrology', nameAr: 'كلى' },
+  { id: 'rheumatology', nameEn: 'Rheumatology', nameAr: 'روماتيزم' },
+  { id: 'hematology', nameEn: 'Hematology', nameAr: 'أمراض دم' },
+  { id: 'oncology', nameEn: 'Oncology', nameAr: 'أورام' },
+  { id: 'allergyImmunology', nameEn: 'Allergy and Immunology', nameAr: 'حساسية ومناعة' },
+  { id: 'infectiousDiseases', nameEn: 'Infectious Diseases', nameAr: 'أمراض معدية' },
+  { id: 'generalSurgery', nameEn: 'General Surgery', nameAr: 'جراحة عامة' },
+  { id: 'pediatricSurgery', nameEn: 'Pediatric Surgery', nameAr: 'جراحة أطفال' },
+  { id: 'plasticSurgery', nameEn: 'Plastic Surgery', nameAr: 'جراحة تجميل' },
+  { id: 'vascularSurgery', nameEn: 'Vascular Surgery', nameAr: 'جراحة أوعية دموية' },
+  { id: 'cardiothoracicSurgery', nameEn: 'Cardiothoracic Surgery', nameAr: 'جراحة قلب وصدر' },
+  { id: 'bariatricSurgery', nameEn: 'Bariatric Surgery', nameAr: 'جراحة سمنة' },
+  { id: 'physiotherapy', nameEn: 'Physiotherapy', nameAr: 'علاج طبيعي' },
+  { id: 'nutrition', nameEn: 'Clinical Nutrition', nameAr: 'تغذية علاجية' },
+  { id: 'radiology', nameEn: 'Radiology', nameAr: 'أشعة' },
+  { id: 'clinicalPathology', nameEn: 'Clinical Pathology', nameAr: 'تحاليل طبية' },
+  { id: 'phoniatrics', nameEn: 'Phoniatrics', nameAr: 'تخاطب' },
+  { id: 'audiology', nameEn: 'Audiology', nameAr: 'سمعيات' },
+  { id: 'painMedicine', nameEn: 'Pain Medicine', nameAr: 'علاج الألم' },
+  { id: 'sportsMedicine', nameEn: 'Sports Medicine', nameAr: 'طب رياضي' },
+  { id: 'geriatrics', nameEn: 'Geriatrics', nameAr: 'طب مسنين' },
+  { id: 'anesthesia', nameEn: 'Anesthesia', nameAr: 'تخدير' },
+  { id: 'emergencyMedicine', nameEn: 'Emergency Medicine', nameAr: 'طوارئ' },
+];
+
+const FEMALE_LEAD = new Set([
+  'obstetricsGynecology',
+  'fertility',
+  'dermatologyCosmetology',
+  'neonatology',
+  'pediatricDentistry',
+]);
+
+const MALE_LEAD = new Set(['urology', 'andrology', 'cardiothoracicSurgery', 'vascularSurgery']);
+
+const MEN = [
+  ['أحمد', 'فؤاد'],
+  ['محمد', 'سالم'],
+  ['عمر', 'ناجي'],
+  ['كريم', 'فهمي'],
+  ['يوسف', 'راضي'],
+  ['حسام', 'شوقي'],
+  ['تامر', 'لطفي'],
+  ['وليد', 'عطية'],
+] as const;
+
+const WOMEN = [
+  ['نورا', 'فؤاد'],
+  ['هدى', 'سالم'],
+  ['ياسمين', 'ناجي'],
+  ['سلمى', 'فهمي'],
+  ['رنا', 'راضي'],
+  ['دينا', 'شوقي'],
+] as const;
+
+const SECRETARIES = [
+  ['منى', 'جابر'],
+  ['داليا', 'حسن'],
+  ['إيمان', 'سعد'],
+  ['هالة', 'زكي'],
+] as const;
+
+const PATIENTS: { first: string; last: string; gender: Gender; birth: string }[] = [
+  { first: 'سارة', last: 'علي', gender: 'female', birth: '1994-03-12' },
+  { first: 'محمود', last: 'حسن', gender: 'male', birth: '1986-07-02' },
+  { first: 'نورهان', last: 'سيد', gender: 'female', birth: '1998-11-20' },
+  { first: 'يوسف', last: 'عادل', gender: 'male', birth: '1991-01-15' },
+  { first: 'مريم', last: 'خالد', gender: 'female', birth: '1989-05-08' },
+  { first: 'عمر', last: 'فاروق', gender: 'male', birth: '1979-09-30' },
+];
+
+const BLOOD = ['A+', 'O+', 'B+', 'AB+', 'A-', 'O+'];
+const DIAGNOSES = ['متابعة دورية', 'التهاب بسيط', 'ارتفاع ضغط', 'نقص فيتامين', 'ألم ومتابعة'];
+const MEDS = ['باراسيتامول 500', 'أوجمنتين 1 جم', 'فيتامين د', 'أوميبرازول 20', 'بروفين 400'];
 
 function phone(local: string): string {
   const digits = local.replace(/\D/g, '');
@@ -20,6 +130,12 @@ function mail(local: string, kind: 'owner' | 'doctor' | 'secretary' | 'patient')
   return `${phone(local).replace(/\D/g, '')}@${kind}.clinsync`;
 }
 
+/** New 0159 numbers. Slot 1 owner, 2 extra doctor, 3 secretary, 4–7 patients. */
+function specPhone(specIndex: number, slot: number): string {
+  const n = 1000000 + specIndex * 20 + slot;
+  return `0159${String(n).slice(-7)}`;
+}
+
 function at(dayOffset: number, hour: number, minute: number): string {
   const today = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Africa/Cairo',
@@ -29,6 +145,34 @@ function at(dayOffset: number, hour: number, minute: number): string {
   }).format(new Date());
   const [year, month, day] = today.split('-').map(Number);
   return new Date(Date.UTC(year, month - 1, day + dayOffset, hour - 3, minute, 0)).toISOString();
+}
+
+function leadGender(specId: string, index: number): Gender {
+  if (FEMALE_LEAD.has(specId)) return 'female';
+  if (MALE_LEAD.has(specId)) return 'male';
+  return index % 2 === 0 ? 'male' : 'female';
+}
+
+function person(gender: Gender, index: number): { first: string; last: string } {
+  const pool = gender === 'female' ? WOMEN : MEN;
+  const [first, last] = pool[index % pool.length];
+  return { first, last };
+}
+
+function patientsFor(specId: string): { first: string; last: string; gender: Gender; birth: string }[] {
+  if (specId === 'obstetricsGynecology' || specId === 'fertility') {
+    return PATIENTS.filter((item) => item.gender === 'female').concat([
+      { first: 'أمل', last: 'حسين', gender: 'female', birth: '1992-02-01' },
+      { first: 'دينا', last: 'صلاح', gender: 'female', birth: '1995-08-14' },
+    ]);
+  }
+  if (specId === 'andrology') {
+    return PATIENTS.filter((item) => item.gender === 'male').concat([
+      { first: 'خالد', last: 'سامي', gender: 'male', birth: '1982-01-19' },
+      { first: 'طارق', last: 'فهمي', gender: 'male', birth: '1978-06-11' },
+    ]);
+  }
+  return PATIENTS.slice(0, 4);
 }
 
 async function wipe(): Promise<void> {
@@ -63,7 +207,11 @@ async function wipe(): Promise<void> {
     'clinics',
   ];
   for (const table of tables) {
-    await db.query(`DELETE FROM ${table}`);
+    if (table === 'users') {
+      await db.query(`DELETE FROM users WHERE COALESCE(is_platform_admin, false) = false`);
+    } else {
+      await db.query(`DELETE FROM ${table}`);
+    }
   }
 }
 
@@ -80,7 +228,15 @@ async function addUser(input: {
     `INSERT INTO users (
        id, email, phone, password_hash, first_name, last_name, locale, gender, is_email_verified, is_phone_verified
      ) VALUES ($1, $2, $3, $4, $5, $6, 'ar', $7, true, true)`,
-    [input.id, mail(input.localPhone, input.kind), phone(input.localPhone), input.passwordHash, input.firstName, input.lastName, input.gender],
+    [
+      input.id,
+      mail(input.localPhone, input.kind),
+      phone(input.localPhone),
+      input.passwordHash,
+      input.firstName,
+      input.lastName,
+      input.gender,
+    ],
   );
 }
 
@@ -95,9 +251,17 @@ async function addClinic(input: {
   await db.query(
     `INSERT INTO clinics (
        id, name, name_ar, slug, phone, street, street_ar, city, city_ar, country, country_ar,
-       specialty, opening_hours, consultation_fee, is_active, approval_status, owner_user_id, place_kind
-     ) VALUES ($1, $2, $2, $1, $3, 'مدينة نصر', 'مدينة نصر', 'Cairo', 'القاهرة', 'Egypt', 'مصر', $4, '٩ صباحاً – ٥ مساءً', $5, true, 'approved', $6, 'clinic')`,
-    [input.id, input.name, phone(input.localPhone), input.specialty, input.fee, input.ownerId],
+       specialty, opening_hours, consultation_fee, is_active, approval_status, owner_user_id, place_kind, photo_urls
+     ) VALUES ($1, $2, $2, $1, $3, 'مدينة نصر', 'مدينة نصر', 'Cairo', 'القاهرة', 'Egypt', 'مصر', $4, '٩ صباحاً – ٥ مساءً', $5, true, 'approved', $6, 'clinic', $7)`,
+    [
+      input.id,
+      input.name,
+      phone(input.localPhone),
+      input.specialty,
+      input.fee,
+      input.ownerId,
+      JSON.stringify(clinicCoverList(input.id, input.specialty)),
+    ],
   );
 }
 
@@ -124,8 +288,8 @@ async function addDoctor(input: {
   await db.query(
     `INSERT INTO doctors (
        id, user_id, clinic_id, first_name, last_name, email, phone, specialty, branch_id, branch_name,
-       languages, gender, years_experience, share_percent, offers_home_visits
-     ) VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $2, $8, '["Arabic"]', $9, $10, $11, false)`,
+       languages, gender, years_experience, share_percent, offers_home_visits, rating, review_count
+     ) VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $2, $8, '["Arabic"]', $9, $10, $11, false, $12, $13)`,
     [
       input.id,
       input.clinicId,
@@ -138,6 +302,8 @@ async function addDoctor(input: {
       input.gender,
       input.years,
       SHARE,
+      4.6 + (input.years % 4) / 10,
+      18 + input.years * 3,
     ],
   );
   for (let day = 0; day < 7; day += 1) {
@@ -230,7 +396,19 @@ async function addRecord(input: {
     `INSERT INTO visits (
        id, appointment_id, patient_id, doctor_id, clinic_id, status, chief_complaint, diagnosis, symptoms, notes, vitals, started_at, completed_at
      ) VALUES ($1, $2, $3, $4, $5, 'completed', $6, $7, $8, $9, $10, $11, $11)`,
-    [visitId, input.id, input.patientId, input.doctorId, input.clinicId, input.complaint ?? input.reason, input.diagnosis, input.reason, 'كشف ومتابعة.', vitals, input.when],
+    [
+      visitId,
+      input.id,
+      input.patientId,
+      input.doctorId,
+      input.clinicId,
+      input.complaint ?? input.reason,
+      input.diagnosis,
+      input.reason,
+      'كشف ومتابعة.',
+      vitals,
+      input.when,
+    ],
   );
   await db.query(`UPDATE patients SET last_visit_at = $2 WHERE id = $1`, [input.patientId, input.when]);
   const meds = JSON.stringify([
@@ -254,7 +432,7 @@ async function addRecord(input: {
       input.patientId,
       input.doctorId,
       input.doctorName,
-      `RX-${input.id.slice(-6)}`,
+      `RX-${input.id.slice(-8)}`,
       input.clinicId,
       input.clinicName,
       meds,
@@ -285,397 +463,168 @@ async function addRecord(input: {
   );
 }
 
-const INTERNAL_PATIENTS: { first: string; last: string; gender: Gender; birth: string }[] = [
-  { first: 'سارة', last: 'علي', gender: 'female', birth: '1994-03-12' },
-  { first: 'محمد', last: 'حسن', gender: 'male', birth: '1986-07-02' },
-  { first: 'نورهان', last: 'سيد', gender: 'female', birth: '1998-11-20' },
-  { first: 'يوسف', last: 'عادل', gender: 'male', birth: '1991-01-15' },
-  { first: 'مريم', last: 'خالد', gender: 'female', birth: '1989-05-08' },
-  { first: 'عمر', last: 'فاروق', gender: 'male', birth: '1979-09-30' },
-  { first: 'هدى', last: 'سمير', gender: 'female', birth: '1996-02-18' },
-  { first: 'كريم', last: 'نبيل', gender: 'male', birth: '1984-12-04' },
-  { first: 'ليلى', last: 'طارق', gender: 'female', birth: '1993-06-27' },
-  { first: 'حسن', last: 'مجدي', gender: 'male', birth: '1975-04-11' },
-];
-
-const OBGYN_PATIENTS: { first: string; last: string; birth: string }[] = [
-  { first: 'أمل', last: 'حسين', birth: '1992-02-01' },
-  { first: 'دينا', last: 'صلاح', birth: '1995-08-14' },
-  { first: 'رنا', last: 'عادل', birth: '1988-10-09' },
-  { first: 'سلمى', last: 'كمال', birth: '1997-01-22' },
-  { first: 'منى', last: 'إبراهيم', birth: '1990-03-03' },
-  { first: 'هبة', last: 'يوسف', birth: '1987-07-19' },
-  { first: 'ندى', last: 'فؤاد', birth: '1999-05-25' },
-  { first: 'ياسمين', last: 'طه', birth: '1993-09-16' },
-  { first: 'إيمان', last: 'رضا', birth: '1985-12-28' },
-  { first: 'شيماء', last: 'مجدي', birth: '1996-04-06' },
-];
-
-const BLOOD = ['A+', 'O+', 'B+', 'AB+', 'A-', 'O-', 'B+', 'A+', 'O+', 'AB+'];
-
-const UROLOGY_PATIENTS: { first: string; last: string; gender: Gender; birth: string }[] = [
-  { first: 'خالد', last: 'سامي', gender: 'male', birth: '1982-01-19' },
-  { first: 'طارق', last: 'فهمي', gender: 'male', birth: '1978-06-11' },
-  { first: 'محمود', last: 'رضا', gender: 'male', birth: '1990-09-03' },
-  { first: 'وليد', last: 'ناصر', gender: 'male', birth: '1986-04-28' },
-  { first: 'حسام', last: 'فتحي', gender: 'male', birth: '1974-11-15' },
-  { first: 'ياسر', last: 'كمال', gender: 'male', birth: '1992-02-07' },
-  { first: 'نهى', last: 'عادل', gender: 'female', birth: '1989-08-21' },
-  { first: 'ريم', last: 'حازم', gender: 'female', birth: '1995-12-02' },
-  { first: 'باسم', last: 'شريف', gender: 'male', birth: '1983-05-17' },
-  { first: 'علاء', last: 'حمدي', gender: 'male', birth: '1977-10-30' },
-];
-
 export async function seedDemoClinics(options?: { force?: boolean }): Promise<void> {
-  const existing = await db.query<{ id: string }>(`SELECT id FROM clinics WHERE id = 'clinic-test-internal'`);
-  if (existing.rows.length > 0 && !options?.force) return;
+  const existing = await db.query<{ n: number }>(
+    `SELECT count(*)::int AS n FROM clinics WHERE id LIKE 'clinic-spec-%'`,
+  );
+  if (Number(existing.rows[0]?.n ?? 0) >= SPECIALTIES.length && !options?.force) return;
 
   await wipe();
   const passwordHash = await bcrypt.hash(PASSWORD, 10);
+  const accounts: Record<string, unknown>[] = [];
 
-  const internalId = 'clinic-test-internal';
-  const internalName = 'عيادة الاختبار';
-  const ownerId = 'user-demo-internal';
-  await addUser({
-    id: ownerId,
-    localPhone: '01092313486',
-    kind: 'owner',
-    firstName: 'أحمد',
-    lastName: 'فتحي',
-    gender: 'male',
-    passwordHash,
-  });
-  await addClinic({
-    id: internalId,
-    name: internalName,
-    localPhone: '01092313486',
-    specialty: 'Internal Medicine',
-    ownerId,
-    fee: FEE.internal,
-  });
-  await addMembership(ownerId, internalId, 'admin');
-  await addMembership(ownerId, internalId, 'doctor');
-  await addDoctor({
-    id: ownerId,
-    clinicId: internalId,
-    clinicName: internalName,
-    localPhone: '01092313486',
-    firstName: 'أحمد',
-    lastName: 'فتحي',
-    specialty: 'Internal Medicine',
-    gender: 'male',
-    years: 12,
-  });
+  for (let index = 0; index < SPECIALTIES.length; index += 1) {
+    const spec = SPECIALTIES[index];
+    const clinicId = `clinic-spec-${spec.id}`;
+    const clinicName = `عيادة ${spec.nameAr}`;
+    const fee = 250 + (index % 8) * 50;
+    const ownerGender = leadGender(spec.id, index);
+    const extraGender = ownerGender === 'female' ? 'male' : 'female';
+    const owner = person(ownerGender, index);
+    const extra = person(extraGender, index + 3);
+    const secretary = SECRETARIES[index % SECRETARIES.length];
+    const ownerPhone = specPhone(index, 1);
+    const extraPhone = specPhone(index, 2);
+    const secretaryPhone = specPhone(index, 3);
+    const ownerId = `user-spec-${spec.id}-owner`;
+    const extraId = `user-spec-${spec.id}-doc`;
+    const secretaryId = `user-spec-${spec.id}-sec`;
+    const ownerYears = 8 + (index % 10);
+    const extraYears = 5 + (index % 8);
+    const clinicPatients = patientsFor(spec.id).slice(0, 4);
 
-  const extraDoctors = [
-    { id: 'user-demo-mostafa', phone: '01098745515', first: 'مصطفى', last: 'محمود', years: 7 },
-    { id: 'user-demo-fathy', phone: '01117581840', first: 'فتحي', last: 'محمود', years: 9 },
-  ];
-  for (const doctor of extraDoctors) {
     await addUser({
-      id: doctor.id,
-      localPhone: doctor.phone,
-      kind: 'doctor',
-      firstName: doctor.first,
-      lastName: doctor.last,
-      gender: 'male',
+      id: ownerId,
+      localPhone: ownerPhone,
+      kind: 'owner',
+      firstName: owner.first,
+      lastName: owner.last,
+      gender: ownerGender,
       passwordHash,
     });
-    await addMembership(doctor.id, internalId, 'doctor');
+    await addClinic({
+      id: clinicId,
+      name: clinicName,
+      localPhone: ownerPhone,
+      specialty: spec.nameEn,
+      ownerId,
+      fee,
+    });
+    await addMembership(ownerId, clinicId, 'admin');
+    await addMembership(ownerId, clinicId, 'doctor');
     await addDoctor({
-      id: doctor.id,
-      clinicId: internalId,
-      clinicName: internalName,
-      localPhone: doctor.phone,
-      firstName: doctor.first,
-      lastName: doctor.last,
-      specialty: 'Internal Medicine',
-      gender: 'male',
-      years: doctor.years,
+      id: ownerId,
+      clinicId,
+      clinicName,
+      localPhone: ownerPhone,
+      firstName: owner.first,
+      lastName: owner.last,
+      specialty: spec.nameEn,
+      gender: ownerGender,
+      years: ownerYears,
     });
-  }
 
-  await addUser({
-    id: 'user-demo-shakira',
-    localPhone: '01142842452',
-    kind: 'secretary',
-    firstName: 'شاكيرا',
-    lastName: 'محمود',
-    gender: 'female',
-    passwordHash,
-  });
-  await addMembership('user-demo-shakira', internalId, 'secretary');
-
-  for (let index = 0; index < INTERNAL_PATIENTS.length; index += 1) {
-    const person = INTERNAL_PATIENTS[index];
-    const suffix = String(101 + index);
-    await addPatient({
-      id: `user-demo-int-p-${index + 1}`,
-      clinicId: internalId,
-      localPhone: `01000000${suffix}`,
-      firstName: person.first,
-      lastName: person.last,
-      gender: person.gender,
-      birth: person.birth,
-      blood: BLOOD[index],
+    await addUser({
+      id: extraId,
+      localPhone: extraPhone,
+      kind: 'doctor',
+      firstName: extra.first,
+      lastName: extra.last,
+      gender: extraGender,
       passwordHash,
     });
-  }
-
-  const internalDoctors = [
-    { id: ownerId, name: 'أحمد فتحي' },
-    { id: 'user-demo-mostafa', name: 'مصطفى محمود' },
-    { id: 'user-demo-fathy', name: 'فتحي محمود' },
-  ];
-  const diagnoses = ['ارتفاع ضغط الدم', 'حموضة وارتجاع', 'متابعة سكر', 'أنيميا نقص حديد', 'التهاب معدة'];
-  const meds = ['كونكور 5 مجم', 'نيكسيوم 40 مجم', 'جلوكوفاج 500 مجم', 'فيروجلوبين', 'موتيليوم'];
-  for (let index = 0; index < INTERNAL_PATIENTS.length; index += 1) {
-    const person = INTERNAL_PATIENTS[index];
-    const doctor = internalDoctors[index % internalDoctors.length];
-    await addRecord({
-      id: `appt-int-past-${index + 1}`,
-      clinicId: internalId,
-      clinicName: internalName,
-      doctorId: doctor.id,
-      doctorName: doctor.name,
-      patientId: `user-demo-int-p-${index + 1}`,
-      patientName: `${person.first} ${person.last}`,
-      when: at(-12 + index, 9 + (index % 4), (index % 2) * 30),
-      status: 'completed',
-      reason: 'متابعة باطنة',
-      complaint: 'تعب ومتابعة دورية',
-      diagnosis: diagnoses[index % diagnoses.length],
-      medication: meds[index % meds.length],
-      fee: FEE.internal,
+    await addMembership(extraId, clinicId, 'doctor');
+    await addDoctor({
+      id: extraId,
+      clinicId,
+      clinicName,
+      localPhone: extraPhone,
+      firstName: extra.first,
+      lastName: extra.last,
+      specialty: spec.nameEn,
+      gender: extraGender,
+      years: extraYears,
     });
-  }
-  const upcoming = [
-    { day: 0, status: 'confirmed' as const, hour: 10 },
-    { day: 1, status: 'confirmed' as const, hour: 11 },
-    { day: 4, status: 'scheduled' as const, hour: 12 },
-  ];
-  for (const slot of upcoming) {
-    for (let doctorIndex = 0; doctorIndex < internalDoctors.length; doctorIndex += 1) {
-      const patientIndex = doctorIndex + (slot.day === 0 ? 0 : slot.day === 1 ? 3 : 6);
-      const person = INTERNAL_PATIENTS[patientIndex];
-      const doctor = internalDoctors[doctorIndex];
+
+    await addUser({
+      id: secretaryId,
+      localPhone: secretaryPhone,
+      kind: 'secretary',
+      firstName: secretary[0],
+      lastName: secretary[1],
+      gender: 'female',
+      passwordHash,
+    });
+    await addMembership(secretaryId, clinicId, 'secretary');
+
+    const doctors = [
+      { id: ownerId, name: `${owner.first} ${owner.last}`, phone: ownerPhone },
+      { id: extraId, name: `${extra.first} ${extra.last}`, phone: extraPhone },
+    ];
+    const patientAccounts: { name: string; phone: string }[] = [];
+
+    for (let p = 0; p < clinicPatients.length; p += 1) {
+      const personRow = clinicPatients[p];
+      const patientId = `user-spec-${spec.id}-p-${p + 1}`;
+      const patientPhone = specPhone(index, 4 + p);
+      const doctor = doctors[p % doctors.length];
+      await addPatient({
+        id: patientId,
+        clinicId,
+        localPhone: patientPhone,
+        firstName: personRow.first,
+        lastName: personRow.last,
+        gender: personRow.gender,
+        birth: personRow.birth,
+        blood: BLOOD[p % BLOOD.length],
+        passwordHash,
+      });
       await addRecord({
-        id: `appt-int-${slot.day}-${doctorIndex + 1}`,
-        clinicId: internalId,
-        clinicName: internalName,
+        id: `appt-${spec.id}-past-${p + 1}`,
+        clinicId,
+        clinicName,
         doctorId: doctor.id,
         doctorName: doctor.name,
-        patientId: `user-demo-int-p-${patientIndex + 1}`,
-        patientName: `${person.first} ${person.last}`,
-        when: at(slot.day, slot.hour, doctorIndex * 20),
-        status: slot.status,
-        reason: slot.day === 0 ? 'كشف النهاردة' : slot.day === 1 ? 'كشف بكرة' : 'كشف الأسبوع الجاي',
-        fee: FEE.internal,
+        patientId,
+        patientName: `${personRow.first} ${personRow.last}`,
+        when: at(-10 + p, 9 + (p % 4), (p % 2) * 20),
+        status: 'completed',
+        reason: `متابعة ${spec.nameAr}`,
+        complaint: 'كشف ومتابعة',
+        diagnosis: DIAGNOSES[p % DIAGNOSES.length],
+        medication: MEDS[p % MEDS.length],
+        fee,
       });
-    }
-  }
-
-  const obgynId = 'clinic-test-obgyn';
-  const obgynName = 'عيادة نسا وتوليد';
-  const fatmaId = 'user-demo-fatma';
-  await addUser({
-    id: fatmaId,
-    localPhone: '01024307135',
-    kind: 'owner',
-    firstName: 'فاطمه',
-    lastName: 'محمود فتحي',
-    gender: 'female',
-    passwordHash,
-  });
-  await addClinic({
-    id: obgynId,
-    name: obgynName,
-    localPhone: '01024307135',
-    specialty: 'Obstetrics and Gynecology',
-    ownerId: fatmaId,
-    fee: FEE.obgyn,
-  });
-  await addMembership(fatmaId, obgynId, 'admin');
-  await addMembership(fatmaId, obgynId, 'doctor');
-  await addDoctor({
-    id: fatmaId,
-    clinicId: obgynId,
-    clinicName: obgynName,
-    localPhone: '01024307135',
-    firstName: 'فاطمه',
-    lastName: 'محمود فتحي',
-    specialty: 'Obstetrics and Gynecology',
-    gender: 'female',
-    years: 11,
-  });
-  await addUser({
-    id: 'user-demo-ghadeer',
-    localPhone: '01094360326',
-    kind: 'secretary',
-    firstName: 'غدير',
-    lastName: 'أحمد',
-    gender: 'female',
-    passwordHash,
-  });
-  await addMembership('user-demo-ghadeer', obgynId, 'secretary');
-
-  for (let index = 0; index < OBGYN_PATIENTS.length; index += 1) {
-    const person = OBGYN_PATIENTS[index];
-    const suffix = String(index + 1).padStart(3, '0');
-    await addPatient({
-      id: `user-demo-ob-p-${index + 1}`,
-      clinicId: obgynId,
-      localPhone: `01000000${suffix}`,
-      firstName: person.first,
-      lastName: person.last,
-      gender: 'female',
-      birth: person.birth,
-      blood: BLOOD[index],
-      passwordHash,
-    });
-    await addRecord({
-      id: `appt-ob-past-${index + 1}`,
-      clinicId: obgynId,
-      clinicName: obgynName,
-      doctorId: fatmaId,
-      doctorName: 'فاطمه محمود فتحي',
-      patientId: `user-demo-ob-p-${index + 1}`,
-      patientName: `${person.first} ${person.last}`,
-      when: at(-14 + index, 10, 0),
-      status: 'completed',
-      reason: 'متابعة نسا',
-      complaint: 'متابعة دورية',
-      diagnosis: index % 2 === 0 ? 'متابعة حمل' : 'التهاب بسيط',
-      medication: index % 2 === 0 ? 'حمض الفوليك' : 'فلاجيل 500 مجم',
-      fee: FEE.obgyn,
-    });
-  }
-  const obgynUpcoming = [
-    { day: 0, status: 'confirmed' as const, patients: [0, 1, 2] },
-    { day: 1, status: 'confirmed' as const, patients: [3, 4] },
-    { day: 5, status: 'scheduled' as const, patients: [5, 6] },
-  ];
-  for (const slot of obgynUpcoming) {
-    for (let index = 0; index < slot.patients.length; index += 1) {
-      const patientIndex = slot.patients[index];
-      const person = OBGYN_PATIENTS[patientIndex];
       await addRecord({
-        id: `appt-ob-${slot.day}-${index + 1}`,
-        clinicId: obgynId,
-        clinicName: obgynName,
-        doctorId: fatmaId,
-        doctorName: 'فاطمه محمود فتحي',
-        patientId: `user-demo-ob-p-${patientIndex + 1}`,
-        patientName: `${person.first} ${person.last}`,
-        when: at(slot.day, 10 + index, 0),
-        status: slot.status,
-        reason: slot.day === 0 ? 'كشف النهاردة' : slot.day === 1 ? 'كشف بكرة' : 'كشف قادم',
-        fee: FEE.obgyn,
+        id: `appt-${spec.id}-next-${p + 1}`,
+        clinicId,
+        clinicName,
+        doctorId: doctor.id,
+        doctorName: doctor.name,
+        patientId,
+        patientName: `${personRow.first} ${personRow.last}`,
+        when: at(p === 0 ? 0 : p === 1 ? 1 : 3, 10 + p, 0),
+        status: p < 2 ? 'confirmed' : 'scheduled',
+        reason: p === 0 ? 'كشف النهاردة' : p === 1 ? 'كشف بكرة' : 'كشف قادم',
+        fee,
       });
+      patientAccounts.push({ name: `${personRow.first} ${personRow.last}`, phone: patientPhone });
     }
-  }
 
-  const urologyId = 'clinic-test-urology';
-  const urologyName = 'عيادة إسلام شعبان';
-  const eslamId = 'user-demo-eslam';
-  await addUser({
-    id: eslamId,
-    localPhone: '01005188116',
-    kind: 'owner',
-    firstName: 'إسلام',
-    lastName: 'شعبان',
-    gender: 'male',
-    passwordHash,
-  });
-  await addClinic({
-    id: urologyId,
-    name: urologyName,
-    localPhone: '01005188116',
-    specialty: 'Urology',
-    ownerId: eslamId,
-    fee: FEE.urology,
-  });
-  await addMembership(eslamId, urologyId, 'admin');
-  await addMembership(eslamId, urologyId, 'doctor');
-  await addDoctor({
-    id: eslamId,
-    clinicId: urologyId,
-    clinicName: urologyName,
-    localPhone: '01005188116',
-    firstName: 'إسلام',
-    lastName: 'شعبان',
-    specialty: 'Urology',
-    gender: 'male',
-    years: 12,
-  });
-  await addUser({
-    id: 'user-demo-shaimaa',
-    localPhone: '01018012930',
-    kind: 'secretary',
-    firstName: 'شيماء',
-    lastName: 'السيد',
-    gender: 'female',
-    passwordHash,
-  });
-  await addMembership('user-demo-shaimaa', urologyId, 'secretary');
-
-  const urologyDiagnoses = ['حصوة حالب', 'التهاب مجرى بول', 'تضخم بروستاتا', 'متابعة بعد منظار'];
-  const urologyMeds = ['روسيفاج 500', 'بروفين 400', 'تامسولوسين', 'سيبروفلوكساسين 500'];
-  for (let index = 0; index < UROLOGY_PATIENTS.length; index += 1) {
-    const person = UROLOGY_PATIENTS[index];
-    const suffix = String(201 + index);
-    await addPatient({
-      id: `user-demo-ur-p-${index + 1}`,
-      clinicId: urologyId,
-      localPhone: `01000000${suffix}`,
-      firstName: person.first,
-      lastName: person.last,
-      gender: person.gender,
-      birth: person.birth,
-      blood: BLOOD[index],
-      passwordHash,
-    });
-    await addRecord({
-      id: `appt-ur-past-${index + 1}`,
-      clinicId: urologyId,
-      clinicName: urologyName,
-      doctorId: eslamId,
-      doctorName: 'إسلام شعبان',
-      patientId: `user-demo-ur-p-${index + 1}`,
-      patientName: `${person.first} ${person.last}`,
-      when: at(-16 + index, 11, 0),
-      status: 'completed',
-      reason: 'متابعة مسالك',
-      complaint: 'ألم ومتابعة',
-      diagnosis: urologyDiagnoses[index % urologyDiagnoses.length],
-      medication: urologyMeds[index % urologyMeds.length],
-      fee: FEE.urology,
+    accounts.push({
+      specialty: spec.nameAr,
+      clinic: clinicName,
+      fee,
+      password: PASSWORD,
+      ownerDoctor: { name: `${owner.first} ${owner.last}`, phone: ownerPhone, roles: 'admin + doctor' },
+      doctor: { name: `${extra.first} ${extra.last}`, phone: extraPhone },
+      secretary: { name: `${secretary[0]} ${secretary[1]}`, phone: secretaryPhone },
+      patients: patientAccounts,
     });
   }
-  const urologyUpcoming = [
-    { day: 0, status: 'confirmed' as const, patients: [0, 1, 2] },
-    { day: 1, status: 'confirmed' as const, patients: [3, 4] },
-    { day: 3, status: 'scheduled' as const, patients: [5, 6] },
-  ];
-  for (const slot of urologyUpcoming) {
-    for (let index = 0; index < slot.patients.length; index += 1) {
-      const patientIndex = slot.patients[index];
-      const person = UROLOGY_PATIENTS[patientIndex];
-      await addRecord({
-        id: `appt-ur-${slot.day}-${index + 1}`,
-        clinicId: urologyId,
-        clinicName: urologyName,
-        doctorId: eslamId,
-        doctorName: 'إسلام شعبان',
-        patientId: `user-demo-ur-p-${patientIndex + 1}`,
-        patientName: `${person.first} ${person.last}`,
-        when: at(slot.day, 12 + index, 0),
-        status: slot.status,
-        reason: slot.day === 0 ? 'كشف النهاردة' : slot.day === 1 ? 'كشف بكرة' : 'كشف قادم',
-        fee: FEE.urology,
-      });
-    }
-  }
+
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  writeFileSync(path.join(here, '..', 'demo-accounts.json'), JSON.stringify({ password: PASSWORD, accounts }, null, 2));
 }
 
 const calledDirectly = process.argv[1]?.replace(/\\/g, '/').endsWith('demo-clinics.ts');

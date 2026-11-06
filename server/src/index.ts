@@ -7,8 +7,8 @@ import cors from 'cors';
 import express from 'express';
 import { z } from 'zod';
 
-import { getClinic, listClinicsForUser, searchClinics, updateClinic, deactivateClinic, addOwnerClinic, approveClinic, listPendingClinics, listClinicCities } from './clinics.js';
-import { migrate, seedDemo } from './db.js';
+import { getClinic, listClinicsForUser, searchClinics, updateClinic, deactivateClinic, addOwnerClinic, approveClinic, listPendingClinics, listClinicCities, ensureClinicPhotos } from './clinics.js';
+import { migrate } from './db.js';
 import { seedDemoClinics } from './demo-clinics.js';
 import {
   callNextAppointment,
@@ -28,6 +28,7 @@ import { getAvailability, getDoctor, listDoctors, updateAvailability } from './d
 import { uploadsRoot } from './files.js';
 import {
   createPatient,
+  firstStaffClinicId,
   getMyPatient,
   getPatient,
   listPatients,
@@ -367,24 +368,38 @@ async function requireUser(req: express.Request, res: express.Response) {
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const opsDir = path.join(here, '..', 'public', 'ops');
+const siteDir = path.join(here, '..', 'public', 'site');
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '12mb' }));
 app.use('/uploads', express.static(uploadsRoot));
 app.use('/api/v1/ops', opsRouter);
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(siteDir, 'index.html'));
+});
 app.use(
-  '/ops',
-  express.static(opsDir, {
+  '/site',
+  express.static(siteDir, {
     setHeaders(res, filePath) {
       if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
       else res.setHeader('Cache-Control', 'public, max-age=86400');
     },
   }),
 );
-app.get('/ops', (_req, res) => {
+app.get(['/ops', '/ops/'], (_req, res) => {
   res.sendFile(path.join(opsDir, 'index.html'));
 });
+app.use(
+  '/ops',
+  express.static(opsDir, {
+    index: false,
+    setHeaders(res, filePath) {
+      if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+      else res.setHeader('Cache-Control', 'public, max-age=86400');
+    },
+  }),
+);
 app.get('/favicon.ico', (_req, res) => {
   res.sendFile(path.join(opsDir, 'logo-yacoub.png'));
 });
@@ -867,14 +882,14 @@ app.get('/api/v1/patients', async (req, res) => {
     res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Invalid patient search' });
     return;
   }
-  const clinicId = clinicFromRequest(req, parsed.data.clinicId);
-  if (!clinicId) {
-    res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Clinic is required' });
-    return;
-  }
   try {
     const user = await requireUser(req, res);
     if (!user) return;
+    const clinicId = clinicFromRequest(req, parsed.data.clinicId) || (await firstStaffClinicId(user.id));
+    if (!clinicId) {
+      res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Clinic is required' });
+      return;
+    }
     const result = await listPatients(user.id, {
       clinicId,
       search: parsed.data.search,
@@ -2115,10 +2130,12 @@ app.post('/api/v1/children/:id/doses', async (req, res) => {
 const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
+await seedDemoClinics();
 await ensurePlatformAdmin();
-if (seedDemo) await seedDemoClinics();
+await ensureClinicPhotos();
 
 app.listen(port, () => {
   console.log(`Yacoub API listening on http://localhost:${port}/api/v1`);
+  console.log(`Website: http://localhost:${port}/`);
   console.log(`Platform dashboard: http://localhost:${port}/ops`);
 });
