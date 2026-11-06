@@ -154,16 +154,20 @@ async function wipe(): Promise<void> {
     'refresh_tokens',
     'login_otps',
     'password_resets',
-    'users',
     'clinics',
   ];
-  for (const table of tables) {
-    if (table === 'users') {
-      await db.query(`DELETE FROM users WHERE COALESCE(is_platform_admin, false) = false`);
-    } else {
-      await db.query(`DELETE FROM ${table}`);
+  try {
+    await db.query(`TRUNCATE TABLE ${tables.join(', ')} CASCADE`);
+  } catch {
+    for (const table of tables) {
+      try {
+        await db.query(`DELETE FROM ${table}`);
+      } catch (error) {
+        console.warn(`wipe skipped ${table}:`, error instanceof Error ? error.message : error);
+      }
     }
   }
+  await db.query(`DELETE FROM users WHERE COALESCE(is_platform_admin, false) = false`);
 }
 
 async function addUser(input: {
@@ -416,9 +420,9 @@ async function addRecord(input: {
 
 export async function seedDemoClinics(options?: { force?: boolean }): Promise<void> {
   const wanted = SPECIALTIES.map((spec) => `clinic-spec-${spec.id}`);
-  const existing = await db.query<{ id: string }>(`SELECT id FROM clinics WHERE id LIKE 'clinic-spec-%'`);
+  const existing = await db.query<{ id: string }>(`SELECT id FROM clinics`);
   const have = new Set(existing.rows.map((row) => row.id));
-  if (!options?.force && wanted.length === have.size && wanted.every((id) => have.has(id))) return;
+  if (!options?.force && have.size === wanted.length && wanted.every((id) => have.has(id))) return;
 
   await wipe();
   const passwordHash = await bcrypt.hash(PASSWORD, 10);

@@ -2138,5 +2138,11 @@ app.listen(port, () => {
   console.log(`Platform dashboard: http://localhost:${port}/ops`);
 });
 
-await seedDemoClinics();
-await ensureClinicPhotos();
+try {
+  console.log('Seeding demo clinics…');
+  await seedDemoClinics();
+  await ensureClinicPhotos();
+  console.log('Demo clinics ready');
+} catch (error) {
+  console.error('Demo seed failed', error);
+}
