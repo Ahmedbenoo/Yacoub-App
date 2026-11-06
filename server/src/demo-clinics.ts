@@ -9,74 +9,25 @@ import { db } from './db.js';
 
 const PASSWORD = 'password123';
 const SHARE = 60;
-const SEED_MARKER = 'clinic-spec-generalMedicine';
 
 type Gender = 'male' | 'female';
 
 const SPECIALTIES: { id: string; nameEn: string; nameAr: string }[] = [
   { id: 'generalMedicine', nameEn: 'General Medicine', nameAr: 'طب عام' },
-  { id: 'familyMedicine', nameEn: 'Family Medicine', nameAr: 'طب الأسرة' },
-  { id: 'internalMedicine', nameEn: 'Internal Medicine', nameAr: 'باطنة' },
-  { id: 'cardiology', nameEn: 'Cardiology', nameAr: 'قلب' },
-  { id: 'pediatricCardiology', nameEn: 'Pediatric Cardiology', nameAr: 'قلب أطفال' },
-  { id: 'dermatology', nameEn: 'Dermatology', nameAr: 'جلدية' },
-  { id: 'dermatologyCosmetology', nameEn: 'Dermatology and Cosmetology', nameAr: 'جلدية وتجميل' },
-  { id: 'pediatrics', nameEn: 'Pediatrics', nameAr: 'أطفال' },
-  { id: 'neonatology', nameEn: 'Neonatology', nameAr: 'حديثي الولادة' },
-  { id: 'orthopedics', nameEn: 'Orthopedics', nameAr: 'عظام' },
-  { id: 'obstetricsGynecology', nameEn: 'Obstetrics and Gynecology', nameAr: 'نساء وتوليد' },
-  { id: 'fertility', nameEn: 'Fertility', nameAr: 'خصوبة' },
-  { id: 'ent', nameEn: 'ENT', nameAr: 'أنف وأذن وحنجرة' },
-  { id: 'ophthalmology', nameEn: 'Ophthalmology', nameAr: 'عيون' },
-  { id: 'optometry', nameEn: 'Optometry', nameAr: 'بصريات' },
-  { id: 'dentistry', nameEn: 'Dentistry', nameAr: 'أسنان' },
-  { id: 'orthodontics', nameEn: 'Orthodontics', nameAr: 'تقويم أسنان' },
-  { id: 'pediatricDentistry', nameEn: 'Pediatric Dentistry', nameAr: 'أسنان أطفال' },
-  { id: 'oralSurgery', nameEn: 'Oral and Maxillofacial Surgery', nameAr: 'جراحة وجه وفكين' },
-  { id: 'neurology', nameEn: 'Neurology', nameAr: 'مخ وأعصاب' },
-  { id: 'neurosurgery', nameEn: 'Neurosurgery', nameAr: 'جراحة مخ وأعصاب' },
-  { id: 'psychiatry', nameEn: 'Psychiatry', nameAr: 'طب نفسي' },
-  { id: 'clinicalPsychology', nameEn: 'Clinical Psychology', nameAr: 'علم نفس' },
-  { id: 'urology', nameEn: 'Urology', nameAr: 'مسالك بولية' },
-  { id: 'andrology', nameEn: 'Andrology', nameAr: 'ذكورة' },
-  { id: 'gastroenterology', nameEn: 'Gastroenterology', nameAr: 'جهاز هضمي' },
-  { id: 'hepatology', nameEn: 'Hepatology', nameAr: 'كبد' },
-  { id: 'pulmonology', nameEn: 'Pulmonology', nameAr: 'صدر' },
-  { id: 'endocrinology', nameEn: 'Endocrinology', nameAr: 'غدد صماء' },
-  { id: 'nephrology', nameEn: 'Nephrology', nameAr: 'كلى' },
-  { id: 'rheumatology', nameEn: 'Rheumatology', nameAr: 'روماتيزم' },
-  { id: 'hematology', nameEn: 'Hematology', nameAr: 'أمراض دم' },
-  { id: 'oncology', nameEn: 'Oncology', nameAr: 'أورام' },
-  { id: 'allergyImmunology', nameEn: 'Allergy and Immunology', nameAr: 'حساسية ومناعة' },
-  { id: 'infectiousDiseases', nameEn: 'Infectious Diseases', nameAr: 'أمراض معدية' },
   { id: 'generalSurgery', nameEn: 'General Surgery', nameAr: 'جراحة عامة' },
-  { id: 'pediatricSurgery', nameEn: 'Pediatric Surgery', nameAr: 'جراحة أطفال' },
-  { id: 'plasticSurgery', nameEn: 'Plastic Surgery', nameAr: 'جراحة تجميل' },
-  { id: 'vascularSurgery', nameEn: 'Vascular Surgery', nameAr: 'جراحة أوعية دموية' },
-  { id: 'cardiothoracicSurgery', nameEn: 'Cardiothoracic Surgery', nameAr: 'جراحة قلب وصدر' },
-  { id: 'bariatricSurgery', nameEn: 'Bariatric Surgery', nameAr: 'جراحة سمنة' },
-  { id: 'physiotherapy', nameEn: 'Physiotherapy', nameAr: 'علاج طبيعي' },
+  { id: 'dentistry', nameEn: 'Dentistry', nameAr: 'أسنان' },
+  { id: 'internalMedicine', nameEn: 'Internal Medicine', nameAr: 'باطنة' },
+  { id: 'urology', nameEn: 'Urology', nameAr: 'مسالك بولية' },
+  { id: 'obstetricsGynecology', nameEn: 'Obstetrics and Gynecology', nameAr: 'نساء وتوليد' },
+  { id: 'neonatology', nameEn: 'Neonatology', nameAr: 'حديثي الولادة' },
+  { id: 'pediatrics', nameEn: 'Pediatrics', nameAr: 'أطفال' },
   { id: 'nutrition', nameEn: 'Clinical Nutrition', nameAr: 'تغذية علاجية' },
-  { id: 'radiology', nameEn: 'Radiology', nameAr: 'أشعة' },
-  { id: 'clinicalPathology', nameEn: 'Clinical Pathology', nameAr: 'تحاليل طبية' },
-  { id: 'phoniatrics', nameEn: 'Phoniatrics', nameAr: 'تخاطب' },
-  { id: 'audiology', nameEn: 'Audiology', nameAr: 'سمعيات' },
-  { id: 'painMedicine', nameEn: 'Pain Medicine', nameAr: 'علاج الألم' },
-  { id: 'sportsMedicine', nameEn: 'Sports Medicine', nameAr: 'طب رياضي' },
-  { id: 'geriatrics', nameEn: 'Geriatrics', nameAr: 'طب مسنين' },
-  { id: 'anesthesia', nameEn: 'Anesthesia', nameAr: 'تخدير' },
-  { id: 'emergencyMedicine', nameEn: 'Emergency Medicine', nameAr: 'طوارئ' },
+  { id: 'physiotherapy', nameEn: 'Physiotherapy', nameAr: 'علاج طبيعي' },
 ];
 
-const FEMALE_LEAD = new Set([
-  'obstetricsGynecology',
-  'fertility',
-  'dermatologyCosmetology',
-  'neonatology',
-  'pediatricDentistry',
-]);
+const FEMALE_LEAD = new Set(['obstetricsGynecology', 'neonatology']);
 
-const MALE_LEAD = new Set(['urology', 'andrology', 'cardiothoracicSurgery', 'vascularSurgery']);
+const MALE_LEAD = new Set(['urology', 'generalSurgery']);
 
 const MEN = [
   ['أحمد', 'فؤاد'],
@@ -130,10 +81,10 @@ function mail(local: string, kind: 'owner' | 'doctor' | 'secretary' | 'patient')
   return `${phone(local).replace(/\D/g, '')}@${kind}.clinsync`;
 }
 
-/** New 0159 numbers. Slot 1 owner, 2 extra doctor, 3 secretary, 4–7 patients. */
+/** Fresh 0157 numbers. Slot 1 owner, 2 extra doctor, 3 secretary, 4–7 patients. */
 function specPhone(specIndex: number, slot: number): string {
   const n = 1000000 + specIndex * 20 + slot;
-  return `0159${String(n).slice(-7)}`;
+  return `0157${String(n).slice(-7)}`;
 }
 
 function at(dayOffset: number, hour: number, minute: number): string {
@@ -464,10 +415,10 @@ async function addRecord(input: {
 }
 
 export async function seedDemoClinics(options?: { force?: boolean }): Promise<void> {
-  const existing = await db.query<{ n: number }>(
-    `SELECT count(*)::int AS n FROM clinics WHERE id LIKE 'clinic-spec-%'`,
-  );
-  if (Number(existing.rows[0]?.n ?? 0) >= SPECIALTIES.length && !options?.force) return;
+  const wanted = SPECIALTIES.map((spec) => `clinic-spec-${spec.id}`);
+  const existing = await db.query<{ id: string }>(`SELECT id FROM clinics WHERE id LIKE 'clinic-spec-%'`);
+  const have = new Set(existing.rows.map((row) => row.id));
+  if (!options?.force && wanted.length === have.size && wanted.every((id) => have.has(id))) return;
 
   await wipe();
   const passwordHash = await bcrypt.hash(PASSWORD, 10);
@@ -623,8 +574,12 @@ export async function seedDemoClinics(options?: { force?: boolean }): Promise<vo
     });
   }
 
-  const here = path.dirname(fileURLToPath(import.meta.url));
-  writeFileSync(path.join(here, '..', 'demo-accounts.json'), JSON.stringify({ password: PASSWORD, accounts }, null, 2));
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    writeFileSync(path.join(here, '..', 'demo-accounts.json'), JSON.stringify({ password: PASSWORD, accounts }, null, 2));
+  } catch {
+    // Render's disk is ephemeral; accounts are still inserted.
+  }
 }
 
 const calledDirectly = process.argv[1]?.replace(/\\/g, '/').endsWith('demo-clinics.ts');
