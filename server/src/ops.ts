@@ -5,7 +5,15 @@ import express from 'express';
 
 import { db } from './db.js';
 import { seedDemoClinics } from './demo-clinics.js';
-import { login, normalizePhone, userFromAccessToken, userPlatformRole, type PlatformRole } from './users.js';
+import {
+  login,
+  normalizePhone,
+  setDemoStaffPasswords,
+  setPasswordByPhone,
+  userFromAccessToken,
+  userPlatformRole,
+  type PlatformRole,
+} from './users.js';
 
 function httpError(status: number, code: string, message: string): Error {
   return Object.assign(new Error(message), { status, code });
@@ -904,6 +912,30 @@ opsRouter.post('/patients/:id/deactivate', async (req, res) => {
     res.json({ success: true, data: await setPatientActiveOps(req.params.id, false) });
   } catch (error) {
     sendError(res, error, 'تعذر إيقاف الملف');
+  }
+});
+
+opsRouter.post('/users/set-password', async (req, res) => {
+  if (!requireSuper(res)) return;
+  const phone = typeof req.body?.phone === 'string' ? req.body.phone : '';
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+  if (!phone || password.length < 8) {
+    res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Phone and password are required' });
+    return;
+  }
+  try {
+    res.json({ success: true, data: await setPasswordByPhone(phone, password) });
+  } catch (error) {
+    sendError(res, error, 'تعذر تحديث كلمة المرور');
+  }
+});
+
+opsRouter.post('/set-demo-passwords', async (_req, res) => {
+  if (!requireSuper(res)) return;
+  try {
+    res.json({ success: true, data: await setDemoStaffPasswords('password123') });
+  } catch (error) {
+    sendError(res, error, 'تعذر تحديث كلمات مرور الحسابات التجريبية');
   }
 });
 

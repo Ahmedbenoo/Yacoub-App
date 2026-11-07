@@ -1,11 +1,9 @@
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 
 import bcrypt from 'bcryptjs';
 
 import { db } from './db.js';
 import { deliverWhatsApp, digitsPhone } from './whatsapp.js';
-
-const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
 
 function httpError(status: number, code: string, message: string): Error {
   return Object.assign(new Error(message), { status, code });
@@ -32,8 +30,7 @@ function staffEmail(phone: string, kind: 'doctor' | 'secretary'): string {
 }
 
 function password(): string {
-  const bytes = randomBytes(10);
-  return Array.from(bytes, (value) => ALPHABET[value % ALPHABET.length]).join('');
+  return 'password123';
 }
 
 async function rolesAt(userId: string, clinicId: string): Promise<string[]> {

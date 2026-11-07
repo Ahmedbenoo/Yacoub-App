@@ -361,6 +361,25 @@ export async function login(identifier: string, password: string) {
   return issueSession(row);
 }
 
+export async function setPasswordByPhone(phoneInput: string, nextPassword: string): Promise<{ phone: string }> {
+  const row = await findByIdentifier(phoneInput);
+  if (!row) throw httpError(404, 'USER_NOT_FOUND', 'No account found for this phone');
+  await db.query('UPDATE users SET password_hash = $2, updated_at = now() WHERE id = $1', [
+    row.id,
+    await bcrypt.hash(nextPassword, 10),
+  ]);
+  return { phone: row.phone ?? phoneInput };
+}
+
+export async function setDemoStaffPasswords(nextPassword: string): Promise<{ updated: number }> {
+  const hash = await bcrypt.hash(nextPassword, 10);
+  const result = await db.query<{ id: string }>(
+    'UPDATE users SET password_hash = $1, updated_at = now() WHERE phone LIKE $2 RETURNING id',
+    [hash, '+20157%'],
+  );
+  return { updated: result.rows.length };
+}
+
 export async function refreshSession(refreshToken: string) {
   const stored = await db.query<{ id: string; user_id: string; expires_at: string }>(
     `SELECT id, user_id, expires_at FROM refresh_tokens WHERE token_hash = $1`,
