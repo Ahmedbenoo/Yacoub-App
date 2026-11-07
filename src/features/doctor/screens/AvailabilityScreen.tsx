@@ -4,10 +4,9 @@ import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { AvailabilityDayCard } from '@/features/doctor/components/AvailabilityDayCard';
-import { formatTime } from '@/features/doctor/lib/formatters';
 import { useUpdateAvailabilityMutation } from '@/features/doctor/hooks';
 import { useDoctorAvailabilityQuery } from '@/features/catalog/doctors/hooks/useDoctorsQueries';
-import { Select } from '@/shared/components/form/Select';
+import { TimePicker } from '@/shared/components/form/TimePicker';
 import { Header } from '@/shared/components/layout/Header';
 import { Screen } from '@/shared/components/layout/Screen';
 import { Button } from '@/shared/components/ui/Button';
@@ -24,11 +23,6 @@ const SLOT_MINUTES = [15, 20, 30, 45, 60];
 const WEEK_DAYS = [0, 1, 2, 3, 4, 5, 6];
 const DEFAULT_START = '09:00';
 const DEFAULT_END = '17:00';
-
-const TIME_OPTIONS = Array.from({ length: 15 }, (_, index) => {
-  const value = `${String(index + 8).padStart(2, '0')}:00`;
-  return { value, label: `\u2066${formatTime(value)}\u2069` };
-});
 
 function hoursAreValid(startTime: string, endTime: string): boolean {
   return startTime < endTime;
@@ -159,20 +153,10 @@ export function AvailabilityScreen({ doctorId }: { doctorId: string }) {
           </Text>
           <View className="flex-row gap-3">
             <View className="min-w-0 flex-1">
-              <Select
-                label={t('availability.from')}
-                value={sharedStart}
-                options={TIME_OPTIONS}
-                onChange={setSharedStart}
-              />
+              <TimePicker label={t('availability.from')} value={sharedStart} onChange={setSharedStart} />
             </View>
             <View className="min-w-0 flex-1">
-              <Select
-                label={t('availability.to')}
-                value={sharedEnd}
-                options={TIME_OPTIONS}
-                onChange={setSharedEnd}
-              />
+              <TimePicker label={t('availability.to')} value={sharedEnd} onChange={setSharedEnd} />
             </View>
           </View>
           <Button
@@ -192,7 +176,6 @@ export function AvailabilityScreen({ doctorId }: { doctorId: string }) {
               dayOfWeek={day}
               startTime={window?.startTime}
               endTime={window?.endTime}
-              timeOptions={TIME_OPTIONS}
               onToggle={() => toggleDay(day)}
               onChangeHours={(startTime, endTime) => changeDay(day, startTime, endTime)}
               disabled={updateMutation.isPending}

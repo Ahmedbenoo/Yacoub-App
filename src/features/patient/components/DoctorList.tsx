@@ -122,6 +122,8 @@ export function DoctorList({
       data={doctors}
       keyExtractor={(item) => item.id}
       className="flex-1"
+      numColumns={2}
+      columnWrapperClassName="gap-3"
       ListHeaderComponent={filterChips}
       contentContainerClassName="gap-3 pb-8"
       keyboardShouldPersistTaps="handled"
@@ -131,6 +133,8 @@ export function DoctorList({
       renderItem={({ item }) => (
         <DoctorCard
           doctor={item}
+          variant="tile"
+          className="w-full min-w-0 flex-1"
           href={hrefForDoctor?.(item)}
           onPress={onPressDoctor ? () => onPressDoctor(item) : undefined}
         />

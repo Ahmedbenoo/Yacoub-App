@@ -257,6 +257,17 @@ export async function ensurePatientForAccount(input: {
   );
 }
 
+export async function firstStaffClinicId(userId: string): Promise<string> {
+  const result = await db.query<{ clinic_id: string }>(
+    `SELECT clinic_id FROM memberships
+     WHERE user_id = $1 AND role = ANY($2::text[])
+     ORDER BY created_at
+     LIMIT 1`,
+    [userId, [...STAFF_ROLES]],
+  );
+  return result.rows[0]?.clinic_id ?? '';
+}
+
 export async function listPatients(
   userId: string,
   filters: { clinicId: string; search?: string; includeInactive?: boolean; page?: number; limit?: number },

@@ -12,6 +12,10 @@
   "back": "رجوع",
   "skip": "تخطي",
   "done": "تم",
+  "hour": "ساعة",
+  "minute": "دقيقة",
+  "showPassword": "إظهار كلمة المرور",
+  "hidePassword": "إخفاء كلمة المرور",
   "comingSoon": "قريباً",
   "comingSoonDescription": "هذه الميزة قيد التطوير وستكون متاحة في إصدار لاحق.",
   "error": {

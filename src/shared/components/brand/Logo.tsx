@@ -1,9 +1,11 @@
 import { Image, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { useResolvedColorScheme } from '@/shared/hooks/useTheme';
 import { cn } from '@/shared/lib/utils';
 
-const logoSource = require('../../../../assets/images/logo-yacoub.png');
+const logoLight = require('../../../../assets/images/logo-yacoub.png');
+const logoOnDark = require('../../../../assets/images/logo-yacoub-on-dark.png');
 
 /** Source asset is 601×221. */
 const LOGO_ASPECT = 601 / 221;
@@ -38,6 +40,7 @@ export function Logo({
   maxVisibleHeight,
 }: LogoProps) {
   const { t } = useTranslation('common');
+  const isDark = useResolvedColorScheme() === 'dark';
   const height = maxVisibleHeight ?? sizeMap[size].height;
   const width = fillWidth ? undefined : height * LOGO_ASPECT;
 
@@ -54,11 +57,11 @@ export function Logo({
       accessibilityLabel={t('appName')}
     >
       <Image
-        source={logoSource}
+        source={isDark ? logoOnDark : logoLight}
         style={
           fillWidth
-            ? { width: '100%', height, maxHeight: '100%' }
-            : { height, width }
+            ? { width: '100%', height, maxHeight: '100%', backgroundColor: 'transparent' }
+            : { height, width, backgroundColor: 'transparent' }
         }
         resizeMode="contain"
       />

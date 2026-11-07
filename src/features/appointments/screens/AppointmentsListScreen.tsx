@@ -7,8 +7,8 @@ import { AppointmentList } from '@/features/appointments/components/AppointmentL
 import { useAppointmentsQuery } from '@/features/appointments/hooks/useAppointmentQueries';
 import { NursingOrderCard } from '@/features/nursing/components/NursingOrderCard';
 import { usePatientNursingRequestsQuery } from '@/features/nursing/hooks/useNursingQueries';
+import { GuestAccountCard } from '@/features/patient/components/GuestAccountCard';
 import { EmptyState } from '@/shared/components/feedback/EmptyState';
-import { GuestPrompt } from '@/shared/components/feedback/GuestPrompt';
 import { Spinner } from '@/shared/components/feedback/Spinner';
 import { Row } from '@/shared/components/layout/Row';
 import { Screen } from '@/shared/components/layout/Screen';
@@ -166,8 +166,11 @@ export function AppointmentsListScreen({
 
   if (viewerRole === UserRole.PATIENT && !user) {
     return (
-      <Screen>
-        <GuestPrompt title={t('guest.title')} description={t('guest.description')} />
+      <Screen className="pt-4">
+        <Text variant="titleLg" className="mb-4">
+          {t('title')}
+        </Text>
+        <GuestAccountCard />
       </Screen>
     );
   }

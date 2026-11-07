@@ -65,6 +65,8 @@ export function ClinicList({
       data={clinics}
       keyExtractor={(item) => item.id}
       className="flex-1"
+      numColumns={2}
+      columnWrapperClassName="gap-3"
       contentContainerClassName="gap-3 pb-8"
       keyboardShouldPersistTaps="handled"
       refreshControl={
@@ -73,6 +75,8 @@ export function ClinicList({
       renderItem={({ item }) => (
         <ClinicCard
           clinic={item}
+          variant="tile"
+          className="w-full min-w-0 flex-1"
           href={hrefForClinic?.(item)}
           onPress={onPressClinic ? () => onPressClinic(item) : undefined}
         />

@@ -20,6 +20,8 @@
     "error": "Could not load patient data",
     "viewProfile": "View patient profile",
     "ageGender": "Age & gender",
+    "age": "Age",
+    "ageYears": "{{age}} years",
     "bloodType": "Blood type",
     "phone": "Phone",
     "email": "Email",

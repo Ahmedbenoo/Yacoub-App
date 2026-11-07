@@ -37,19 +37,22 @@
     "createAccount": "إنشاء حساب",
     "signIn": "عندك حساب؟ ادخل",
     "pathNursingTitle": "اطلب تمريض منزلي",
-    "pathNursingDescription": "زيارات سريعة أو رعاية بالشفت، بأسعار واضحة",
-    "pathHomeDoctorTitle": "اطلب دكتور في البيت",
-    "pathHomeDoctorDescription": "زيارة خاصة في عنوانك، من غير حجز عيادة",
+    "pathNursingDescription": "الممرض يجي لحد البيت",
+    "pathNursingBadge": "لحد البيت",
+    "pathHomeDoctorTitle": "اطلب دكتور الآن",
+    "pathHomeDoctorDescription": "كشف خاص في عنوانك",
+    "pathHomeDoctorBadge": "كشف فوري",
     "searchCardTitle": "دور على عياده",
     "searchCardDescription": "ابحث عن اطباء وعيادات واحجز فى ثوانى",
     "pathDoctorTitle": "دور على دكتور",
     "pathDoctorDescription": "شوف التخصص واحجز كشف",
+    "moreClinicsHint": "المزيد",
     "pathClinicTitle": "دور على عيادة",
     "pathClinicDescription": "عيادات ومراكز تقدر تزورها",
     "recordsTitle": "سجلك الطبي",
     "recordsDescription": "سجّل برقم الموبايل عشان تشوف الزيارات والوصفات.",
     "profileTitle": "حسابك",
-    "profileDescription": "ادخل برقم الموبايل أو من دخول الموظفين."
+    "profileDescription": "سجّل برقم الموبايل عشان تحجز وتتابع مواعيدك."
   },
   "specialties": {
     "generalMedicine": "طب عام",
@@ -127,8 +130,9 @@
     "hours": "مواعيد العمل",
     "fee": "سعر الكشف",
     "feeValue": "{{value}} ج.م",
-    "openMap": "افتح الخريطة",
-    "doctors": "أطباء هذه العيادة",
+    "openMap": "الخريطة",
+    "call": "اتصل",
+    "doctors": "أطباء العيادة",
     "error": "تعذر تحميل ملف العيادة"
   },
   "search": {

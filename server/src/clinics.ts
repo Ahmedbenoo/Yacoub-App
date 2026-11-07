@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { clinicCoverList, defaultClinicCover } from './clinic-covers.js';
 import { db } from './db.js';
 import { absoluteUrl, storeImage, writeSeedImage } from './files.js';
 
@@ -58,6 +59,8 @@ export type PublicClinic = {
   consultationFee?: number;
   openingHours?: string;
   photoUrls?: string[];
+  rating?: number;
+  reviewCount?: number;
   ownerUserId?: string;
   placeKind?: 'clinic' | 'center';
   createdAt: string;
@@ -93,7 +96,11 @@ function readPhotos(value: string | null): string[] {
   }
 }
 
-export function toPublicClinic(row: ClinicRow, baseUrl: string): PublicClinic {
+export function toPublicClinic(
+  row: ClinicRow,
+  baseUrl: string,
+  stats?: { rating?: number; reviewCount?: number },
+): PublicClinic {
   const photos = readPhotos(row.photo_urls).map((url) => absoluteUrl(baseUrl, url)).filter((url): url is string => Boolean(url));
   return {
     id: row.id,
@@ -120,7 +127,9 @@ export function toPublicClinic(row: ClinicRow, baseUrl: string): PublicClinic {
     locationUrl: row.location_url ?? undefined,
     consultationFee: row.consultation_fee ?? undefined,
     openingHours: row.opening_hours ?? undefined,
-    photoUrls: photos,
+    photoUrls: photos.length ? photos : [defaultClinicCover(row.id, row.specialty)],
+    rating: stats?.rating ?? 0,
+    reviewCount: stats?.reviewCount ?? 0,
     ownerUserId: row.owner_user_id ?? undefined,
     placeKind: row.place_kind === 'center' ? 'center' : 'clinic',
     createdAt: new Date(row.created_at).toISOString(),
@@ -131,6 +140,30 @@ export function toPublicClinic(row: ClinicRow, baseUrl: string): PublicClinic {
 async function clinicById(id: string): Promise<ClinicRow | undefined> {
   const result = await db.query<ClinicRow>('SELECT * FROM clinics WHERE id = $1', [id]);
   return result.rows[0];
+}
+
+async function ratingsByClinicIds(ids: string[]): Promise<Map<string, { rating: number; reviewCount: number }>> {
+  const map = new Map<string, { rating: number; reviewCount: number }>();
+  if (!ids.length) return map;
+  const placeholders = ids.map((_, index) => `$${index + 1}`).join(', ');
+  const result = await db.query<{ clinic_id: string; rating: number | string; review_count: number }>(
+    `SELECT clinic_id,
+            COALESCE(ROUND((SUM(rating * GREATEST(review_count, 1)) / NULLIF(SUM(GREATEST(review_count, 1)), 0))::numeric, 1), 0) AS rating,
+            COALESCE(SUM(review_count), 0)::int AS review_count
+     FROM doctors
+     WHERE clinic_id IN (${placeholders})
+     GROUP BY clinic_id`,
+    ids,
+  );
+  for (const row of result.rows) {
+    map.set(row.clinic_id, { rating: Number(row.rating), reviewCount: Number(row.review_count) });
+  }
+  return map;
+}
+
+async function toPublicClinics(rows: ClinicRow[], baseUrl: string): Promise<PublicClinic[]> {
+  const stats = await ratingsByClinicIds(rows.map((row) => row.id));
+  return rows.map((row) => toPublicClinic(row, baseUrl, stats.get(row.id)));
 }
 
 export async function seedClinicDetails(): Promise<void> {
@@ -254,13 +287,14 @@ export async function listClinicsForUser(userId: string, baseUrl: string): Promi
      ORDER BY created_at`,
     [userId],
   );
-  return result.rows.map((row) => toPublicClinic(row, baseUrl));
+  return toPublicClinics(result.rows, baseUrl);
 }
 
 export async function getClinic(id: string, baseUrl: string): Promise<PublicClinic> {
   const row = await clinicById(id);
   if (!row || !row.is_active) throw httpError(404, 'NOT_FOUND', 'Clinic not found');
-  return toPublicClinic(row, baseUrl);
+  const [clinic] = await toPublicClinics([row], baseUrl);
+  return clinic;
 }
 
 export async function searchClinics(
@@ -290,7 +324,7 @@ export async function searchClinics(
     [...params, limit, (page - 1) * limit],
   );
   return {
-    data: result.rows.map((row) => toPublicClinic(row, baseUrl)),
+    data: await toPublicClinics(result.rows, baseUrl),
     meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
   };
 }
@@ -386,8 +420,28 @@ export async function addOwnerClinic(
      ON CONFLICT (user_id, clinic_id, role) DO NOTHING`,
     [`mem-${id}`, userId, id],
   );
+  await db.query('UPDATE clinics SET photo_urls = $2 WHERE id = $1', [
+    id,
+    JSON.stringify(clinicCoverList(id, input.specialty)),
+  ]);
   const row = await clinicById(id);
   return toPublicClinic(row!, baseUrl);
+}
+
+export async function ensureClinicPhotos(): Promise<void> {
+  const result = await db.query<ClinicRow>('SELECT id, specialty, photo_urls FROM clinics');
+  for (const row of result.rows) {
+    if (readPhotos(row.photo_urls).length) continue;
+    await db.query('UPDATE clinics SET photo_urls = $2, updated_at = now() WHERE id = $1', [
+      row.id,
+      JSON.stringify(clinicCoverList(row.id, row.specialty)),
+    ]);
+  }
+  await db.query(
+    `UPDATE doctors
+     SET rating = 4.7, review_count = 28, updated_at = now()
+     WHERE review_count = 0 AND clinic_id LIKE 'clinic-test-%'`,
+  );
 }
 
 export async function listPendingClinics(userId: string, baseUrl: string): Promise<PublicClinic[]> {

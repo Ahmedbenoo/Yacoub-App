@@ -1,4 +1,5 @@
-import { View } from 'react-native';
+import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
+import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -10,7 +11,6 @@ import { useDoctorsQuery } from '@/features/catalog/doctors/hooks/useDoctorsQuer
 import { SkeletonCard } from '@/shared/components/feedback/Skeleton';
 import { Row } from '@/shared/components/layout/Row';
 import { SectionHeader } from '@/shared/components/layout/SectionHeader';
-import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { Icon, type AppIconName } from '@/shared/components/ui/Icon';
 import { Text } from '@/shared/components/ui/Text';
@@ -34,38 +34,39 @@ const BENEFITS: { icon: AppIconName; titleKey: string; descriptionKey: string }[
   },
 ];
 
+function HomeCardRail({ children }: { children: ReactNode }) {
+  const [railWidth, setRailWidth] = useState(0);
+  const tileWidth = railWidth > 0 ? Math.round((railWidth - 12) / 1.5) : 220;
+
+  return (
+    <ScrollView
+      horizontal
+      nestedScrollEnabled
+      showsHorizontalScrollIndicator={false}
+      contentContainerClassName="gap-3 pe-1"
+      onLayout={(event) => setRailWidth(event.nativeEvent.layout.width)}
+    >
+      {Children.map(children, (child) =>
+        isValidElement(child)
+          ? cloneElement(child as ReactElement<{ tileWidth?: number }>, { tileWidth })
+          : child,
+      )}
+    </ScrollView>
+  );
+}
+
 export function PatientGuestHome() {
   const { t } = useTranslation('patient');
 
   const doctorsQuery = useDoctorsQuery();
   const clinicsQuery = useClinicsSearchQuery();
 
-  const doctors = (doctorsQuery.data?.data ?? []).filter((doctor) => doctor.isActive !== false).slice(0, 3);
-  const clinics = (clinicsQuery.data?.data ?? []).slice(0, 2);
+  const doctors = (doctorsQuery.data?.data ?? []).filter((doctor) => doctor.isActive !== false).slice(0, 8);
+  const clinics = (clinicsQuery.data?.data ?? []).slice(0, 8);
 
   return (
     <View className="gap-4 py-4">
       <Text variant="titleMd">{t('guest.heroTitle')}</Text>
-
-      <Card elevated className="gap-2 p-3">
-        <Text variant="titleSm">{t('guest.accountTitle')}</Text>
-        <Text variant="bodySm" muted>
-          {t('guest.accountDescription')}
-        </Text>
-        <Button
-          title={t('guest.createAccount')}
-          onPress={() => router.push('/(auth)/register')}
-          fullWidth
-          className="h-11 min-h-0"
-        />
-        <Button
-          title={t('guest.signIn')}
-          variant="ghost"
-          onPress={() => router.push('/(auth)/login')}
-          fullWidth
-          className="h-9 min-h-0"
-        />
-      </Card>
 
       <PatientPathChoices isAuthenticated={false} />
 
@@ -77,9 +78,16 @@ export function PatientGuestHome() {
             onAction={() => router.push(getPatientSearchHref({ tab: 'clinics' }))}
           />
           {clinics.length > 0 ? (
-            clinics.map((clinic) => (
-              <ClinicCard key={clinic.id} clinic={clinic} href={getPatientClinicHref(clinic.id)} />
-            ))
+            <HomeCardRail>
+              {clinics.map((clinic) => (
+                <ClinicCard
+                  key={clinic.id}
+                  clinic={clinic}
+                  variant="tile"
+                  href={getPatientClinicHref(clinic.id)}
+                />
+              ))}
+            </HomeCardRail>
           ) : (
             <SkeletonCard />
           )}
@@ -93,9 +101,16 @@ export function PatientGuestHome() {
           onAction={() => router.push(getPatientSearchHref({ tab: 'doctors' }))}
         />
         {doctors.length > 0 ? (
-          doctors.map((doctor) => (
-            <DoctorCard key={doctor.id} doctor={doctor} href={getPatientDoctorHref(doctor.id)} />
-          ))
+          <HomeCardRail>
+            {doctors.map((doctor) => (
+              <DoctorCard
+                key={doctor.id}
+                doctor={doctor}
+                variant="tile"
+                href={getPatientDoctorHref(doctor.id)}
+              />
+            ))}
+          </HomeCardRail>
         ) : doctorsQuery.isFetching ? (
           <View className="gap-3">
             <SkeletonCard />

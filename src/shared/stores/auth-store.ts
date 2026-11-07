@@ -51,30 +51,43 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   setSession: async (session) => {
     await setSecureItem(STORAGE_KEYS.ACCESS_TOKEN, session.accessToken);
     await setSecureItem(STORAGE_KEYS.REFRESH_TOKEN, session.refreshToken);
-    await setSecureItem(STORAGE_KEYS.USER, JSON.stringify(session.user));
 
-    const activeRole = await resolveActiveRole(session.user);
+    const previous = get();
+    const sameUser = previous.user?.id === session.user.id;
+    const clinicId =
+      (sameUser && previous.activeClinicId) || session.user.clinicId || previous.activeClinicId;
+    const resolvedUser = { ...session.user, clinicId };
 
-    await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CLINIC, session.user.clinicId);
+    await setSecureItem(STORAGE_KEYS.USER, JSON.stringify(resolvedUser));
+    const activeRole = await resolveActiveRole(resolvedUser);
+    if (clinicId) {
+      await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CLINIC, clinicId);
+    }
 
     set({
-      user: session.user,
+      user: resolvedUser,
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       isAuthenticated: true,
       activeRole,
-      activeClinicId: session.user.clinicId,
+      activeClinicId: clinicId,
     });
   },
 
   updateUser: async (user) => {
-    await setSecureItem(STORAGE_KEYS.USER, JSON.stringify(user));
-    const activeRole = await resolveActiveRole(user);
+    const previousClinicId = get().activeClinicId;
+    const clinicId = user.clinicId || previousClinicId;
+    const resolvedUser = { ...user, clinicId };
+    await setSecureItem(STORAGE_KEYS.USER, JSON.stringify(resolvedUser));
+    const activeRole = await resolveActiveRole(resolvedUser);
+    if (clinicId) {
+      await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CLINIC, clinicId);
+    }
 
     set({
-      user,
+      user: resolvedUser,
       activeRole,
-      activeClinicId: user.clinicId,
+      activeClinicId: clinicId,
       isAuthenticated: true,
     });
   },

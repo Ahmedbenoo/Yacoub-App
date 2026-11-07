@@ -37,19 +37,22 @@
     "createAccount": "Create account",
     "signIn": "Already have an account? Sign in",
     "pathNursingTitle": "Request home nursing",
-    "pathNursingDescription": "Quick visits or shift care, with clear prices",
-    "pathHomeDoctorTitle": "Request a home doctor",
-    "pathHomeDoctorDescription": "A private visit at your address, separate from a clinic booking",
+    "pathNursingDescription": "A nurse comes to your home",
+    "pathNursingBadge": "At home",
+    "pathHomeDoctorTitle": "Request a doctor now",
+    "pathHomeDoctorDescription": "A private exam at your address",
+    "pathHomeDoctorBadge": "Same day",
     "searchCardTitle": "Find a clinic",
     "searchCardDescription": "Search doctors and clinics and book in seconds",
     "pathDoctorTitle": "Find a doctor",
     "pathDoctorDescription": "See a specialty and book a visit",
+    "moreClinicsHint": "More",
     "pathClinicTitle": "Find a clinic",
     "pathClinicDescription": "Clinics and centers you can visit",
     "recordsTitle": "Your records",
     "recordsDescription": "Sign in with your phone to see visits and prescriptions.",
     "profileTitle": "Your account",
-    "profileDescription": "Sign in with your phone, or use staff login."
+    "profileDescription": "Sign in with your phone to book and track appointments."
   },
   "specialties": {
     "generalMedicine": "General Medicine",
@@ -127,8 +130,9 @@
     "hours": "Opening hours",
     "fee": "Visit fee",
     "feeValue": "{{value}} EGP",
-    "openMap": "Open map",
-    "doctors": "Doctors at this clinic",
+    "openMap": "Map",
+    "call": "Call",
+    "doctors": "Clinic doctors",
     "error": "Could not load clinic profile"
   },
   "search": {

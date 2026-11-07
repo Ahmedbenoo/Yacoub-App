@@ -56,6 +56,8 @@ export interface Clinic extends TenantEntity {
   consultationFee?: number;
   openingHours?: string;
   photoUrls?: string[];
+  rating?: number;
+  reviewCount?: number;
   organizationId?: string;
   ownerUserId?: string;
   placeKind?: 'clinic' | 'center';

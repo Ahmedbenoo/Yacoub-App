@@ -54,23 +54,6 @@ export function SettingsPanel({ showAvatar = true, showAccountCard = true }: Set
 
   return (
     <View className="gap-4 py-4">
-      {!user && (
-        <Card className="gap-3">
-          <Text variant="titleSm">{t('login.staffEntryTitle')}</Text>
-          <Text variant="bodySm" muted>
-            {t('login.staffEntrySubtitle')}
-          </Text>
-          <Pressable
-            onPress={() => router.push('/(auth)/login')}
-            className="items-center justify-center rounded-xl bg-primary-600 py-3 active:opacity-80"
-          >
-            <Text variant="label" className="text-center text-white">
-              {t('login.staffSignIn')}
-            </Text>
-          </Pressable>
-        </Card>
-      )}
-
       {user && showAccountCard && (
         <Card className="gap-3">
           {showAvatar && activeRole !== UserRole.ADMIN ? (
@@ -84,9 +67,6 @@ export function SettingsPanel({ showAvatar = true, showAccountCard = true }: Set
             </Text>
             <Text variant="titleSm" className="text-center">
               {user.firstName} {user.lastName}
-            </Text>
-            <Text variant="bodySm" muted className="text-center">
-              {user.email}
             </Text>
           </View>
           <Pressable

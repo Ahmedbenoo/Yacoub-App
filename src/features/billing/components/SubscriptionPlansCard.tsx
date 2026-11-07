@@ -3,11 +3,11 @@ import { View } from 'react-native';
 import {
   annualPrice,
   formatEgp,
-  SUBSCRIPTION_NOTE,
   SUBSCRIPTION_PLANS,
   type SubscriptionPlanId,
 } from '@/shared/catalog/subscription-plans';
 import { Card } from '@/shared/components/ui/Card';
+import { Icon, type AppIconName } from '@/shared/components/ui/Icon';
 import { Text } from '@/shared/components/ui/Text';
 import { useLocaleStore } from '@/shared/stores';
 
@@ -16,47 +16,67 @@ interface SubscriptionPlansCardProps {
   onlyId?: SubscriptionPlanId;
 }
 
+const PLAN_ICONS: Record<SubscriptionPlanId, AppIconName> = {
+  clinic: 'clinic',
+  center: 'doctors',
+  network: 'star',
+};
+
 export function SubscriptionPlansCard({ activeId, onlyId }: SubscriptionPlansCardProps) {
   const locale = useLocaleStore((state) => state.locale);
   const lang = locale === 'ar' ? 'ar' : 'en';
   const plans = onlyId ? SUBSCRIPTION_PLANS.filter((plan) => plan.id === onlyId) : SUBSCRIPTION_PLANS;
+  const monthLabel = lang === 'ar' ? 'شهر' : 'month';
+  const yearLabel = lang === 'ar' ? 'سنويًا' : 'billed annually';
+  const currentLabel = lang === 'ar' ? 'باقتك الحالية' : 'Current plan';
 
   return (
-    <Card className="items-center gap-3">
-      <Text variant="titleSm" className="w-full text-center" style={{ alignSelf: 'stretch' }}>
-        {lang === 'ar' ? 'أسعار الباقات' : 'Plans'}
-      </Text>
+    <View className="gap-3">
       {plans.map((plan) => {
         const active = plan.id === activeId;
         return (
-          <View
+          <Card
             key={plan.id}
-            className={`w-full items-center gap-1 rounded-xl px-3 py-2 ${active ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+            className={`gap-3 overflow-hidden p-5 ${
+              active ? 'border-[#0F766E] bg-[#F0FDFA] dark:border-primary-500 dark:bg-primary-900/20' : ''
+            }`}
+            style={active ? { borderWidth: 1.5 } : undefined}
           >
-            <Text variant="bodySm" className="w-full text-center" style={{ alignSelf: 'stretch' }}>
-              {plan.name[lang]} — {formatEgp(plan.monthly)} / {lang === 'ar' ? 'شهر' : 'month'}
+            <View className="flex-row items-center gap-3">
+              <View
+                className={`h-11 w-11 items-center justify-center rounded-2xl ${
+                  active ? 'bg-[#0F766E]' : 'bg-[#F0FDFA] dark:bg-primary-900/40'
+                }`}
+              >
+                <Icon name={PLAN_ICONS[plan.id]} size={20} color={active ? '#FFFFFF' : '#0F766E'} />
+              </View>
+              <View className="min-w-0 flex-1 gap-0.5">
+                <Text variant="titleSm">{plan.name[lang]}</Text>
+                {active ? (
+                  <Text variant="caption" className="text-[#0F766E] dark:text-primary-300">
+                    {currentLabel}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+
+            <View className="flex-row items-end gap-1.5">
+              <Text variant="titleMd">{formatEgp(plan.monthly)}</Text>
+              <Text variant="caption" muted className="pb-0.5">
+                / {monthLabel}
+              </Text>
+            </View>
+
+            <Text variant="caption" muted>
+              {formatEgp(annualPrice(plan.monthly))} {yearLabel}
             </Text>
-            <Text variant="caption" muted className="w-full text-center" style={{ alignSelf: 'stretch' }}>
-              {lang === 'ar' ? 'السنوي' : 'Annual'} {formatEgp(annualPrice(plan.monthly))}
-            </Text>
-            <Text variant="caption" muted className="w-full text-center" style={{ alignSelf: 'stretch' }}>
+
+            <Text variant="bodySm" muted>
               {plan.detail[lang]}
             </Text>
-            {active ? (
-              <Text
-                variant="caption"
-                className="w-full text-center text-primary-700 dark:text-primary-300"
-                style={{ alignSelf: 'stretch' }}
-              >
-                {lang === 'ar' ? 'باقتك الحالية' : 'Your current plan'}
-              </Text>
-            ) : null}
-          </View>
+          </Card>
         );
       })}
-      <Text variant="caption" muted className="w-full text-center" style={{ alignSelf: 'stretch' }}>
-        {SUBSCRIPTION_NOTE[lang]}
-      </Text>
-    </Card>
+    </View>
   );
 }

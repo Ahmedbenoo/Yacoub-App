@@ -1,5 +1,4 @@
 import type { Clinic, ClinicFilters, PaginatedResponse } from '@/shared/types/models';
-import { clinicPhotoDataUrl } from '@/shared/lib/clinic-photo';
 import { sleep } from '@/shared/lib/utils';
 
 import { TEST_CLINIC_LOGO_URL } from './clinic-logo';
@@ -32,9 +31,11 @@ const mockClinics: Clinic[] = [
     consultationFee: 300,
     openingHours: 'السبت–الخميس، 10:00 ص – 10:00 م',
     locationUrl: 'https://www.google.com/maps/search/?api=1&query=Tahrir+Square+Cairo',
+    rating: 4.8,
+    reviewCount: 124,
     photoUrls: [
-      clinicPhotoDataUrl('#0F766E', 'الاستقبال'),
-      clinicPhotoDataUrl('#115E59', 'غرفة الكشف'),
+      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=900&q=80',
     ],
     createdAt: now,
     updatedAt: now,
@@ -62,7 +63,9 @@ const mockClinics: Clinic[] = [
     consultationFee: 250,
     openingHours: 'السبت–الخميس، 9:00 ص – 5:00 م',
     locationUrl: 'https://www.google.com/maps/search/?api=1&query=Abbas+El+Akkad+Cairo',
-    photoUrls: [clinicPhotoDataUrl('#0F766E', 'الفرع الشمالي')],
+    rating: 4.7,
+    reviewCount: 58,
+    photoUrls: ['https://images.unsplash.com/photo-1666214280557-f1b5022eb634?auto=format&fit=crop&w=900&q=80'],
     createdAt: now,
     updatedAt: now,
   },
@@ -89,7 +92,9 @@ const mockClinics: Clinic[] = [
     consultationFee: 400,
     openingHours: 'كل يوم، 12:00 م – 10:00 م',
     locationUrl: 'https://www.google.com/maps/search/?api=1&query=Nile+Corniche+Cairo',
-    photoUrls: [clinicPhotoDataUrl('#115E59', 'فرع وسط البلد')],
+    rating: 4.6,
+    reviewCount: 41,
+    photoUrls: ['https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=900&q=80'],
     createdAt: now,
     updatedAt: now,
   },

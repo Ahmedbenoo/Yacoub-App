@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { Select } from '@/shared/components/form/Select';
+import { TimePicker } from '@/shared/components/form/TimePicker';
 import { Text } from '@/shared/components/ui/Text';
 
 const WEEK_FROM_SATURDAY = [6, 0, 1, 2, 3, 4, 5] as const;
@@ -13,8 +14,6 @@ const DAY_NAME: Record<number, string> = {
   5: 'الجمعة',
   6: 'السبت',
 };
-const TIME_VALUES = Array.from({ length: 15 }, (_, index) => `${String(index + 8).padStart(2, '0')}:00`);
-
 function formatArabicTime(value: string) {
   const [hours, minutes] = value.split(':').map(Number);
   const suffix = hours >= 12 ? 'م' : 'ص';
@@ -90,11 +89,6 @@ export function formatOpeningHours(days: number[], start: string, end: string) {
   return `${dayLabel}، ${from} – ${to}`;
 }
 
-const TIME_OPTIONS = TIME_VALUES.map((value) => ({
-  value,
-  label: `\u2066${formatArabicTime(value)}\u2069`,
-}));
-
 const DAY_OPTIONS = WEEK_FROM_SATURDAY.map((day) => ({
   value: String(day),
   label: DAY_NAME[day],
@@ -146,18 +140,16 @@ export function OpeningHoursCalendar({
       </View>
       <View className="flex-row gap-3">
         <View className="min-w-0 flex-1">
-          <Select
-            label="من"
-            value={parsed.start}
-            options={TIME_OPTIONS}
-            onChange={(start) => update(parsed.days, start, parsed.end)}
-          />
+            <TimePicker
+              label="من"
+              value={parsed.start}
+              onChange={(start) => update(parsed.days, start, parsed.end)}
+            />
         </View>
         <View className="min-w-0 flex-1">
-          <Select
+          <TimePicker
             label="إلى"
             value={parsed.end}
-            options={TIME_OPTIONS}
             onChange={(end) => update(parsed.days, parsed.start, end)}
           />
         </View>

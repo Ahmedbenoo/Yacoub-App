@@ -10,8 +10,8 @@ import { Avatar } from '@/shared/components/ui/Avatar';
 import { Card } from '@/shared/components/ui/Card';
 import { Icon } from '@/shared/components/ui/Icon';
 import { Text } from '@/shared/components/ui/Text';
+import { GuestAccountCard } from '@/features/patient/components/GuestAccountCard';
 import { EmptyState } from '@/shared/components/feedback/EmptyState';
-import { GuestPrompt } from '@/shared/components/feedback/GuestPrompt';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
 import { Spinner } from '@/shared/components/feedback/Spinner';
 import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
@@ -41,8 +41,11 @@ export function MedicalRecordsScreen() {
 
   if (!isAuthenticated) {
     return (
-      <Screen>
-        <GuestPrompt title={t('guest.recordsTitle')} description={t('guest.recordsDescription')} />
+      <Screen className="pt-4">
+        <Text variant="titleLg" className="mb-4">
+          {t('records.title')}
+        </Text>
+        <GuestAccountCard />
       </Screen>
     );
   }

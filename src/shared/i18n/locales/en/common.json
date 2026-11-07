@@ -12,6 +12,10 @@
   "back": "Back",
   "skip": "Skip",
   "done": "Done",
+  "hour": "Hour",
+  "minute": "Minute",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
   "comingSoon": "Coming Soon",
   "comingSoonDescription": "This feature is under development and will be available in a future release.",
   "error": {

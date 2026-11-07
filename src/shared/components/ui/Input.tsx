@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react';
-import { TextInput, View, type TextInputProps } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { Pressable, TextInput, View, type TextInputProps } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
+import { Icon } from '@/shared/components/ui/Icon';
 import { Text } from '@/shared/components/ui/Text';
 import { useResolvedColorScheme } from '@/shared/hooks/useTheme';
 import { cn } from '@/shared/lib/utils';
@@ -25,11 +27,18 @@ export function Input({
   editable = true,
   style,
   leadingIcon,
+  secureTextEntry,
   ...props
 }: InputProps) {
+  const { t } = useTranslation('common');
   const colorScheme = useResolvedColorScheme();
   const isDark = colorScheme === 'dark';
   const isRtl = useLocaleStore((s) => s.isRtl);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const isPassword = Boolean(secureTextEntry);
+  const hideValue = isPassword && !passwordVisible;
+  const endSide = isRtl ? 'left' : 'right';
+  const startSide = isRtl ? 'right' : 'left';
 
   return (
     <View className={cn('gap-1.5', containerClassName)} style={{ direction: isRtl ? 'rtl' : 'ltr' }}>
@@ -46,13 +55,33 @@ export function Input({
               position: 'absolute',
               top: 0,
               bottom: 0,
-              [isRtl ? 'right' : 'left']: 14,
+              [startSide]: 14,
               zIndex: 1,
               justifyContent: 'center',
             }}
           >
             {leadingIcon}
           </View>
+        ) : null}
+        {isPassword ? (
+          <Pressable
+            onPress={() => setPasswordVisible((open) => !open)}
+            accessibilityRole="button"
+            accessibilityLabel={passwordVisible ? t('hidePassword') : t('showPassword')}
+            hitSlop={8}
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              [endSide]: 8,
+              zIndex: 2,
+              width: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon name={passwordVisible ? 'eyeOff' : 'eye'} size={20} color={isDark ? '#94A3B8' : '#64748B'} />
+          </Pressable>
         ) : null}
         <TextInput
           className={cn(
@@ -66,6 +95,7 @@ export function Input({
           )}
           placeholderTextColor={isDark ? '#94A3B8' : '#64748B'}
           editable={editable}
+          secureTextEntry={hideValue}
           textAlign={isRtl ? 'right' : 'left'}
           style={[
             {
@@ -74,11 +104,8 @@ export function Input({
               writingDirection: isRtl ? 'rtl' : 'ltr',
               includeFontPadding: false,
               paddingVertical: 12,
-              ...(leadingIcon
-                ? isRtl
-                  ? { paddingRight: 42, paddingLeft: 16 }
-                  : { paddingLeft: 42, paddingRight: 16 }
-                : null),
+              ...(leadingIcon ? { [isRtl ? 'paddingRight' : 'paddingLeft']: 42 } : null),
+              ...(isPassword ? { [isRtl ? 'paddingLeft' : 'paddingRight']: 44 } : null),
             },
             style,
             getTypedFontStyle(isRtl, '400'),

@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { getDayName } from '@/features/doctor/lib/formatters';
-import { Select, type SelectOption } from '@/shared/components/form/Select';
+import { TimePicker } from '@/shared/components/form/TimePicker';
 import { Badge } from '@/shared/components/ui/Badge';
 import { Card } from '@/shared/components/ui/Card';
 import { Icon } from '@/shared/components/ui/Icon';
@@ -14,7 +14,6 @@ interface AvailabilityDayCardProps {
   dayOfWeek: number;
   startTime?: string;
   endTime?: string;
-  timeOptions: SelectOption[];
   onToggle: () => void;
   onChangeHours: (startTime: string, endTime: string) => void;
   disabled?: boolean;
@@ -24,7 +23,6 @@ export function AvailabilityDayCard({
   dayOfWeek,
   startTime,
   endTime,
-  timeOptions,
   onToggle,
   onChangeHours,
   disabled,
@@ -71,18 +69,16 @@ export function AvailabilityDayCard({
       {isActive && startTime && endTime ? (
         <View className="flex-row gap-3">
           <View className="min-w-0 flex-1">
-            <Select
+            <TimePicker
               label={t('availability.from')}
               value={startTime}
-              options={timeOptions}
               onChange={(nextStart) => onChangeHours(nextStart, endTime)}
             />
           </View>
           <View className="min-w-0 flex-1">
-            <Select
+            <TimePicker
               label={t('availability.to')}
               value={endTime}
-              options={timeOptions}
               onChange={(nextEnd) => onChangeHours(startTime, nextEnd)}
             />
           </View>

@@ -27,7 +27,9 @@ export type AppIconName =
   | 'starOutline'
   | 'mail'
   | 'phone'
-  | 'language';
+  | 'language'
+  | 'eye'
+  | 'eyeOff';
 
 const ICON_MAP = {
   dashboard: { ios: 'square.grid.2x2.fill', android: 'dashboard', web: 'dashboard' },
@@ -57,6 +59,8 @@ const ICON_MAP = {
   mail: { ios: 'envelope.fill', android: 'mail', web: 'mail' },
   phone: { ios: 'phone.fill', android: 'call', web: 'call' },
   language: { ios: 'globe', android: 'language', web: 'language' },
+  eye: { ios: 'eye.fill', android: 'visibility', web: 'visibility' },
+  eyeOff: { ios: 'eye.slash.fill', android: 'visibility_off', web: 'visibility_off' },
 } as const;
 
 interface IconProps {
