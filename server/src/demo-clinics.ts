@@ -422,7 +422,10 @@ export async function seedDemoClinics(options?: { force?: boolean }): Promise<vo
   const wanted = SPECIALTIES.map((spec) => `clinic-spec-${spec.id}`);
   const existing = await db.query<{ id: string }>(`SELECT id FROM clinics`);
   const have = new Set(existing.rows.map((row) => row.id));
-  if (!options?.force && have.size === wanted.length && wanted.every((id) => have.has(id))) return;
+  const extras = [...have].filter((id) => !wanted.includes(id));
+  if (!options?.force && wanted.every((id) => have.has(id))) return;
+  // Extra registered clinics must not trigger a full wipe on boot/deploy.
+  if (!options?.force && extras.length > 0) return;
 
   await wipe();
   const passwordHash = await bcrypt.hash(PASSWORD, 10);
