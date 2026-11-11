@@ -51,13 +51,14 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 18px 10px 16px;
+        padding: 12px 14px 8px;
       }
       .brand img {
-        width: 100%;
-        max-width: 180px;
-        height: auto;
+        width: auto;
+        height: 36px;
+        max-width: 168px;
         object-fit: contain;
+        object-position: center;
       }
       header {
         grid-column: 2;
@@ -69,8 +70,11 @@
         width: 100%;
         max-width: 1180px;
         justify-self: start;
-        padding: 18px 20px 16px 10px;
+        padding: 12px 20px 10px 10px;
       }
+      header > div { line-height: 1.2; }
+      header h1 { font-size: 18px; line-height: 1.2; }
+      header .sub { margin-top: 2px; font-size: 12px; line-height: 1.25; }
       .tabs {
         grid-column: 1;
         grid-row: 2;
