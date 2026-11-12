@@ -29,8 +29,25 @@ function staffEmail(phone: string, kind: 'doctor' | 'secretary'): string {
   return `${normalizePhone(phone).replace(/\D/g, '')}@${kind}.clinsync`;
 }
 
-function password(): string {
-  return 'password123';
+function staffWelcomeMessage(input: {
+  clinicName: string;
+  phone: string;
+  password: string;
+  role: 'doctor' | 'secretary';
+  personName: string;
+}): string {
+  const greeting = input.role === 'doctor' ? `د. ${input.personName}` : input.personName;
+  return [
+    `أهلاً ${greeting} 👋`,
+    '',
+    `اتضاف حسابك في ${input.clinicName}.`,
+    '',
+    'سجّل الدخول بالتفاصيل دي:',
+    `اسم المستخدم: ${displayPhone(input.phone)}`,
+    `كلمة المرور: ${input.password}`,
+    '',
+    'تقدر تغيّر كلمة المرور من البروفايل بعد الدخول.',
+  ].join('\n');
 }
 
 async function rolesAt(userId: string, clinicId: string): Promise<string[]> {
@@ -44,6 +61,21 @@ async function rolesAt(userId: string, clinicId: string): Promise<string[]> {
 async function requireAdmin(userId: string, clinicId: string): Promise<void> {
   const roles = await rolesAt(userId, clinicId);
   if (!roles.includes('admin')) throw httpError(403, 'FORBIDDEN', 'Only the clinic admin can do this');
+}
+
+async function resolveAdminClinicId(userId: string, clinicId: string): Promise<string> {
+  if (clinicId) return clinicId;
+  const membership = await db.query<{ clinic_id: string }>(
+    `SELECT clinic_id FROM memberships WHERE user_id = $1 AND role = 'admin' LIMIT 1`,
+    [userId],
+  );
+  if (membership.rows[0]?.clinic_id) return membership.rows[0].clinic_id;
+  const owned = await db.query<{ id: string }>(
+    `SELECT id FROM clinics WHERE owner_user_id = $1 AND is_active = true LIMIT 1`,
+    [userId],
+  );
+  if (owned.rows[0]?.id) return owned.rows[0].id;
+  throw httpError(400, 'CLINIC_REQUIRED', 'Clinic is required');
 }
 
 async function clinicName(clinicId: string): Promise<string> {
@@ -84,20 +116,18 @@ async function credentialsMessage(input: {
   role: 'doctor' | 'secretary';
   personName: string;
 }): Promise<string> {
-  const greeting = input.role === 'doctor' ? `د. ${input.personName}` : input.personName;
-  const body = [
-    `أهلاً ${greeting}، اتضاف حسابك في ${input.clinicName}.`,
-    `اسم المستخدم: ${displayPhone(input.phone)}`,
-    `كلمة المرور: ${input.password}`,
-    'تقدر تغيّر كلمة المرور من البروفايل بعد تسجيل الدخول.',
-  ].join('\n');
+  const body = staffWelcomeMessage(input);
   const to = digitsPhone(input.phone);
   await db.query('INSERT INTO staff_whatsapp (id, to_phone, body) VALUES ($1, $2, $3)', [
     `staff-wa-${randomUUID()}`,
     to,
     body,
   ]);
-  await deliverWhatsApp(body, to, input.clinicId);
+  try {
+    await deliverWhatsApp(body, to, input.clinicId);
+  } catch {
+    // Owner can still share the welcome message from the app.
+  }
   return body;
 }
 
@@ -160,6 +190,7 @@ export async function createDoctor(
     firstName: string;
     lastName: string;
     phone?: string;
+    password: string;
     specialty: string;
     branchName: string;
     languages: string[];
@@ -195,14 +226,15 @@ export async function createDoctor(
   }
 
   await enforceDoctorCap(clinicId);
-  const generated = password();
+  const chosenPassword = input.password.trim();
+  if (chosenPassword.length < 8) throw httpError(400, 'PASSWORD_REQUIRED', 'Password must be at least 8 characters');
   const userId = `user-doctor-${randomUUID()}`;
   const email = staffEmail(phone, 'doctor');
   await db.query(
     `INSERT INTO users (
        id, email, phone, password_hash, first_name, last_name, locale, is_email_verified, is_phone_verified
      ) VALUES ($1, $2, $3, $4, $5, $6, 'ar', true, true)`,
-    [userId, email, phone, await bcrypt.hash(generated, 10), input.firstName.trim(), input.lastName.trim()],
+    [userId, email, phone, await bcrypt.hash(chosenPassword, 10), input.firstName.trim(), input.lastName.trim()],
   );
   await db.query(`INSERT INTO memberships (id, user_id, clinic_id, role) VALUES ($1, $2, $3, 'doctor')`, [
     `mem-${randomUUID()}`,
@@ -234,7 +266,7 @@ export async function createDoctor(
     clinicId,
     clinicName: await clinicName(clinicId),
     phone,
-    password: generated,
+    password: chosenPassword,
     role: 'doctor',
     personName: `${input.firstName} ${input.lastName}`.trim(),
   });
@@ -245,21 +277,45 @@ export async function createDoctor(
 export async function createSecretary(
   actorId: string,
   clinicId: string,
-  input: { firstName: string; lastName: string; phone: string },
+  input: { firstName: string; lastName: string; phone: string; password: string },
 ) {
+  clinicId = await resolveAdminClinicId(actorId, clinicId);
   await requireAdmin(actorId, clinicId);
   const phone = normalizePhone(input.phone);
   if (!phone) throw httpError(400, 'PHONE_REQUIRED', 'Phone is required');
-  const existing = await db.query<{ id: string }>('SELECT id FROM users WHERE phone = $1', [phone]);
-  if (existing.rows[0]) throw httpError(409, 'PHONE_EXISTS', 'An account with this phone already exists');
-  const generated = password();
+  const chosenPassword = input.password.trim();
+  if (chosenPassword.length < 8) throw httpError(400, 'PASSWORD_REQUIRED', 'Password must be at least 8 characters');
+  const existing = await db.query<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    phone: string | null;
+    email: string | null;
+  }>('SELECT id, first_name, last_name, phone, email FROM users WHERE phone = $1', [phone]);
+  if (existing.rows[0]) {
+    const found = existing.rows[0];
+    await db.query(
+      `INSERT INTO memberships (id, user_id, clinic_id, role) VALUES ($1, $2, $3, 'secretary')
+       ON CONFLICT (user_id, clinic_id, role) DO NOTHING`,
+      [`mem-${randomUUID()}`, found.id, clinicId],
+    );
+    return {
+      userId: found.id,
+      email: found.email ?? staffEmail(phone, 'secretary'),
+      phone: displayPhone(found.phone || phone),
+      firstName: found.first_name,
+      lastName: found.last_name,
+      clinicId,
+      linkedExisting: true,
+    };
+  }
   const userId = `user-secretary-${randomUUID()}`;
   const email = staffEmail(phone, 'secretary');
   await db.query(
     `INSERT INTO users (
        id, email, phone, password_hash, first_name, last_name, locale, is_email_verified, is_phone_verified
      ) VALUES ($1, $2, $3, $4, $5, $6, 'ar', true, true)`,
-    [userId, email, phone, await bcrypt.hash(generated, 10), input.firstName.trim(), input.lastName.trim()],
+    [userId, email, phone, await bcrypt.hash(chosenPassword, 10), input.firstName.trim(), input.lastName.trim()],
   );
   await db.query(`INSERT INTO memberships (id, user_id, clinic_id, role) VALUES ($1, $2, $3, 'secretary')`, [
     `mem-${randomUUID()}`,
@@ -270,11 +326,128 @@ export async function createSecretary(
     clinicId,
     clinicName: await clinicName(clinicId),
     phone,
-    password: generated,
+    password: chosenPassword,
     role: 'secretary',
     personName: `${input.firstName} ${input.lastName}`.trim(),
   });
-  return { userId, email, phone, linkedExisting: false, credentialsWhatsApp };
+  return {
+    userId,
+    email,
+    phone: displayPhone(phone),
+    firstName: input.firstName.trim(),
+    lastName: input.lastName.trim(),
+    clinicId,
+    linkedExisting: false,
+    credentialsWhatsApp,
+  };
+}
+
+export async function listSecretaries(actorId: string) {
+  const result = await db.query<SecretaryRow>(
+    `SELECT u.id, u.first_name, u.last_name, u.phone, u.avatar_url, m.clinic_id, c.name AS clinic_name, c.name_ar AS clinic_name_ar
+     FROM memberships m
+     JOIN users u ON u.id = m.user_id
+     JOIN clinics c ON c.id = m.clinic_id
+     WHERE m.role = 'secretary'
+       AND m.clinic_id IN (
+         SELECT clinic_id FROM memberships WHERE user_id = $1 AND role = 'admin'
+         UNION
+         SELECT id FROM clinics WHERE owner_user_id = $1
+       )
+     ORDER BY u.first_name, u.last_name`,
+    [actorId],
+  );
+  return result.rows.map(toSecretary);
+}
+
+type SecretaryRow = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
+  avatar_url: string | null;
+  clinic_id: string;
+  clinic_name: string;
+  clinic_name_ar: string | null;
+};
+
+function toSecretary(row: SecretaryRow) {
+  return {
+    id: `${row.id}:${row.clinic_id}`,
+    userId: row.id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    phone: row.phone ? displayPhone(row.phone) : '',
+    clinicId: row.clinic_id,
+    clinicName: row.clinic_name,
+    clinicNameAr: row.clinic_name_ar ?? undefined,
+    avatarUrl: row.avatar_url ?? undefined,
+  };
+}
+
+function secretaryLookupSql() {
+  return `SELECT u.id, u.first_name, u.last_name, u.phone, u.avatar_url, m.clinic_id, c.name AS clinic_name, c.name_ar AS clinic_name_ar
+     FROM memberships m
+     JOIN users u ON u.id = m.user_id
+     JOIN clinics c ON c.id = m.clinic_id
+     WHERE m.role = 'secretary'
+       AND (u.id = $2 OR u.id || ':' || m.clinic_id = $2)
+       AND m.clinic_id IN (
+         SELECT clinic_id FROM memberships WHERE user_id = $1 AND role = 'admin'
+         UNION
+         SELECT id FROM clinics WHERE owner_user_id = $1
+       )
+     ORDER BY u.first_name, u.last_name
+     LIMIT 1`;
+}
+
+export async function getSecretary(actorId: string, secretaryId: string) {
+  const result = await db.query<SecretaryRow>(secretaryLookupSql(), [actorId, secretaryId]);
+  if (!result.rows[0]) throw httpError(404, 'NOT_FOUND', 'Secretary not found');
+  return toSecretary(result.rows[0]);
+}
+
+export async function updateSecretary(
+  actorId: string,
+  secretaryId: string,
+  input: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string },
+) {
+  const current = await getSecretary(actorId, secretaryId);
+  const phone = input.phone ? normalizePhone(input.phone) : undefined;
+  if (input.phone && !phone) throw httpError(400, 'PHONE_REQUIRED', 'Phone is required');
+  if (phone) {
+    const taken = await db.query<{ id: string }>('SELECT id FROM users WHERE phone = $1 AND id <> $2', [
+      phone,
+      current.userId,
+    ]);
+    if (taken.rows[0]) throw httpError(409, 'PHONE_EXISTS', 'An account with this phone already exists');
+  }
+  await db.query(
+    `UPDATE users
+     SET first_name = COALESCE($2, first_name),
+         last_name = COALESCE($3, last_name),
+         phone = COALESCE($4, phone),
+         avatar_url = COALESCE($5, avatar_url),
+         updated_at = now()
+     WHERE id = $1`,
+    [
+      current.userId,
+      input.firstName?.trim() || null,
+      input.lastName?.trim() || null,
+      phone || null,
+      input.avatarUrl?.trim() || null,
+    ],
+  );
+  return getSecretary(actorId, current.userId);
+}
+
+export async function removeSecretary(actorId: string, secretaryId: string) {
+  const current = await getSecretary(actorId, secretaryId);
+  await db.query(`DELETE FROM memberships WHERE user_id = $1 AND clinic_id = $2 AND role = 'secretary'`, [
+    current.userId,
+    current.clinicId,
+  ]);
+  return current;
 }
 
 export async function updateDoctor(

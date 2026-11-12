@@ -59,6 +59,8 @@ export const queryKeys = {
     reports: (clinicId: string) => [...queryKeys.admin.all, 'reports', 'live', clinicId] as const,
     reportDetail: (clinicId: string, id: string) =>
       [...queryKeys.admin.all, 'report', 'live', clinicId, id] as const,
+    secretaries: () => [...queryKeys.admin.all, 'secretaries'] as const,
+    secretary: (id: string) => [...queryKeys.admin.all, 'secretary', id] as const,
   },
   invoices: {
     all: ['invoices'] as const,

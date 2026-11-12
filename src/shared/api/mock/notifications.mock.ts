@@ -51,7 +51,7 @@ const SEED_NOTIFICATIONS: Notification[] = [
     userId: 'user-patient-001',
     type: NotificationType.SYSTEM,
     messageKey: 'welcome',
-    title: 'Welcome to Yacoub',
+    title: 'Welcome to Munjiz Tibbi',
     body: 'Manage your appointments and medical records in one place',
     createdAt: hoursAgo(24),
     readAt: hoursAgo(20),

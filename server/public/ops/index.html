@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>منجز طبي — إدارة المنصة</title>
-    <link rel="icon" type="image/png" href="/ops/logo-munjaz.png" />
+    <link rel="icon" type="image/png" href="/ops/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -217,6 +217,8 @@
       .on { background: #d1fae5; color: #065f46; }
       .off { background: #fee2e2; color: #991b1b; }
       .pending { background: #fef3c7; color: #92400e; }
+      .kind-clinic { background: #ccfbf1; color: #0f766e; }
+      .kind-center { background: #e0e7ff; color: #3730a3; }
       .actions { display: flex; flex-wrap: wrap; gap: 6px; }
       .hidden { display: none !important; }
       .login { max-width: 420px; margin: 12vh auto; padding: 24px; }
@@ -256,7 +258,7 @@
     <div id="app" class="shell hidden">
       <div class="rail" aria-hidden="true"></div>
       <div class="brand">
-        <img src="/ops/logo-munjaz.png" alt="منجز طبي" />
+        <img src="/ops/logo-munjiz.png" alt="منجز طبي" />
       </div>
       <header>
         <div>
@@ -281,12 +283,13 @@
       const API = '/api/v1/ops';
       const tabs = [
         ['overview', 'النمو', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>'],
-        ['clinics', 'العيادات', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>'],
+        ['clinics', 'العيادات والمراكز', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>'],
         ['patients', 'المرضى', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 11h6"/><path d="M19 8v6"/></svg>'],
         ['users', 'المستخدمين', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'],
         ['appointments', 'الحجوزات', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>'],
         ['money', 'الفلوس', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>'],
         ['doctors', 'الدكاترة', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>'],
+        ['secretaries', 'السكرتارية', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3"/><path d="M17 8h4"/><path d="M19 6v4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>'],
         ['nurses', 'التمريض', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1 2-3 2-5a7 7 0 0 0-14 0c0 2 .5 4 2 5"/><path d="M12 13v8"/><path d="M8 18h8"/></svg>'],
         ['nursing', 'طلبات تمريض', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>'],
         ['home', 'زيارات منزلية', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>'],
@@ -309,6 +312,11 @@
       }
       function tag(on, yes, no) {
         return `<span class="tag ${on ? 'on' : 'off'}">${on ? yes : no}</span>`;
+      }
+      function kindTag(kind) {
+        return kind === 'center'
+          ? '<span class="tag kind-center">مركز</span>'
+          : '<span class="tag kind-clinic">عيادة</span>';
       }
       function statusTag(value) {
         const pending = value === 'pending' || value === 'scheduled' || value === 'requested';
@@ -446,11 +454,13 @@
             ];
             const items = [
               [data.users, 'كل المستخدمين', 'users'],
-              [data.clinics, 'كل العيادات', 'clinics'],
+              [data.clinicsOnly ?? 0, 'كل العيادات', 'clinics', 'clinic'],
+              [data.centers ?? 0, 'كل المراكز', 'clinics', 'center'],
               [data.patients, 'كل ملفات المرضى', 'patients'],
               [data.doctors, 'كل الدكاترة', 'doctors'],
-              [data.clinicsActive, 'عيادات ظاهرة', 'clinics'],
-              [data.clinicsPending, 'عيادات تنتظر اعتماد', 'clinics'],
+              [data.secretaries ?? 0, 'كل السكرتارية', 'secretaries'],
+              [data.clinicsActive, 'عيادات ومراكز ظاهرة', 'clinics'],
+              [data.clinicsPending, 'تنتظر اعتماد', 'clinics'],
               [data.appointmentsToday, 'حجوزات اليوم', 'appointments'],
               [data.appointmentsOpen, 'حجوزات مفتوحة', 'appointments'],
               [data.usersBlocked, 'حسابات موقوفة', 'users'],
@@ -471,26 +481,32 @@
                 ${chart('حجوزات', g.appointmentsDaily || [])}
               </div>
               <h2>حجم التطبيق</h2>
-              <div class="stats">${items.map(([n, l, go]) => `<div class="stat" data-go="${go}"><b>${n}</b><span>${l}</span></div>`).join('')}</div>`;
+              <div class="stats">${items.map(([n, l, go, kind]) => `<div class="stat" data-go="${go}"${kind ? ` data-status="${kind}"` : ''}><b>${n}</b><span>${l}</span></div>`).join('')}</div>`;
             return;
           }
           if (tab === 'clinics') {
             if (!fromSearch) {
-              toolbar(searchBox('اسم أو مدينة أو موبايل'));
+              toolbar(`${searchBox('اسم أو مدينة أو موبايل')}
+              ${statusTabs([
+                ['', 'الكل'],
+                ['clinic', 'عيادات'],
+                ['center', 'مراكز'],
+              ])}`);
               bindSearch();
             }
-            const rows = await api('/clinics?q=' + encodeURIComponent(q));
+            const rows = await api('/clinics?q=' + encodeURIComponent(q) + '&kind=' + encodeURIComponent(status));
             if (seq !== searchSeq) return;
-            if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد عيادات</div>'; return; }
-            content.innerHTML = `<table><thead><tr><th>العيادة</th><th>المالك</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد عيادات أو مراكز</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>الاسم</th><th>النوع</th><th>المالك</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
               <tr>
                 <td><b>${row.name}</b><div class="sub">${row.city || ''} ${row.specialty || ''} · ${row.doctors} دكتور<br>${row.phone || ''}</div></td>
+                <td>${kindTag(row.placeKind)}</td>
                 <td>${row.ownerName || '—'}<div class="sub">${row.ownerPhone || ''}</div></td>
                 <td>${tag(row.isActive, 'ظاهرة', 'مخفية')} ${row.approvalStatus === 'pending' ? statusTag('pending') : ''}</td>
                 <td class="actions">
-                  ${row.approvalStatus === 'pending' ? `<button class="btn ok" data-act="/clinics/${row.id}/approve" data-msg="اعتماد العيادة وإظهارها للمرضى؟">اعتماد</button>` : ''}
+                  ${row.approvalStatus === 'pending' ? `<button class="btn ok" data-act="/clinics/${row.id}/approve" data-msg="اعتماد المكان وإظهاره للمرضى؟">اعتماد</button>` : ''}
                   ${superUser ? (row.isActive
-                    ? `<button class="btn danger" data-act="/clinics/${row.id}/deactivate" data-msg="إخفاء العيادة من التطبيق؟">إيقاف</button>`
+                    ? `<button class="btn danger" data-act="/clinics/${row.id}/deactivate" data-msg="إخفاء المكان من التطبيق؟">إيقاف</button>`
                     : `<button class="btn" data-act="/clinics/${row.id}/activate">تفعيل</button>`) : ''}
                 </td>
               </tr>`).join('')}</tbody></table>`;
@@ -565,6 +581,27 @@
                   ${superUser && row.status !== 'cancelled' && row.status !== 'completed'
                     ? `<button class="btn danger" data-act="/appointments/${row.id}/cancel" data-msg="إلغاء الحجز؟">إلغاء</button>`
                     : ''}
+                </td>
+              </tr>`).join('')}</tbody></table>`;
+            return;
+          }
+          if (tab === 'secretaries') {
+            if (!fromSearch) {
+              toolbar(searchBox('اسم أو موبايل أو عيادة'));
+              bindSearch();
+            }
+            const rows = await api('/secretaries?q=' + encodeURIComponent(q));
+            if (seq !== searchSeq) return;
+            if (!rows.length) { content.innerHTML = '<div class="empty">لا توجد سكرتارية</div>'; return; }
+            content.innerHTML = `<table><thead><tr><th>السكرتير</th><th>المكان</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.map((row) => `
+              <tr>
+                <td><b>${row.name}</b><div class="sub">${row.phone || ''}</div></td>
+                <td>${row.clinicName || '—'}<div class="sub">${kindTag(row.placeKind)}</div></td>
+                <td>${tag(!row.isBlocked, 'نشط', 'موقوف')}</td>
+                <td class="actions">
+                  ${!superUser ? '' : row.isBlocked
+                    ? `<button class="btn" data-act="/users/${row.id}/unblock">فتح</button>`
+                    : `<button class="btn danger" data-act="/users/${row.id}/block" data-msg="إيقاف حساب السكرتير من دخول التطبيق؟">إيقاف</button>`}
                 </td>
               </tr>`).join('')}</tbody></table>`;
             return;
@@ -686,7 +723,7 @@
         if (go?.dataset.go) {
           tab = go.dataset.go;
           q = '';
-          status = '';
+          status = go.dataset.status || '';
           showApp();
           return;
         }

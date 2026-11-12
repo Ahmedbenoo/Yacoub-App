@@ -69,7 +69,7 @@ if (-not $apk) {
 }
 
 New-Item -ItemType Directory -Force -Path "$root\dist" | Out-Null
-$dest = "$root\dist\clinsync-release.apk"
+$dest = "$root\dist\munjiz-tibbi-release.apk"
 Copy-Item $apk.FullName $dest -Force
 Write-Host "APK ready: $dest"
 Write-Host "Size: $([math]::Round($apk.Length / 1MB, 1)) MB"

@@ -24,6 +24,12 @@
   "price": "Visit price",
   "pricePlaceholder": "Example: 500",
   "priceValue": "{{value}} EGP",
+  "doctorEntryTitle": "Home visits",
+  "doctorEntrySubtitleOff": "Turn on requests at the patient's home",
+  "doctorEntrySubtitleOn": "View home visit requests",
+  "enableTitle": "Receive home visit requests",
+  "enableHint": "After you turn this on, patients in your specialty can request a visit at home, and the requests show up here.",
+  "enableAction": "Turn on home visits",
   "doctorListTitle": "Home visit requests",
   "doctorDetailTitle": "Visit request",
   "doctorEmptyTitle": "No requests in your specialty",
@@ -36,6 +42,7 @@
     "completed": "Completed"
   },
   "toast": {
+    "enabled": "Home visits are on",
     "requested": "Home visit requested",
     "accepted": "Visit accepted",
     "completed": "Visit marked done",

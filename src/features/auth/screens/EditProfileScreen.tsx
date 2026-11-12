@@ -1,4 +1,5 @@
-import { Alert, Image, Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { Image, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +19,7 @@ import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { Text } from '@/shared/components/ui/Text';
 import { FormInput } from '@/shared/components/form/FormInput';
+import { ConfirmDialog } from '@/shared/components/feedback/ConfirmDialog';
 import { Spinner } from '@/shared/components/feedback/Spinner';
 import { pickProfileImage } from '@/shared/lib/pick-profile-image';
 import { getChangePasswordRoute } from '@/shared/navigation/routes';
@@ -34,11 +36,11 @@ const AVATAR_PRESETS = [
 
 export function EditProfileScreen() {
   const { t } = useTranslation('auth');
-  const { t: tc } = useTranslation('common');
   const { user, isLoading } = useCurrentUser();
   const activeRole = useAuthStore((s) => s.activeRole);
   const updateProfile = useUpdateProfileMutation();
   const deleteAccount = useDeleteAccountMutation();
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { control, handleSubmit, reset, setValue } = useForm<UpdateProfileFormData>({
     resolver: zodResolver(updateProfileSchema),
@@ -233,22 +235,25 @@ export function EditProfileScreen() {
         />
 
         {activeRole === UserRole.PATIENT ? (
-          <Button
-            title={t('editProfile.deleteAccount')}
-            variant="danger"
-            loading={deleteAccount.isPending}
-            onPress={() => {
-              Alert.alert(t('editProfile.deleteTitle'), t('editProfile.deleteMessage'), [
-                { text: tc('cancel'), style: 'cancel' },
-                {
-                  text: t('editProfile.deleteAccount'),
-                  style: 'destructive',
-                  onPress: () => deleteAccount.mutate(),
-                },
-              ]);
-            }}
-            fullWidth
-          />
+          <>
+            <Button
+              title={t('editProfile.deleteAccount')}
+              variant="danger"
+              loading={deleteAccount.isPending}
+              onPress={() => setConfirmDelete(true)}
+              fullWidth
+            />
+            <ConfirmDialog
+              visible={confirmDelete}
+              title={t('editProfile.deleteTitle')}
+              message={t('editProfile.deleteMessage')}
+              confirmLabel={t('editProfile.deleteAccount')}
+              destructive
+              loading={deleteAccount.isPending}
+              onCancel={() => setConfirmDelete(false)}
+              onConfirm={() => deleteAccount.mutate()}
+            />
+          </>
         ) : null}
       </View>
     </Screen>

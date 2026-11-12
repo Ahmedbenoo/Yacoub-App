@@ -4,10 +4,11 @@ import { Locale, UserRole } from '@/shared/types/enums';
 import type { AuthSession, User } from '@/shared/types/models';
 
 import { NurseVerification } from '@/shared/types/enums';
+import type { SecretaryProfile } from '@/shared/types/models/admin';
 import type { RegisterNursePayload } from '@/shared/types/models/nursing';
 
 import { cloneSeed, resetArray } from './clone';
-import { listAssignedClinicIds } from './clinics.mock';
+import { getMockClinicById, listAssignedClinicIds, unassignUserClinic } from './clinics.mock';
 import { insertNurseProfile } from './nursing.mock';
 import { ensurePatientForUser, linkPatientFilesByPhone, syncPatientIdentity } from './patients.mock';
 
@@ -183,6 +184,67 @@ const SEED_CREDENTIALS: MockCredential[] = [
 
 const MOCK_CREDENTIALS: MockCredential[] = cloneSeed(SEED_CREDENTIALS);
 
+export function listMockSecretaries(clinicIds?: string[]): SecretaryProfile[] {
+  const allowed = clinicIds ? new Set(clinicIds) : null;
+  const rows: SecretaryProfile[] = [];
+
+  for (const credential of MOCK_CREDENTIALS) {
+    if (!credential.user.roles.includes(UserRole.SECRETARY)) continue;
+    const assigned = listAssignedClinicIds(credential.user.id);
+    const clinicIds = assigned.length ? assigned : [''];
+    for (const clinicId of clinicIds) {
+      if (clinicId && allowed && !allowed.has(clinicId)) continue;
+      const clinic = clinicId ? getMockClinicById(clinicId) : undefined;
+      rows.push({
+        id: `${credential.user.id}:${clinicId || 'clinic'}`,
+        userId: credential.user.id,
+        firstName: credential.user.firstName,
+        lastName: credential.user.lastName,
+        phone: credential.user.phone ?? '',
+        clinicId,
+        clinicName: clinic?.name,
+        clinicNameAr: clinic?.nameAr,
+        avatarUrl: credential.user.avatarUrl,
+      });
+    }
+  }
+
+  return rows;
+}
+
+export function getMockSecretary(id: string): SecretaryProfile {
+  const found = listMockSecretaries().find(
+    (item) => item.userId === id || item.id === id || item.id.startsWith(`${id}:`),
+  );
+  if (!found) throw { code: 'NOT_FOUND', message: 'Secretary not found' };
+  return found;
+}
+
+export function removeMockSecretary(id: string): SecretaryProfile {
+  const current = getMockSecretary(id);
+  const credential = MOCK_CREDENTIALS.find((item) => item.user.id === current.userId);
+  if (!credential) throw { code: 'NOT_FOUND', message: 'Secretary not found' };
+  unassignUserClinic(current.userId, current.clinicId);
+  if (!listAssignedClinicIds(current.userId).length) {
+    credential.user.roles = credential.user.roles.filter((role) => role !== UserRole.SECRETARY);
+  }
+  return current;
+}
+
+export function updateMockSecretary(
+  id: string,
+  input: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string },
+): SecretaryProfile {
+  const current = getMockSecretary(id);
+  const credential = MOCK_CREDENTIALS.find((item) => item.user.id === current.userId);
+  if (!credential) throw { code: 'NOT_FOUND', message: 'Secretary not found' };
+  if (input.firstName) credential.user.firstName = input.firstName.trim();
+  if (input.lastName) credential.user.lastName = input.lastName.trim();
+  if (input.phone) credential.user.phone = input.phone.trim();
+  if (input.avatarUrl) credential.user.avatarUrl = input.avatarUrl.trim();
+  return getMockSecretary(current.userId);
+}
+
 function findCredentialByIdentifier(identifier: string): MockCredential | undefined {
   const trimmed = identifier.trim();
   if (isEmailIdentifier(trimmed)) {
@@ -290,7 +352,10 @@ export function createStaffCredential(input: {
   }
 
   const email = phoneToStaffEmail(phone, input.role === UserRole.SECRETARY ? 'secretary' : 'doctor');
-  const password = input.password.trim() || generateUniqueStaffPassword();
+  const password = input.password.trim();
+  if (password.length < 8) {
+    throw { code: 'PASSWORD_REQUIRED', message: 'Password must be at least 8 characters' };
+  }
   const id = `user-${input.role}-${Date.now()}`;
   const user = {
     id,

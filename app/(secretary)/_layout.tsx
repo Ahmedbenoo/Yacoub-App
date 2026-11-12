@@ -21,6 +21,11 @@ export default function SecretaryLayout() {
       <Stack.Screen name="prescriptions/[id]" />
       <Stack.Screen name="book/[id]" />
       <Stack.Screen name="notifications" />
+      <Stack.Screen name="notification-settings" />
+      <Stack.Screen name="roles" />
+      <Stack.Screen name="active-clinic" />
+      <Stack.Screen name="language" />
+      <Stack.Screen name="theme" />
       <Stack.Screen name="edit-profile" />
       <Stack.Screen name="change-password" />
     </Stack>

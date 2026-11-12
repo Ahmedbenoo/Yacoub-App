@@ -1,76 +1,38 @@
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
-import { router } from 'expo-router';
+import { View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { ClinicCoverCard } from '@/features/admin/components/ClinicCoverCard';
-import { ReportsList } from '@/features/admin/components/ReportsList';
-import { useClinicReportsQuery } from '@/features/admin/hooks';
 import { useUserClinicsQuery } from '@/features/clinic/hooks/useClinicQueries';
 import { clinicsService } from '@/features/clinic/services/clinics.service';
-import { Spinner } from '@/shared/components/feedback/Spinner';
-import { SectionHeader } from '@/shared/components/layout/SectionHeader';
+import { SettingsNavRow } from '@/shared/components/layout/SettingsNavRow';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
-import { Icon, type AppIconName } from '@/shared/components/ui/Icon';
+import { type AppIconName } from '@/shared/components/ui/Icon';
 import { Input } from '@/shared/components/ui/Input';
 import { Text } from '@/shared/components/ui/Text';
-import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
-import { getAdminReportsListHref } from '@/shared/navigation/routes';
 import { useAuthStore } from '@/shared/stores';
 
 const SETTINGS: { title: string; subtitle: string; href: string; icon: AppIconName }[] = [
-  { title: 'أسعار الباقات', subtitle: 'الباقة الحالية والأسعار', href: '/(admin)/plans', icon: 'star' },
   { title: 'إدارة الجداول', subtitle: 'مواعيد الدكاترة', href: '/(admin)/schedules', icon: 'calendar' },
   { title: 'صفحة العيادة', subtitle: 'المواعيد والسعر والخريطة', href: '/(admin)/clinic-page', icon: 'clinic' },
+  { title: 'الإشعارات', subtitle: 'التنبيهات وفئات الإشعارات', href: '/(admin)/notification-settings', icon: 'bell' },
+  { title: 'التقارير', subtitle: 'تقارير الفرع والحجوزات', href: '/(admin)/reports', icon: 'records' },
+  { title: 'الاشتراك', subtitle: 'الباقة الحالية والأسعار', href: '/(admin)/plans', icon: 'star' },
+  { title: 'الأدوار', subtitle: 'طبيب أو مدير العيادة', href: '/(admin)/roles', icon: 'doctors' },
+  { title: 'المحفظة', subtitle: 'رقم التحويل وطلبات الشحن', href: '/(admin)/wallet', icon: 'phone' },
+  { title: 'الفروع', subtitle: 'اختيار الفرع النشط', href: '/(admin)/active-clinic', icon: 'clinic' },
+  { title: 'اللغة', subtitle: 'العربية والإنجليزية', href: '/(admin)/language', icon: 'language' },
+  { title: 'المظهر', subtitle: 'فاتح أو داكن أو النظام', href: '/(admin)/theme', icon: 'sun' },
 ];
-
-function SettingsRow({
-  title,
-  subtitle,
-  icon,
-  href,
-}: {
-  title: string;
-  subtitle: string;
-  icon: AppIconName;
-  href: string;
-}) {
-  const { forwardIconName, rowStyle } = useLayoutDirection();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      className="active:opacity-80"
-      onPress={() => router.push(href as never)}
-    >
-      <Card className="flex-row items-center gap-3" style={rowStyle}>
-        <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-900/30">
-          <Icon name={icon} size={18} color="#0D9488" />
-        </View>
-        <View className="min-w-0 flex-1 gap-0.5">
-          <Text variant="titleSm">{title}</Text>
-          <Text variant="caption" muted>
-            {subtitle}
-          </Text>
-        </View>
-        <Icon name={forwardIconName} size={18} color="#94A3B8" />
-      </Card>
-    </Pressable>
-  );
-}
 
 const extraStaff: { id: string; name: string; role: string }[] = [
   { id: 'staff-accounts', name: 'قسم الحسابات', role: 'حسابات' },
 ];
 
 export function ClinicRulesPanel() {
-  const { t } = useTranslation('admin');
   const userId = useAuthStore((s) => s.user?.id);
-  const { data: reports, isLoading: reportsLoading } = useClinicReportsQuery();
   const queryClient = useQueryClient();
   const clinicsQuery = useUserClinicsQuery();
   const [staffName, setStaffName] = useState('');
@@ -96,18 +58,8 @@ export function ClinicRulesPanel() {
     <View className="gap-3 pb-2">
       <ClinicCoverCard />
       {SETTINGS.map((item) => (
-        <SettingsRow key={item.href} {...item} />
+        <SettingsNavRow key={item.href} {...item} href={item.href as never} />
       ))}
-
-      <View className="gap-3">
-        <SectionHeader
-          title={t('reports.title')}
-          actionLabel={t('dashboard.viewAll')}
-          onAction={() => router.push(getAdminReportsListHref(), { withAnchor: true })}
-        />
-        {reportsLoading ? <Spinner /> : null}
-        {reports ? <ReportsList reports={reports} /> : null}
-      </View>
 
       {(pendingQuery.data ?? []).map((clinic) => (
         <Card key={clinic.id} className="gap-2">

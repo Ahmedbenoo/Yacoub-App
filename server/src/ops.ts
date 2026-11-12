@@ -14,6 +14,7 @@ import {
   userPlatformRole,
   type PlatformRole,
 } from './users.js';
+import { getWhatsAppRuntimeStatus } from './whatsapp/provider.js';
 
 function httpError(status: number, code: string, message: string): Error {
   return Object.assign(new Error(message), { status, code });
@@ -50,21 +51,21 @@ async function markPlatformRole(phone: string, role: PlatformRole): Promise<bool
 
 export async function ensurePlatformAdmin(): Promise<void> {
   const phone = normalizePhone(process.env.OPS_ADMIN_PHONE ?? '');
+  const password = process.env.OPS_ADMIN_PASSWORD?.trim();
   if (phone) {
     const found = await markPlatformRole(phone, 'super_admin');
-    if (!found) {
-      const password = process.env.OPS_ADMIN_PASSWORD?.trim();
-      if (password && password.length >= 8) {
-        const id = `user-ops-${randomUUID()}`;
-        const firstName = process.env.OPS_ADMIN_NAME?.trim() || 'Platform';
-        await db.query(
-          `INSERT INTO users (
-             id, email, phone, password_hash, first_name, last_name, locale,
-             is_email_verified, is_phone_verified, is_platform_admin, platform_role
-           ) VALUES ($1, $2, $3, $4, $5, 'Admin', 'ar', true, true, true, 'super_admin')`,
-          [id, `ops-${phone.replace(/\D/g, '')}@yacoub.local`, phone, await bcrypt.hash(password, 10), firstName],
-        );
-      }
+    if (!found && password && password.length >= 8) {
+      const id = `user-ops-${randomUUID()}`;
+      const firstName = process.env.OPS_ADMIN_NAME?.trim() || 'Platform';
+      await db.query(
+        `INSERT INTO users (
+           id, email, phone, password_hash, first_name, last_name, locale,
+           is_email_verified, is_phone_verified, is_platform_admin, platform_role
+         ) VALUES ($1, $2, $3, $4, $5, 'Admin', 'ar', true, true, true, 'super_admin')`,
+        [id, `ops-${phone.replace(/\D/g, '')}@yacoub.local`, phone, await bcrypt.hash(password, 10), firstName],
+      );
+    } else if (found && password && password.length >= 8) {
+      await setPasswordByPhone(phone, password);
     }
   }
 
@@ -137,11 +138,14 @@ async function overview() {
     dailySeries('appointments'),
     db.query<{
       clinics: string | number;
+      clinics_only: string | number;
+      centers: string | number;
       clinics_active: string | number;
       clinics_pending: string | number;
       users: string | number;
       users_blocked: string | number;
       doctors: string | number;
+      secretaries: string | number;
       patients: string | number;
       appointments_today: string | number;
       appointments_open: string | number;
@@ -154,11 +158,14 @@ async function overview() {
     }>(
       `SELECT
          (SELECT count(*) FROM clinics) AS clinics,
+         (SELECT count(*) FROM clinics WHERE coalesce(place_kind, 'clinic') <> 'center') AS clinics_only,
+         (SELECT count(*) FROM clinics WHERE place_kind = 'center') AS centers,
          (SELECT count(*) FROM clinics WHERE is_active = true) AS clinics_active,
          (SELECT count(*) FROM clinics WHERE approval_status = 'pending') AS clinics_pending,
          (SELECT count(*) FROM users) AS users,
          (SELECT count(*) FROM users WHERE is_blocked = true) AS users_blocked,
          (SELECT count(*) FROM doctors) AS doctors,
+         (SELECT count(*) FROM memberships WHERE role = 'secretary') AS secretaries,
          (SELECT count(*) FROM patients) AS patients,
          (SELECT count(*) FROM appointments
            WHERE (scheduled_at AT TIME ZONE 'Africa/Cairo')::date = (now() AT TIME ZONE 'Africa/Cairo')::date) AS appointments_today,
@@ -182,11 +189,14 @@ async function overview() {
 
   return {
     clinics: n(row?.clinics),
+    clinicsOnly: n(row?.clinics_only),
+    centers: n(row?.centers),
     clinicsActive: n(row?.clinics_active),
     clinicsPending: n(row?.clinics_pending),
     users: n(row?.users),
     usersBlocked: n(row?.users_blocked),
     doctors: n(row?.doctors),
+    secretaries: n(row?.secretaries),
     patients: n(row?.patients),
     appointmentsToday: n(row?.appointments_today),
     appointmentsOpen: n(row?.appointments_open),
@@ -213,9 +223,10 @@ async function overview() {
   };
 }
 
-async function listClinics(query?: string) {
+async function listClinics(query?: string, kind?: string) {
   const q = query?.trim() ?? '';
   const like = `%${q}%`;
+  const placeKind = kind === 'center' || kind === 'clinic' ? kind : '';
   const result = await db.query<{
     id: string;
     name: string;
@@ -223,6 +234,7 @@ async function listClinics(query?: string) {
     phone: string | null;
     city: string | null;
     specialty: string | null;
+    place_kind: string | null;
     is_active: boolean;
     approval_status: string | null;
     owner_user_id: string | null;
@@ -231,16 +243,17 @@ async function listClinics(query?: string) {
     doctors: string | number;
     created_at: string;
   }>(
-    `SELECT c.id, c.name, c.name_ar, c.phone, c.city, c.specialty, c.is_active, c.approval_status,
+    `SELECT c.id, c.name, c.name_ar, c.phone, c.city, c.specialty, c.place_kind, c.is_active, c.approval_status,
             c.owner_user_id, c.created_at,
             trim(concat(coalesce(u.first_name, ''), ' ', coalesce(u.last_name, ''))) AS owner_name,
             u.phone AS owner_phone,
             (SELECT count(*) FROM doctors d WHERE d.clinic_id = c.id) AS doctors
      FROM clinics c
      LEFT JOIN users u ON u.id = c.owner_user_id
-     WHERE $1 = '' OR c.name ILIKE $2 OR c.name_ar ILIKE $2 OR coalesce(c.phone, '') ILIKE $2 OR coalesce(c.city, '') ILIKE $2
+     WHERE ($1 = '' OR c.name ILIKE $2 OR c.name_ar ILIKE $2 OR coalesce(c.phone, '') ILIKE $2 OR coalesce(c.city, '') ILIKE $2)
+       AND ($3 = '' OR coalesce(c.place_kind, 'clinic') = $3)
      ORDER BY c.created_at DESC`,
-    [q, like],
+    [q, like, placeKind],
   );
   return result.rows.map((row) => ({
     id: row.id,
@@ -248,6 +261,7 @@ async function listClinics(query?: string) {
     phone: row.phone,
     city: row.city,
     specialty: row.specialty,
+    placeKind: row.place_kind === 'center' ? 'center' : 'clinic',
     isActive: row.is_active,
     approvalStatus: row.approval_status === 'pending' ? 'pending' : 'approved',
     ownerUserId: row.owner_user_id,
@@ -460,6 +474,51 @@ async function listDoctorsOps(query?: string) {
   }));
 }
 
+async function listSecretariesOps(query?: string) {
+  const q = query?.trim() ?? '';
+  const like = `%${q}%`;
+  const result = await db.query<{
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    phone: string | null;
+    email: string | null;
+    is_blocked: boolean;
+    clinic_id: string;
+    clinic_name: string | null;
+    place_kind: string | null;
+    created_at: string;
+  }>(
+    `SELECT u.id AS user_id, u.first_name, u.last_name, u.phone, u.email, u.is_blocked, u.created_at,
+            m.clinic_id, coalesce(c.name_ar, c.name) AS clinic_name, c.place_kind
+     FROM memberships m
+     JOIN users u ON u.id = m.user_id
+     JOIN clinics c ON c.id = m.clinic_id
+     WHERE m.role = 'secretary'
+       AND (
+         $1 = ''
+         OR u.first_name ILIKE $2
+         OR u.last_name ILIKE $2
+         OR coalesce(u.phone, '') ILIKE $2
+         OR coalesce(c.name_ar, c.name) ILIKE $2
+       )
+     ORDER BY u.created_at DESC
+     LIMIT 300`,
+    [q, like],
+  );
+  return result.rows.map((row) => ({
+    id: row.user_id,
+    name: `${row.first_name} ${row.last_name}`.trim(),
+    phone: row.phone,
+    email: row.email,
+    isBlocked: row.is_blocked,
+    clinicId: row.clinic_id,
+    clinicName: row.clinic_name,
+    placeKind: row.place_kind === 'center' ? 'center' : 'clinic',
+    createdAt: iso(row.created_at),
+  }));
+}
+
 async function setDoctorActiveOps(id: string, active: boolean) {
   const result = await db.query<{ id: string }>(
     'UPDATE doctors SET is_active = $2, updated_at = now() WHERE id = $1 RETURNING id',
@@ -630,6 +689,10 @@ function sendError(res: express.Response, error: unknown, fallback: string) {
   res.status(Number.isFinite(status) ? status : 500).json({ code, message });
 }
 
+function opsDataSource(): 'live' | 'local' {
+  return process.env.DATABASE_URL?.trim() ? 'live' : 'local';
+}
+
 export const opsRouter = express.Router();
 
 opsRouter.post('/login', async (req, res) => {
@@ -657,10 +720,16 @@ opsRouter.post('/login', async (req, res) => {
           lastName: session.user.lastName,
           phone: session.user.phone,
           role,
+          dataSource: opsDataSource(),
         },
       },
     });
   } catch (error) {
+    const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
+    if (code === 'INVALID_CREDENTIALS') {
+      res.status(401).json({ code, message: 'رقم الموبايل أو كلمة المرور غلط' });
+      return;
+    }
     sendError(res, error, 'تعذر تسجيل الدخول');
   }
 });
@@ -700,8 +769,13 @@ opsRouter.get('/me', async (_req, res) => {
     data: {
       id: res.locals.opsUserId,
       role: res.locals.opsRole,
+      dataSource: opsDataSource(),
     },
   });
+});
+
+opsRouter.get('/whatsapp/status', async (_req, res) => {
+  res.json({ success: true, data: getWhatsAppRuntimeStatus() });
 });
 
 opsRouter.get('/overview', async (_req, res) => {
@@ -714,7 +788,13 @@ opsRouter.get('/overview', async (_req, res) => {
 
 opsRouter.get('/clinics', async (req, res) => {
   try {
-    res.json({ success: true, data: await listClinics(typeof req.query.q === 'string' ? req.query.q : '') });
+    res.json({
+      success: true,
+      data: await listClinics(
+        typeof req.query.q === 'string' ? req.query.q : '',
+        typeof req.query.kind === 'string' ? req.query.kind : '',
+      ),
+    });
   } catch (error) {
     sendError(res, error, 'تعذر تحميل العيادات');
   }
@@ -809,6 +889,14 @@ opsRouter.get('/doctors', async (req, res) => {
     res.json({ success: true, data: await listDoctorsOps(typeof req.query.q === 'string' ? req.query.q : '') });
   } catch (error) {
     sendError(res, error, 'تعذر تحميل الدكاترة');
+  }
+});
+
+opsRouter.get('/secretaries', async (req, res) => {
+  try {
+    res.json({ success: true, data: await listSecretariesOps(typeof req.query.q === 'string' ? req.query.q : '') });
+  } catch (error) {
+    sendError(res, error, 'تعذر تحميل السكرتارية');
   }
 });
 

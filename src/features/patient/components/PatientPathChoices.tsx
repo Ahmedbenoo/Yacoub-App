@@ -37,6 +37,8 @@ function cardShadow(glow: string, tint: string) {
   });
 }
 
+const MINI_CARD_HEIGHT = 220;
+
 function MiniCard({
   icon,
   title,
@@ -62,21 +64,19 @@ function MiniCard({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="min-w-0 flex-1 active:opacity-90"
-      style={{ flex: 1, alignSelf: 'stretch', ...(Platform.OS === 'web' ? { display: 'flex' } : {}) }}
+      className="min-w-0 active:opacity-90"
+      style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, height: MINI_CARD_HEIGHT }}
     >
       <View
         className="h-full justify-between overflow-hidden rounded-[26px] p-4"
         style={[
           {
-            flexGrow: 1,
-            flexShrink: 0,
-            minHeight: 204,
+            height: MINI_CARD_HEIGHT,
             backgroundColor: to,
             borderWidth: 1,
             borderColor: 'rgba(255,255,255,0.18)',
             ...(Platform.OS === 'web'
-              ? { backgroundImage: `linear-gradient(165deg, ${from} 0%, ${to} 100%)`, height: '100%' }
+              ? { backgroundImage: `linear-gradient(165deg, ${from} 0%, ${to} 100%)` }
               : {}),
           },
           cardShadow(glow, to),
@@ -167,7 +167,7 @@ export function PatientPathChoices({ isAuthenticated }: PatientPathChoicesProps)
         </View>
       </Pressable>
 
-      <View className="flex-row items-stretch gap-3">
+      <View className="flex-row items-start gap-3" style={{ flexGrow: 0 }}>
         <MiniCard
           icon="doctors"
           title={t('guest.pathHomeDoctorTitle')}

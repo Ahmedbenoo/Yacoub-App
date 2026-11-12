@@ -6,10 +6,12 @@ import Toast from 'react-native-toast-message';
 import { useUserClinicsQuery } from '@/features/clinic/hooks/useClinicQueries';
 import { clinicsService } from '@/features/clinic/services/clinics.service';
 import { OpeningHoursCalendar } from '@/features/admin/components/OpeningHoursCalendar';
+import { useSpecialtyOptions } from '@/features/admin/hooks';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { Input } from '@/shared/components/ui/Input';
 import { Text } from '@/shared/components/ui/Text';
+import { Select } from '@/shared/components/form/Select';
 import { pickProfileImage } from '@/shared/lib/pick-profile-image';
 import { queryKeys } from '@/shared/api/query-keys';
 import { useAuthStore } from '@/shared/stores';
@@ -18,24 +20,42 @@ export function ClinicListingEditor() {
   const clinicId = useAuthStore((state) => state.activeClinicId);
   const queryClient = useQueryClient();
   const clinicsQuery = useUserClinicsQuery();
+  const specialtyOptions = useSpecialtyOptions();
   const clinic = clinicsQuery.data?.find((item) => item.id === clinicId) ?? clinicsQuery.data?.[0];
   const [hours, setHours] = useState('');
   const [fee, setFee] = useState('');
   const [locationUrl, setLocationUrl] = useState('');
+  const [street, setStreet] = useState('');
+  const [city, setCity] = useState('');
+  const [specialty, setSpecialty] = useState('');
 
   useEffect(() => {
     if (!clinic) return;
-    setHours(clinic.openingHours ?? '');
-    setFee(clinic.consultationFee != null ? String(clinic.consultationFee) : '');
+    setHours(clinic.openingHours?.trim() ?? '');
+    setFee(clinic.consultationFee ? String(clinic.consultationFee) : '');
     setLocationUrl(clinic.locationUrl ?? '');
-  }, [clinic?.id, clinic?.openingHours, clinic?.consultationFee, clinic?.locationUrl]);
+    setStreet(clinic.address.street?.trim() ?? '');
+    setCity(clinic.address.city?.trim() ?? '');
+    setSpecialty(clinic.specialty?.trim() ?? '');
+  }, [
+    clinic?.id,
+    clinic?.openingHours,
+    clinic?.consultationFee,
+    clinic?.locationUrl,
+    clinic?.address.street,
+    clinic?.address.city,
+    clinic?.specialty,
+  ]);
 
   const save = useMutation({
     mutationFn: () =>
       clinicsService.updateListing(clinic?.id ?? '', {
-        openingHours: hours,
-        consultationFee: Number(fee),
+        openingHours: hours.trim(),
+        consultationFee: /^\d+$/.test(fee) ? Number(fee) : null,
         locationUrl,
+        street: street.trim(),
+        city: city.trim(),
+        specialty: specialty.trim(),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clinics.all });
@@ -67,8 +87,18 @@ export function ClinicListingEditor() {
     <Card className="gap-3">
       <Text variant="titleSm">صفحة العيادة</Text>
       <Text variant="caption" muted>
-        المواعيد والسعر والصور والخريطة اللي المريض يشوفها قبل الحجز.
+        العنوان والتخصص والمواعيد والسعر والصور والخريطة اللي المريض يشوفها قبل الحجز.
       </Text>
+      <Select
+        label="التخصص"
+        value={specialty}
+        onChange={setSpecialty}
+        options={specialtyOptions}
+        placeholder="اختار التخصص"
+        searchable
+      />
+      <Input label="المدينة" value={city} onChangeText={setCity} />
+      <Input label="العنوان" value={street} onChangeText={setStreet} />
       <OpeningHoursCalendar value={hours} onChange={setHours} />
       <Input label="سعر الكشف" value={fee} onChangeText={setFee} keyboardType="number-pad" />
       <Input label="لينك الخريطة" value={locationUrl} onChangeText={setLocationUrl} autoCapitalize="none" />
@@ -89,7 +119,6 @@ export function ClinicListingEditor() {
         title="حفظ بيانات الصفحة"
         fullWidth
         loading={save.isPending}
-        disabled={!hours.trim() || !/^\d+$/.test(fee)}
         onPress={() => save.mutate()}
       />
     </Card>

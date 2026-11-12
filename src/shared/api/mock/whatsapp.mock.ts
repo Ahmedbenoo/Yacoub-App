@@ -2,7 +2,8 @@ import { listMockAppointments } from '@/shared/api/mock/appointments.mock';
 import type { Appointment } from '@/shared/types/models/appointment';
 import type { WhatsAppMessage, WhatsAppMessageKind } from '@/shared/types/models/whatsapp';
 import { AppointmentStatus } from '@/shared/types/enums';
-import { formatPhoneForDisplay, normalizePhone } from '@/shared/lib/phone';
+import { normalizePhone } from '@/shared/lib/phone';
+import { buildStaffWelcomeMessage } from '@/shared/lib/staff-welcome';
 import { sleep } from '@/shared/lib/utils';
 
 const messages: WhatsAppMessage[] = [];
@@ -151,14 +152,13 @@ export function queueStaffAccessWhatsApp(input: {
   role: 'doctor' | 'secretary';
   personName: string;
 }): string {
-  const username = formatPhoneForDisplay(normalizePhone(input.phone));
-  const greeting = input.role === 'doctor' ? `د. ${input.personName}` : input.personName;
-  const body = [
-    `أهلاً ${greeting}، اتضاف حسابك في ${input.clinicName}.`,
-    `اسم المستخدم: ${username}`,
-    `كلمة المرور: ${input.password}`,
-    'تقدر تغيّر كلمة المرور من البروفايل بعد تسجيل الدخول.',
-  ].join('\n');
+  const body = buildStaffWelcomeMessage({
+    clinicName: input.clinicName,
+    phone: input.phone,
+    password: input.password,
+    role: input.role,
+    personName: input.personName,
+  });
   staffMessages.unshift({
     id: `wa-staff-${Date.now()}`,
     phone: normalizePhone(input.phone),

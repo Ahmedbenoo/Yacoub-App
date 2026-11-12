@@ -1,14 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
 import { db } from './db.js';
+import { digitsPhone } from './whatsapp/phone.js';
+import { sendAppWhatsApp } from './whatsapp/provider.js';
 
-export function digitsPhone(input: string): string {
-  const digits = input.replace(/\D/g, '');
-  if (!digits) return '';
-  if (digits.startsWith('00')) return digits.slice(2);
-  if (digits.startsWith('0')) return `20${digits.slice(1)}`;
-  return digits;
-}
+export { digitsPhone };
 
 type QueuedAppointment = {
   id: string;
@@ -115,21 +111,7 @@ export async function deliverWhatsApp(body: string, to: string, clinicId: string
 }
 
 export async function deliverAppWhatsApp(body: string, to: string): Promise<boolean> {
-  const token = (process.env.WHATSAPP_TOKEN || '').trim();
-  const phoneNumberId = (process.env.WHATSAPP_PHONE_NUMBER_ID || '').trim();
-  const destination = digitsPhone(to);
-  if (!token || !phoneNumberId || !destination) return false;
-  const response = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      to: destination,
-      type: 'text',
-      text: { body },
-    }),
-  }).catch(() => null);
-  return Boolean(response?.ok);
+  return sendAppWhatsApp(body, to);
 }
 
 async function dispatchDue(): Promise<void> {

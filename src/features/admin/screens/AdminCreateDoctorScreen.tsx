@@ -22,7 +22,8 @@ import { Text } from '@/shared/components/ui/Text';
 import { FormInput } from '@/shared/components/form/FormInput';
 import { FormSelect } from '@/shared/components/form/FormSelect';
 import { StaffAccessSentCard } from '@/features/admin/components/StaffAccessSentCard';
-import { phoneToStaffEmail } from '@/shared/lib/phone';
+import { formatPhoneForDisplay, phoneToStaffEmail } from '@/shared/lib/phone';
+import { buildStaffWelcomeMessage } from '@/shared/lib/staff-welcome';
 import { getAdminDoctorHref } from '@/shared/navigation/routes';
 
 export function AdminCreateDoctorScreen() {
@@ -33,8 +34,13 @@ export function AdminCreateDoctorScreen() {
   const createDoctor = useCreateDoctorMutation();
   const { data: clinic } = useActiveClinicQuery();
   const lockedSpecialty = clinic?.specialty;
-  const [sentMessage, setSentMessage] = useState<string | null>(null);
-  const [createdDoctorId, setCreatedDoctorId] = useState<string | null>(null);
+  const [access, setAccess] = useState<{
+    message: string;
+    phone: string;
+    username: string;
+    password: string;
+    doctorId: string;
+  } | null>(null);
 
   const { control, handleSubmit, setValue } = useForm<CreateDoctorFormData>({
     resolver: zodResolver(createDoctorSchema),
@@ -42,6 +48,7 @@ export function AdminCreateDoctorScreen() {
       firstName: '',
       lastName: '',
       phone: '',
+      password: '',
       specialty: lockedSpecialty ?? '',
       branchId: '',
       languages: '',
@@ -55,12 +62,15 @@ export function AdminCreateDoctorScreen() {
 
   const onSubmit = (data: CreateDoctorFormData) => {
     const specialty = lockedSpecialty || data.specialty;
+    const password = data.password.trim();
+    const phone = data.phone.trim();
     createDoctor.mutate(
       {
         firstName: data.firstName.trim(),
         lastName: data.lastName.trim(),
-        email: phoneToStaffEmail(data.phone, 'doctor'),
-        phone: data.phone.trim(),
+        email: phoneToStaffEmail(phone, 'doctor'),
+        phone,
+        password,
         specialty,
         branchName: lockedSpecialty ? clinic?.name ?? specialty : resolveBranchName(data.branchId || ''),
         languages: parseCommaList(data.languages),
@@ -68,25 +78,42 @@ export function AdminCreateDoctorScreen() {
       },
       {
         onSuccess: (doctor) => {
-          if (doctor.credentialsWhatsApp) {
-            setCreatedDoctorId(doctor.id);
-            setSentMessage(doctor.credentialsWhatsApp);
+          if (doctor.linkedExisting) {
+            router.replace(getAdminDoctorHref(doctor.id));
             return;
           }
-          router.replace(getAdminDoctorHref(doctor.id));
+          const username = formatPhoneForDisplay(phone);
+          setAccess({
+            doctorId: doctor.id,
+            phone,
+            username,
+            password,
+            message:
+              doctor.credentialsWhatsApp ||
+              buildStaffWelcomeMessage({
+                role: 'doctor',
+                personName: `${data.firstName} ${data.lastName}`.trim(),
+                clinicName: clinic?.nameAr || clinic?.name || 'العيادة',
+                phone,
+                password,
+              }),
+          });
         },
       },
     );
   };
 
-  if (sentMessage) {
+  if (access) {
     return (
       <Screen scroll className="px-5">
         <Header showBack title={t('doctors.createTitle')} />
         <View className="py-4">
           <StaffAccessSentCard
-            message={sentMessage}
-            onDone={() => createdDoctorId && router.replace(getAdminDoctorHref(createdDoctorId))}
+            message={access.message}
+            phone={access.phone}
+            username={access.username}
+            password={access.password}
+            onDone={() => router.replace(getAdminDoctorHref(access.doctorId))}
           />
         </View>
       </Screen>
@@ -101,7 +128,21 @@ export function AdminCreateDoctorScreen() {
         <Card className="gap-4">
           <FormInput control={control} name="firstName" label={t('doctors.firstName')} />
           <FormInput control={control} name="lastName" label={t('doctors.lastName')} />
-          <FormInput control={control} name="phone" label={t('doctors.phone')} keyboardType="phone-pad" />
+          <FormInput
+            control={control}
+            name="phone"
+            label={t('doctors.phone')}
+            helper={t('staffAccess.usernameHint')}
+            keyboardType="phone-pad"
+            autoComplete="tel"
+          />
+          <FormInput
+            control={control}
+            name="password"
+            label={t('doctors.password')}
+            secureTextEntry
+            autoComplete="password"
+          />
           <Text variant="bodySm" muted>
             {t('staffAccess.hint')}
           </Text>

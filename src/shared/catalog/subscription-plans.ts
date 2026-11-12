@@ -5,6 +5,7 @@ export interface SubscriptionPlan {
   monthly: number;
   name: { ar: string; en: string };
   detail: { ar: string; en: string };
+  features: { ar: string[]; en: string[] };
 }
 
 export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
@@ -16,6 +17,10 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       ar: 'فرع واحد، لحد 3 دكاترة، وسكرتارية بلا حد',
       en: 'One branch, up to 3 doctors, and unlimited secretaries',
     },
+    features: {
+      ar: ['فرع واحد', 'حتى 3 دكاترة', 'سكرتارية بلا حد'],
+      en: ['One branch', 'Up to 3 doctors', 'Unlimited secretaries'],
+    },
   },
   {
     id: 'center',
@@ -24,6 +29,10 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     detail: {
       ar: 'لحد فرعين. الفرع الجديد يفضل معلّق لحد الاعتماد',
       en: 'Up to two branches. A new branch stays pending until approval',
+    },
+    features: {
+      ar: ['حتى فرعين', 'الفرع الجديد معلّق لحين الاعتماد', 'سكرتارية بلا حد'],
+      en: ['Up to two branches', 'New branch stays pending until approval', 'Unlimited secretaries'],
     },
   },
   {
@@ -34,12 +43,16 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       ar: 'تقارير كل الفروع، وموظفين الحسابات',
       en: 'Reports for every branch, plus accounts staff',
     },
+    features: {
+      ar: ['كل الفروع', 'تقارير مجمّعة للفروع', 'موظفين الحسابات'],
+      en: ['All branches', 'Combined branch reports', 'Accounts staff'],
+    },
   },
 ];
 
 export const SUBSCRIPTION_NOTE = {
-  ar: 'من غير رسوم تأسيس. التمريض المنزلي داخل الاشتراك. السنوي بسعر 10 شهور.',
-  en: 'No setup fee. Home nursing is included. Annual price is 10 months.',
+  ar: 'من غير رسوم تأسيس. السنوي بسعر 10 شهور.',
+  en: 'No setup fee. Annual price is 10 months.',
 };
 
 export function annualPrice(monthly: number): number {

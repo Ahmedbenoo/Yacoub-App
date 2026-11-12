@@ -2,6 +2,7 @@
   "tabs": {
     "dashboard": "لوحة التحكم",
     "doctors": "الأطباء",
+    "team": "فريق العمل",
     "patients": "المرضى",
     "appointments": "المواعيد",
     "more": "المزيد"
@@ -117,6 +118,10 @@
     "doctorCreated": "تم إنشاء الطبيب",
     "doctorLinked": "الدكتور اتضاف على العيادة بحسابه الحالي",
     "secretaryCreated": "تم إنشاء السكرتيرة",
+    "secretaryLinked": "السكرتير موجود واتضاف لفريق العمل",
+    "secretaryUpdated": "تم تحديث بروفايل السكرتير",
+    "secretaryDeleted": "السكرتير اتشال من الفريق",
+    "deleteFailed": "فشل الحذف",
     "clinicCreated": "تم إضافة العيادة",
     "patientUpdated": "تم تحديث المريض",
     "patientCreated": "تم إنشاء المريض",
@@ -129,15 +134,40 @@
     "deactivateFailed": "فشل إلغاء التفعيل",
     "reactivateFailed": "فشل إعادة التفعيل"
   },
+  "staff": {
+    "title": "فريق العمل",
+    "addMember": "إضافة عضو",
+    "addMemberTitle": "اختار الدور",
+    "roleDoctor": "طبيب",
+    "searchPlaceholder": "البحث عن أطباء أو سكرتارية…",
+    "doctors": "أطباء",
+    "secretaries": "سكرتارية",
+    "roleSecretary": "سكرتيرة",
+    "error": "تعذر تحميل فريق العمل",
+    "empty": {
+      "title": "مفيش فريق عمل",
+      "description": "ضيف دكتور أو سكرتيرة من الصفحة دي"
+    }
+  },
   "secretary": {
     "createTitle": "إضافة سكرتيرة",
     "createAction": "إنشاء الحساب",
-    "creating": "جاري الإنشاء..."
+    "creating": "جاري الإنشاء...",
+    "editTitle": "تعديل السكرتير",
+    "deleteTitle": "حذف السكرتير",
+    "deleteMessage": "هيتشال {{name}} من فريق العمل ومش هيقدر يدخل العيادة كسكرتير.",
+    "deleteConfirm": "حذف"
   },
   "staffAccess": {
-    "hint": "اسم المستخدم هيبقى رقم التليفون. التطبيق هيطلّع كلمة مرور عشوائية ويبعتها واتساب مع اسم العيادة.",
+    "hint": "اسم المستخدم هو رقم التليفون. اكتب كلمة مرور للحساب، وبعد التسجيل تقدر تبعتها واتساب.",
+    "usernameHint": "ده هيبقى اسم المستخدم",
+    "username": "اسم المستخدم",
+    "readyTitle": "الحساب جاهز",
+    "shareHint": "شارك رسالة الترحيب على واتساب مع اسم المستخدم وكلمة المرور.",
+    "shareWhatsApp": "مشاركة على واتساب",
+    "shareFailed": "تعذر فتح واتساب",
     "sentTitle": "اتبعت واتساب",
-    "sentToast": "اتبعت رسالة الدخول على الواتساب",
+    "sentToast": "الحساب اتسجل",
     "done": "تمام"
   },
   "clinic": {

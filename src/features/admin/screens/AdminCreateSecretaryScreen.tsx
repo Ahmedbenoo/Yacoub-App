@@ -15,24 +15,39 @@ import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { Text } from '@/shared/components/ui/Text';
 import { FormInput } from '@/shared/components/form/FormInput';
+import { formatPhoneForDisplay } from '@/shared/lib/phone';
+import { buildStaffWelcomeMessage } from '@/shared/lib/staff-welcome';
+import { useActiveClinicQuery } from '@/features/clinic/hooks';
 
 type CreateSecretaryForm = z.infer<typeof createSecretarySchema>;
 
 export function AdminCreateSecretaryScreen() {
   const { t } = useTranslation('admin');
   const createSecretary = useCreateSecretaryMutation();
-  const [sentMessage, setSentMessage] = useState<string | null>(null);
+  const { data: clinic } = useActiveClinicQuery();
+  const [access, setAccess] = useState<{
+    message: string;
+    phone: string;
+    username: string;
+    password: string;
+  } | null>(null);
   const { control, handleSubmit } = useForm<CreateSecretaryForm>({
     resolver: zodResolver(createSecretarySchema),
-    defaultValues: { firstName: '', lastName: '', phone: '' },
+    defaultValues: { firstName: '', lastName: '', phone: '', password: '' },
   });
 
-  if (sentMessage) {
+  if (access) {
     return (
       <Screen scroll className="px-5">
         <Header showBack title={t('secretary.createTitle')} />
         <View className="py-4">
-          <StaffAccessSentCard message={sentMessage} onDone={() => router.back()} />
+          <StaffAccessSentCard
+            message={access.message}
+            phone={access.phone}
+            username={access.username}
+            password={access.password}
+            onDone={() => router.back()}
+          />
         </View>
       </Screen>
     );
@@ -46,7 +61,21 @@ export function AdminCreateSecretaryScreen() {
         <Card className="gap-4">
           <FormInput control={control} name="firstName" label={t('doctors.firstName')} />
           <FormInput control={control} name="lastName" label={t('doctors.lastName')} />
-          <FormInput control={control} name="phone" label={t('doctors.phone')} keyboardType="phone-pad" />
+          <FormInput
+            control={control}
+            name="phone"
+            label={t('doctors.phone')}
+            helper={t('staffAccess.usernameHint')}
+            keyboardType="phone-pad"
+            autoComplete="tel"
+          />
+          <FormInput
+            control={control}
+            name="password"
+            label={t('doctors.password')}
+            secureTextEntry
+            autoComplete="password"
+          />
           <Text variant="bodySm" muted>
             {t('staffAccess.hint')}
           </Text>
@@ -60,14 +89,30 @@ export function AdminCreateSecretaryScreen() {
                 firstName: data.firstName.trim(),
                 lastName: data.lastName.trim(),
                 phone: data.phone.trim(),
+                password: data.password.trim(),
               },
               {
                 onSuccess: (account) => {
-                  if (account.credentialsWhatsApp) {
-                    setSentMessage(account.credentialsWhatsApp);
+                  if (account.linkedExisting) {
+                    router.back();
                     return;
                   }
-                  router.back();
+                  const phone = data.phone.trim();
+                  const password = data.password.trim();
+                  setAccess({
+                    phone,
+                    username: formatPhoneForDisplay(phone),
+                    password,
+                    message:
+                      account.credentialsWhatsApp ||
+                      buildStaffWelcomeMessage({
+                        role: 'secretary',
+                        personName: `${data.firstName} ${data.lastName}`.trim(),
+                        clinicName: clinic?.nameAr || clinic?.name || 'العيادة',
+                        phone,
+                        password,
+                      }),
+                  });
                 },
               },
             ),

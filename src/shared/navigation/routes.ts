@@ -59,6 +59,31 @@ export function getEditProfileRoute(role: UserRole | null): string {
   }
 }
 
+export function getRoleAreaPath(role: UserRole | null): string {
+  switch (role) {
+    case UserRole.DOCTOR:
+      return '/(doctor)';
+    case UserRole.PATIENT:
+      return '/(patient)';
+    case UserRole.ADMIN:
+      return '/(admin)';
+    case UserRole.SECRETARY:
+      return '/(secretary)';
+    case UserRole.NURSE:
+      return '/(nurse)';
+    case UserRole.NURSING_ADMIN:
+      return '/(nursing-admin)';
+    default:
+      return '/(auth)';
+  }
+}
+
+export type SettingsPage = 'language' | 'theme' | 'notification-settings' | 'roles' | 'active-clinic';
+
+export function getSettingsPageHref(role: UserRole | null, page: SettingsPage): Href {
+  return `${getRoleAreaPath(role)}/${page}` as Href;
+}
+
 export function getChangePasswordRoute(role: UserRole | null): string {
   switch (role) {
     case UserRole.DOCTOR:
@@ -156,6 +181,18 @@ export function getAdminDoctorEditHref(doctorId: string): Href {
 
 export function getAdminDoctorCreateHref(): Href {
   return '/(admin)/doctor/create' as Href;
+}
+
+export function getAdminSecretaryCreateHref(): Href {
+  return '/(admin)/secretary/create' as Href;
+}
+
+export function getAdminSecretaryHref(secretaryId: string): Href {
+  return idHref('/(admin)/secretary/[id]', secretaryId);
+}
+
+export function getAdminSecretaryEditHref(secretaryId: string): Href {
+  return `/(admin)/secretary/${secretaryId}/edit` as Href;
 }
 
 export function getAdminReportHref(reportId: string): Href {

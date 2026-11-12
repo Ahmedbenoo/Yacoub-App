@@ -22,6 +22,11 @@ export default function DoctorLayout() {
       <Stack.Screen name="home-visits/index" />
       <Stack.Screen name="home-visits/[id]" />
       <Stack.Screen name="notifications" />
+      <Stack.Screen name="notification-settings" />
+      <Stack.Screen name="roles" />
+      <Stack.Screen name="active-clinic" />
+      <Stack.Screen name="language" />
+      <Stack.Screen name="theme" />
       <Stack.Screen name="edit-profile" />
       <Stack.Screen name="change-password" />
     </Stack>

@@ -118,39 +118,41 @@ async function insertDoctor(
 export async function registerOwnerAccount(input: {
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   phone: string;
-  gender: 'male' | 'female';
+  gender?: 'male' | 'female';
   password: string;
   placeKind: 'clinic' | 'center';
   placeName: string;
   clinicName?: string;
-  clinicPhone: string;
-  street: string;
-  city: string;
+  clinicPhone?: string;
+  street?: string;
+  city?: string;
   locationUrl?: string;
-  specialty: string;
-  openingHours: string;
-  consultationFee: number;
-  practices: boolean;
+  specialty?: string;
+  openingHours?: string;
+  consultationFee?: number;
+  practices?: boolean;
 }) {
   const phone = normalizePhone(input.phone);
   if (!/^\+\d{10,15}$/.test(phone)) throw httpError(400, 'VALIDATION_ERROR', 'Phone number is invalid');
   const userId = `user-owner-${randomUUID()}`;
-  const email = input.email.trim().toLowerCase();
+  const email = (input.email?.trim() || `${phone.replace(/\D/g, '')}@clinic.clinsync`).toLowerCase();
+  const gender = input.gender ?? 'male';
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
-  await insertUser({ id: userId, email, phone, password: input.password, firstName, lastName, gender: input.gender });
+  await insertUser({ id: userId, email, phone, password: input.password, firstName, lastName, gender });
   const clinicName = (input.placeKind === 'center' ? input.clinicName || input.placeName : input.placeName).trim();
+  const clinicPhone = normalizePhone(input.clinicPhone || '') || phone;
   const clinicId = await insertClinic({
     ownerId: userId,
     name: clinicName,
-    phone: normalizePhone(input.clinicPhone) || input.clinicPhone.trim(),
-    street: input.street,
-    city: input.city,
+    phone: clinicPhone,
+    street: input.street?.trim() || '',
+    city: input.city?.trim() || '',
     locationUrl: input.locationUrl,
-    specialty: input.specialty,
-    openingHours: input.openingHours,
+    specialty: input.specialty?.trim() || '',
+    openingHours: input.openingHours?.trim() || undefined,
     consultationFee: input.consultationFee,
     placeKind: input.placeKind,
   });
@@ -160,7 +162,17 @@ export async function registerOwnerAccount(input: {
     clinicId,
   ]);
   if (input.practices) {
-    await insertDoctor(userId, clinicId, clinicName, phone, input.specialty, email, firstName, lastName, input.gender);
+    await insertDoctor(
+      userId,
+      clinicId,
+      clinicName,
+      phone,
+      input.specialty?.trim() || '',
+      email,
+      firstName,
+      lastName,
+      gender,
+    );
   }
   return sessionForUser(userId);
 }

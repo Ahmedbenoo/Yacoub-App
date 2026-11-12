@@ -2,8 +2,9 @@
 export const TAB_TOP_BAR_METRICS = {
   horizontalPadding: 10,
   bottomPadding: 2,
-  contentHeight: 48,
-  logoVisibleHeight: 34,
+  contentHeight: 56,
+  logoVisibleHeight: 56,
+  logoVisibleWidth: 102,
   iconButtonSize: 32,
   iconSize: 20,
   actionsGap: 7,

@@ -5,7 +5,6 @@ import { Alert, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { ClinicRulesPanel } from '@/features/admin/components/ClinicRulesPanel';
-import { WalletPanel } from '@/features/wallet/components/WalletPanel';
 import { Screen } from '@/shared/components/layout/Screen';
 import { SettingsPanel } from '@/shared/components/layout/SettingsPanel';
 import { Button } from '@/shared/components/ui/Button';
@@ -54,7 +53,7 @@ export default function AdminMoreScreen() {
         {t('tabs.more')}
       </Text>
       <ClinicRulesPanel />
-      <View className="gap-3 pb-2">
+      <View className="mt-8 gap-3">
         {canAddClinic ? (
           <Button
             title={t('clinic.add')}
@@ -63,12 +62,6 @@ export default function AdminMoreScreen() {
             onPress={() => router.push('/(admin)/clinic/create')}
           />
         ) : null}
-        <Button
-          title={t('clinic.addSecretary')}
-          variant="outline"
-          fullWidth
-          onPress={() => router.push('/(admin)/secretary/create')}
-        />
         {activeClinicId ? (
           <Button
             title={t('clinic.delete')}
@@ -79,8 +72,7 @@ export default function AdminMoreScreen() {
           />
         ) : null}
       </View>
-      <WalletPanel mode="admin" />
-      <SettingsPanel />
+      <SettingsPanel showAccountCard={false} className="gap-3 pt-3 pb-4" />
     </Screen>
   );
 }

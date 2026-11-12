@@ -24,6 +24,12 @@
   "price": "سعر الزيارة",
   "pricePlaceholder": "مثال: 500",
   "priceValue": "{{value}} ج.م",
+  "doctorEntryTitle": "الكشف المنزلي",
+  "doctorEntrySubtitleOff": "فعّل استقبال الطلبات في بيت المريض",
+  "doctorEntrySubtitleOn": "عرض طلبات الكشف في بيت المريض",
+  "enableTitle": "استقبل طلبات الكشف المنزلي",
+  "enableHint": "بعد التفعيل، المرضى في تخصصك يقدروا يطلبوا كشف في البيت، والطلبات هتظهر هنا.",
+  "enableAction": "تفعيل الكشف المنزلي",
   "doctorListTitle": "طلبات الزيارة المنزلية",
   "doctorDetailTitle": "طلب زيارة",
   "doctorEmptyTitle": "مفيش طلبات في تخصصك",
@@ -36,6 +42,7 @@
     "completed": "مكتملة"
   },
   "toast": {
+    "enabled": "تم تفعيل الكشف المنزلي",
     "requested": "تم إرسال طلب الزيارة",
     "accepted": "تم قبول الزيارة",
     "completed": "تم تسجيل انتهاء الزيارة",

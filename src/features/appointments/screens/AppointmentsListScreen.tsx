@@ -32,41 +32,30 @@ interface AppointmentsListScreenProps {
   showStatusFilter?: boolean;
 }
 
-const ADMIN_STATUS_FILTERS: StatusFilter[] = [
+const UPCOMING_STATUS_FILTERS: StatusFilter[] = [
   'all',
   AppointmentStatus.SCHEDULED,
   AppointmentStatus.CONFIRMED,
-  AppointmentStatus.COMPLETED,
-  AppointmentStatus.CANCELLED,
-  AppointmentStatus.NO_SHOW,
 ];
 
-const DOCTOR_STATUS_FILTERS: StatusFilter[] = [
+const TODAY_STATUS_FILTERS: StatusFilter[] = [
   'all',
   AppointmentStatus.SCHEDULED,
   AppointmentStatus.CONFIRMED,
   AppointmentStatus.IN_PROGRESS,
 ];
 
-const PATIENT_STATUS_FILTERS: StatusFilter[] = [
+const PAST_STATUS_FILTERS: StatusFilter[] = [
   'all',
-  AppointmentStatus.SCHEDULED,
-  AppointmentStatus.CONFIRMED,
+  AppointmentStatus.COMPLETED,
   AppointmentStatus.CANCELLED,
 ];
 
-function getStatusFiltersForRole(role: UserRole): StatusFilter[] {
-  switch (role) {
-    case UserRole.ADMIN:
-    case UserRole.SECRETARY:
-      return ADMIN_STATUS_FILTERS;
-    case UserRole.DOCTOR:
-      return DOCTOR_STATUS_FILTERS;
-    case UserRole.PATIENT:
-      return PATIENT_STATUS_FILTERS;
-    default:
-      return ADMIN_STATUS_FILTERS;
-  }
+function getStatusFiltersForTab(tab: ScopeTab): StatusFilter[] {
+  if (tab === 'upcoming') return UPCOMING_STATUS_FILTERS;
+  if (tab === 'today') return TODAY_STATUS_FILTERS;
+  if (tab === 'past') return PAST_STATUS_FILTERS;
+  return [];
 }
 
 function readParam(value: string | string[] | undefined) {
@@ -137,9 +126,10 @@ export function AppointmentsListScreen({
     }
   }, [focusParam, scopeParam]);
 
-  const statusFilters = getStatusFiltersForRole(viewerRole);
+  const statusFilters = getStatusFiltersForTab(activeTab);
   const isPatient = viewerRole === UserRole.PATIENT;
   const showNursing = isPatient && section === 'nursing';
+  const showScopedStatusFilter = showStatusFilter && !showNursing && statusFilters.length > 0;
 
   const filters: AppointmentFilters = useMemo(() => {
     const base: AppointmentFilters = {
@@ -151,8 +141,7 @@ export function AppointmentsListScreen({
       base.status = AppointmentStatus.NO_SHOW;
     }
 
-    const canFilterStatus = activeTab === 'upcoming';
-    if (showStatusFilter && canFilterStatus && statusFilter !== 'all') {
+    if (showStatusFilter && activeTab !== 'noshow' && statusFilter !== 'all') {
       base.status = statusFilter;
     }
 
@@ -239,7 +228,7 @@ export function AppointmentsListScreen({
 
       {showNursing ? <PatientNursingTab userId={user?.id} /> : null}
 
-      {showStatusFilter && !showNursing && activeTab === 'upcoming' && (
+      {showScopedStatusFilter && (
         <Row className="mb-4 flex-wrap gap-2">
           {statusFilters.map((filter) => (
             <Pressable

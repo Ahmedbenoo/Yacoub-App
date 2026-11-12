@@ -1,4 +1,12 @@
-import { createOwnerCredential, createStaffCredential, sessionForUser } from './auth.mock';
+import {
+  createOwnerCredential,
+  createStaffCredential,
+  getMockSecretary,
+  listMockSecretaries,
+  removeMockSecretary,
+  sessionForUser,
+  updateMockSecretary,
+} from './auth.mock';
 import { addClinicForOwner, assignUserClinic, createOwnedPlace, ownerHasCenter } from './clinics.mock';
 import { insertDoctorProfile } from './doctors.mock';
 import type {
@@ -28,10 +36,10 @@ export const ownerRegistrationMock = {
       placeName: data.placeName,
       clinicName: data.clinicName,
       phone: data.clinicPhone,
-      street: data.street,
-      city: data.city,
+      street: data.street ?? '',
+      city: data.city ?? '',
       locationUrl: data.locationUrl,
-      specialty: data.specialty,
+      specialty: data.specialty ?? '',
       openingHours: data.openingHours,
       consultationFee: data.consultationFee,
     });
@@ -114,18 +122,37 @@ export const ownerRegistrationMock = {
 
   hasCenter: ownerHasCenter,
 
+  async listSecretaries() {
+    return listMockSecretaries();
+  },
+
+  async getSecretary(id: string) {
+    return getMockSecretary(id);
+  },
+
+  async updateSecretary(
+    id: string,
+    payload: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string },
+  ) {
+    return updateMockSecretary(id, payload);
+  },
+
+  async removeSecretary(id: string) {
+    return removeMockSecretary(id);
+  },
+
   async createSecretary(input: {
     firstName: string;
     lastName: string;
     phone: string;
-    password?: string;
+    password: string;
   }) {
     const clinicId = getMockClinicScope();
     const account = createStaffCredential({
       firstName: input.firstName,
       lastName: input.lastName,
       phone: input.phone,
-      password: input.password?.trim() || '',
+      password: input.password.trim(),
       role: UserRole.SECRETARY,
       clinicId,
     });
@@ -142,6 +169,12 @@ export const ownerRegistrationMock = {
         personName: `${input.firstName} ${input.lastName}`.trim(),
       });
     }
-    return { ...account, credentialsWhatsApp };
+    return {
+      ...account,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      clinicId,
+      credentialsWhatsApp,
+    };
   },
 };

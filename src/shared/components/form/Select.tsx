@@ -14,6 +14,7 @@ import { typography } from '@/shared/theme/tokens';
 export interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 interface SelectProps {
@@ -57,7 +58,8 @@ export function Select({
     setQuery('');
   };
 
-  const handleSelect = (nextValue: string) => {
+  const handleSelect = (nextValue: string, disabled?: boolean) => {
+    if (disabled) return;
     onChange(nextValue);
     close();
   };
@@ -163,17 +165,22 @@ export function Select({
                     key={option.value}
                     accessibilityRole="button"
                     accessibilityLabel={option.label}
-                    accessibilityState={{ selected: isSelected }}
-                    onPress={() => handleSelect(option.value)}
+                    accessibilityState={{ selected: isSelected, disabled: option.disabled }}
+                    disabled={option.disabled}
+                    onPress={() => handleSelect(option.value, option.disabled)}
                       className={cn(
                         'rounded-xl px-4 py-3',
+                        option.disabled && 'opacity-50',
                         isSelected && (isDark ? 'bg-primary-900/40' : 'bg-primary-50'),
                       )}
                     >
                       <Text
                         variant="body"
                         style={alignInlineStart}
-                        className={cn(isSelected && 'text-primary-700 dark:text-primary-300')}
+                        className={cn(
+                          isSelected && 'text-primary-700 dark:text-primary-300',
+                          option.disabled && 'text-slate-400',
+                        )}
                       >
                         {option.label}
                       </Text>

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { clinicCoverList, defaultClinicCover } from './clinic-covers.js';
+import { clinicCoverList, defaultClinicCover, isDemoClinicId, isStockCoverUrl } from './clinic-covers.js';
 import { db } from './db.js';
 import { absoluteUrl, storeImage, writeSeedImage } from './files.js';
 
@@ -69,13 +69,16 @@ export type PublicClinic = {
 
 export type ClinicPatch = {
   openingHours?: string;
-  consultationFee?: number;
+  consultationFee?: number | null;
   locationUrl?: string;
   photoUrl?: string;
   coverUrl?: string;
   replacePhotoIndex?: number;
   replacePhotoUrl?: string;
   logoUrl?: string;
+  street?: string;
+  city?: string;
+  specialty?: string;
 };
 
 function httpError(status: number, code: string, message: string): Error {
@@ -127,7 +130,11 @@ export function toPublicClinic(
     locationUrl: row.location_url ?? undefined,
     consultationFee: row.consultation_fee ?? undefined,
     openingHours: row.opening_hours ?? undefined,
-    photoUrls: photos.length ? photos : [defaultClinicCover(row.id, row.specialty)],
+    photoUrls: photos.length
+      ? photos
+      : isDemoClinicId(row.id)
+        ? [defaultClinicCover(row.id, row.specialty)]
+        : [],
     rating: stats?.rating ?? 0,
     reviewCount: stats?.reviewCount ?? 0,
     ownerUserId: row.owner_user_id ?? undefined,
@@ -348,10 +355,16 @@ export async function updateClinic(userId: string, clinicId: string, patch: Clin
   let openingHours = clinic.opening_hours;
   let fee = clinic.consultation_fee;
   let locationUrl = clinic.location_url;
+  let street = clinic.street;
+  let city = clinic.city;
+  let specialty = clinic.specialty;
 
-  if (patch.openingHours !== undefined) openingHours = patch.openingHours.trim();
+  if (patch.openingHours !== undefined) openingHours = patch.openingHours.trim() || null;
   if (patch.consultationFee !== undefined) fee = patch.consultationFee;
   if (patch.locationUrl !== undefined) locationUrl = patch.locationUrl.trim() || null;
+  if (patch.street !== undefined) street = patch.street.trim() || null;
+  if (patch.city !== undefined) city = patch.city.trim() || null;
+  if (patch.specialty !== undefined) specialty = patch.specialty.trim() || null;
   if (patch.logoUrl) logo = storeImage(patch.logoUrl, folder);
   if (patch.photoUrl) photos = [...photos, storeImage(patch.photoUrl, folder)];
   if (patch.replacePhotoUrl !== undefined && patch.replacePhotoIndex != null) {
@@ -371,9 +384,12 @@ export async function updateClinic(userId: string, clinicId: string, patch: Clin
          location_url = $4,
          logo_url = $5,
          photo_urls = $6,
+         street = $7,
+         city = $8,
+         specialty = $9,
          updated_at = now()
      WHERE id = $1`,
-    [clinicId, openingHours, fee, locationUrl, logo, JSON.stringify(photos)],
+    [clinicId, openingHours, fee, locationUrl, logo, JSON.stringify(photos), street, city, specialty],
   );
 
   return getClinic(clinicId, baseUrl);
@@ -420,10 +436,6 @@ export async function addOwnerClinic(
      ON CONFLICT (user_id, clinic_id, role) DO NOTHING`,
     [`mem-${id}`, userId, id],
   );
-  await db.query('UPDATE clinics SET photo_urls = $2 WHERE id = $1', [
-    id,
-    JSON.stringify(clinicCoverList(id, input.specialty)),
-  ]);
   const row = await clinicById(id);
   return toPublicClinic(row!, baseUrl);
 }
@@ -431,10 +443,20 @@ export async function addOwnerClinic(
 export async function ensureClinicPhotos(): Promise<void> {
   const result = await db.query<ClinicRow>('SELECT id, specialty, photo_urls FROM clinics');
   for (const row of result.rows) {
-    if (readPhotos(row.photo_urls).length) continue;
+    const photos = readPhotos(row.photo_urls);
+    if (isDemoClinicId(row.id)) {
+      if (photos.length) continue;
+      await db.query('UPDATE clinics SET photo_urls = $2, updated_at = now() WHERE id = $1', [
+        row.id,
+        JSON.stringify(clinicCoverList(row.id, row.specialty)),
+      ]);
+      continue;
+    }
+    const owned = photos.filter((url) => !isStockCoverUrl(url));
+    if (owned.length === photos.length) continue;
     await db.query('UPDATE clinics SET photo_urls = $2, updated_at = now() WHERE id = $1', [
       row.id,
-      JSON.stringify(clinicCoverList(row.id, row.specialty)),
+      JSON.stringify(owned),
     ]);
   }
   await db.query(

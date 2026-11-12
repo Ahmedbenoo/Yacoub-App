@@ -159,6 +159,10 @@ export function listAssignedClinicIds(userId: string): string[] {
   return userClinicIds[userId] ?? [];
 }
 
+export function unassignUserClinic(userId: string, clinicId: string) {
+  userClinicIds[userId] = (userClinicIds[userId] ?? []).filter((id) => id !== clinicId);
+}
+
 export function ownerHasCenter(userId: string): boolean {
   return organizations.some((organization) => organization.ownerUserId === userId);
 }
@@ -294,19 +298,25 @@ export function updateClinicListing(
   clinicId: string,
   patch: {
     openingHours?: string;
-    consultationFee?: number;
+    consultationFee?: number | null;
     locationUrl?: string;
     photoUrl?: string;
     coverUrl?: string;
     replacePhotoIndex?: number;
     replacePhotoUrl?: string;
+    street?: string;
+    city?: string;
+    specialty?: string;
   },
 ): Clinic {
   const clinic = mockClinics.find((item) => item.id === clinicId);
   if (!clinic) throw { code: 'NOT_FOUND', message: 'Clinic not found' };
-  if (patch.openingHours !== undefined) clinic.openingHours = patch.openingHours.trim();
-  if (patch.consultationFee !== undefined) clinic.consultationFee = patch.consultationFee;
+  if (patch.openingHours !== undefined) clinic.openingHours = patch.openingHours.trim() || undefined;
+  if (patch.consultationFee !== undefined) clinic.consultationFee = patch.consultationFee ?? undefined;
   if (patch.locationUrl !== undefined) clinic.locationUrl = patch.locationUrl.trim() || undefined;
+  if (patch.street !== undefined) clinic.address.street = patch.street.trim();
+  if (patch.city !== undefined) clinic.address.city = patch.city.trim();
+  if (patch.specialty !== undefined) clinic.specialty = patch.specialty.trim() || undefined;
   if (patch.photoUrl) clinic.photoUrls = [...(clinic.photoUrls ?? []), patch.photoUrl];
   if (patch.replacePhotoUrl && patch.replacePhotoIndex != null) {
     const photos = [...(clinic.photoUrls ?? [])];

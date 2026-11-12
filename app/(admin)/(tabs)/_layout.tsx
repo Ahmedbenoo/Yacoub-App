@@ -30,7 +30,7 @@ export default function AdminTabsLayout() {
         />
         <Tabs.Screen
           name="doctors"
-          options={{ title: t('tabs.doctors'), tabBarIcon: createTabBarIcon('doctors') }}
+          options={{ title: t('tabs.team'), tabBarIcon: createTabBarIcon('doctors') }}
         />
         <Tabs.Screen
           name="patients"

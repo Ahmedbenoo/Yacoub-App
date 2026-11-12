@@ -67,7 +67,7 @@ export async function requestPushPermissions(): Promise<PushPermissionStatus> {
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
-      name: 'Yacoub',
+      name: 'منجز طبي',
       importance: Notifications.AndroidImportance.DEFAULT,
     });
   }

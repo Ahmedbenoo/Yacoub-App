@@ -25,16 +25,24 @@ export const createDoctorSchema = z.object({
   firstName: z.string().min(2, 'firstNameMin'),
   lastName: z.string().min(2, 'lastNameMin'),
   phone: z.string().refine(isValidPhone, 'invalidPhone'),
+  password: z.string().min(8, 'passwordMin'),
   specialty: z.string().min(1, 'specialtyRequired'),
   branchId: z.string().optional(),
   languages: z.string().optional(),
   bio: z.string().optional(),
 });
 
+export const updateSecretarySchema = z.object({
+  firstName: z.string().min(2, 'firstNameMin'),
+  lastName: z.string().min(2, 'lastNameMin'),
+  phone: z.string().refine(isValidPhone, 'invalidPhone'),
+});
+
 export const createSecretarySchema = z.object({
   firstName: z.string().min(2, 'firstNameMin'),
   lastName: z.string().min(2, 'lastNameMin'),
   phone: z.string().refine(isValidPhone, 'invalidPhone'),
+  password: z.string().min(8, 'passwordMin'),
 });
 
 export const addClinicSchema = z.object({
@@ -65,6 +73,7 @@ export const createPatientSchema = z.object({
 
 export type UpdateDoctorFormData = z.infer<typeof updateDoctorSchema>;
 export type UpdatePatientFormData = z.infer<typeof updatePatientSchema>;
+export type UpdateSecretaryFormData = z.infer<typeof updateSecretarySchema>;
 export type CreateDoctorFormData = z.infer<typeof createDoctorSchema>;
 export type CreatePatientFormData = z.infer<typeof createPatientSchema>;
 

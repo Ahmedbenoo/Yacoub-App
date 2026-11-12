@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 
 import { useResolvedColorScheme } from '@/shared/hooks/useTheme';
 import { cn } from '@/shared/lib/utils';
+import { useLocaleStore } from '@/shared/stores';
 
-const logoLight = require('../../../../assets/images/logo-yacoub.png');
-const logoOnDark = require('../../../../assets/images/logo-yacoub-on-dark.png');
+const logoLight = require('../../../../assets/images/logo-munjiz.png');
+const logoOnDark = require('../../../../assets/images/logo-munjiz.png');
 
-/** Source asset is 601×221. */
-const LOGO_ASPECT = 601 / 221;
+/** Source asset is 1024×558. */
+const LOGO_ASPECT = 1024 / 558;
 
 type LogoSize = 'sm' | 'nav' | 'md' | 'lg' | 'xl';
 
@@ -22,14 +23,16 @@ interface LogoProps {
   fillWidth?: boolean;
   /** Cap visible height — used by nav bar for consistent sizing across roles. */
   maxVisibleHeight?: number;
+  /** Override the logo box width (nav bar). */
+  boxWidth?: number;
 }
 
 const sizeMap: Record<LogoSize, { height: number }> = {
   sm: { height: 28 },
-  nav: { height: 34 },
-  md: { height: 40 },
-  lg: { height: 56 },
-  xl: { height: 72 },
+  nav: { height: 38 },
+  md: { height: 48 },
+  lg: { height: 64 },
+  xl: { height: 80 },
 };
 
 export function Logo({
@@ -38,31 +41,35 @@ export function Logo({
   align = 'center',
   fillWidth = false,
   maxVisibleHeight,
+  boxWidth,
 }: LogoProps) {
   const { t } = useTranslation('common');
+  const isRtl = useLocaleStore((s) => s.isRtl);
   const isDark = useResolvedColorScheme() === 'dark';
-  const height = maxVisibleHeight ?? sizeMap[size].height;
-  const width = fillWidth ? undefined : height * LOGO_ASPECT;
+  const fallbackHeight = maxVisibleHeight ?? sizeMap[size].height;
+  const width = fillWidth ? undefined : boxWidth ?? fallbackHeight * LOGO_ASPECT;
+  const height = width ? width / LOGO_ASPECT : fallbackHeight;
+  const alignItems =
+    align === 'center' ? 'center' : isRtl ? 'flex-end' : 'flex-start';
 
   return (
     <View
-      className={cn(
-        'shrink-0 justify-center overflow-hidden',
-        align === 'start' ? 'items-start' : 'items-center',
-        fillWidth && 'flex-1',
-        className,
-      )}
-      style={fillWidth ? { height } : { height, width }}
+      className={cn('shrink-0 justify-center overflow-hidden', fillWidth && 'flex-1', className)}
+      style={
+        fillWidth
+          ? { height: fallbackHeight, alignItems, direction: 'ltr' }
+          : { height, width, alignItems, direction: 'ltr' }
+      }
       accessibilityRole="image"
       accessibilityLabel={t('appName')}
     >
       <Image
         source={isDark ? logoOnDark : logoLight}
-        style={
-          fillWidth
-            ? { width: '100%', height, maxHeight: '100%', backgroundColor: 'transparent' }
-            : { height, width, backgroundColor: 'transparent' }
-        }
+        style={{
+          width: fillWidth ? '100%' : width,
+          height: fillWidth ? fallbackHeight : height,
+          backgroundColor: 'transparent',
+        }}
         resizeMode="contain"
       />
     </View>

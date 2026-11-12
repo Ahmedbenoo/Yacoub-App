@@ -82,12 +82,15 @@ export const clinicsService = {
     clinicId: string,
     patch: {
       openingHours?: string;
-      consultationFee?: number;
+      consultationFee?: number | null;
       locationUrl?: string;
       photoUrl?: string;
       coverUrl?: string;
       replacePhotoIndex?: number;
       replacePhotoUrl?: string;
+      street?: string;
+      city?: string;
+      specialty?: string;
     },
   ): Promise<Clinic> => {
     if (!usesRealClinicApi()) return updateClinicListing(clinicId, patch);

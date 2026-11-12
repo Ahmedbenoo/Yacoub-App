@@ -56,7 +56,7 @@ export interface CreateDoctorPayload {
   lastName: string;
   email: string;
   phone?: string;
-  password?: string;
+  password: string;
   specialty: string;
   branchName: string;
   languages: string[];
@@ -68,17 +68,39 @@ export interface CreateDoctorResult extends DoctorProfile {
   credentialsWhatsApp?: string;
 }
 
+export interface SecretaryProfile {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  clinicId: string;
+  clinicName?: string;
+  clinicNameAr?: string;
+  avatarUrl?: string;
+}
+
+export interface UpdateSecretaryPayload {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  avatarUrl?: string;
+}
+
 export interface CreateSecretaryPayload {
   firstName: string;
   lastName: string;
   phone: string;
-  password?: string;
+  password: string;
 }
 
 export interface CreateSecretaryResult {
   userId: string;
   email: string;
   phone: string;
+  firstName?: string;
+  lastName?: string;
+  clinicId?: string;
   linkedExisting: boolean;
   credentialsWhatsApp?: string;
 }
@@ -96,21 +118,21 @@ export interface RegisterDoctorPayload {
 export interface RegisterOwnerPayload {
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   phone: string;
-  gender: 'male' | 'female';
+  gender?: 'male' | 'female';
   password: string;
   placeKind: 'clinic' | 'center';
   placeName: string;
   clinicName?: string;
-  clinicPhone: string;
-  street: string;
-  city: string;
+  clinicPhone?: string;
+  street?: string;
+  city?: string;
   locationUrl?: string;
-  specialty: string;
-  openingHours: string;
-  consultationFee: number;
-  practices: boolean;
+  specialty?: string;
+  openingHours?: string;
+  consultationFee?: number;
+  practices?: boolean;
 }
 
 export interface AddOwnerClinicPayload {

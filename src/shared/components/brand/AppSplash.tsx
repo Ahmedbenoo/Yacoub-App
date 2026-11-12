@@ -2,7 +2,7 @@ import { createElement, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Image, Platform, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
-const logo = require('../../../../assets/images/logo-yacoub.png') as
+const logo = require('../../../../assets/images/logo-munjiz.png') as
   | number
   | string
   | { uri?: string; default?: string };
@@ -90,35 +90,12 @@ const WEB_LOADER_CSS = `
 .app-web-loader .loader-logo {
   position: relative;
   z-index: 1;
-  width: 118px;
+  width: 148px;
   background: #fff;
   border-radius: 22px;
   padding: 10px 12px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
   animation: yacoub-loader-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.app-web-loader .loader-word {
-  color: #ecfdf5;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  font-size: 13px;
-  opacity: 0;
-  animation: yacoub-loader-fade 0.6s ease 0.55s forwards;
-}
-.app-web-loader .loader-bar {
-  width: 100%;
-  height: 3px;
-  border-radius: 99px;
-  background: rgba(204, 251, 241, 0.16);
-  overflow: hidden;
-}
-.app-web-loader .loader-bar i {
-  display: block;
-  height: 100%;
-  width: 0;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #14b8a6, #ccfbf1);
-  animation: yacoub-loader-fill 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes yacoub-loader-draw { to { stroke-dashoffset: 0; } }
 @keyframes yacoub-loader-pulse {
@@ -133,18 +110,12 @@ const WEB_LOADER_CSS = `
   from { transform: translateY(12px) scale(0.92); opacity: 0; }
   to { transform: none; opacity: 1; }
 }
-@keyframes yacoub-loader-fade { to { opacity: 0.78; } }
-@keyframes yacoub-loader-fill { to { width: 100%; } }
 @media (prefers-reduced-motion: reduce) {
   .app-web-loader .loader-ecg path,
   .app-web-loader .loader-ring::after,
-  .app-web-loader .loader-logo,
-  .app-web-loader .loader-word,
-  .app-web-loader .loader-bar i { animation: none; }
+  .app-web-loader .loader-logo { animation: none; }
   .app-web-loader .loader-ecg path { stroke-dashoffset: 0; }
-  .app-web-loader .loader-bar i { width: 100%; }
-  .app-web-loader .loader-logo,
-  .app-web-loader .loader-word { opacity: 1; }
+  .app-web-loader .loader-logo { opacity: 1; }
 }
 `;
 
@@ -154,7 +125,7 @@ function WebAppSplash() {
       <StatusBar style="light" />
       {createElement(
         'div',
-        { className: 'app-web-loader', role: 'status', 'aria-label': 'جاري تحميل يعقوب' },
+        { className: 'app-web-loader', role: 'status', 'aria-label': 'جاري تحميل منجز طبي' },
         createElement('style', { dangerouslySetInnerHTML: { __html: WEB_LOADER_CSS } }),
         createElement(
           'div',
@@ -168,10 +139,8 @@ function WebAppSplash() {
               { className: 'loader-ecg', viewBox: '0 0 120 120', 'aria-hidden': 'true' },
               createElement('path', { d: 'M8 64 H28 L36 64 L44 28 L54 92 L64 52 L70 64 H112' }),
             ),
-            createElement('img', { className: 'loader-logo', src: logoUri(), alt: 'يعقوب' }),
           ),
-          createElement('div', { className: 'loader-word' }, 'YACOUB'),
-          createElement('div', { className: 'loader-bar', 'aria-hidden': 'true' }, createElement('i')),
+          createElement('img', { className: 'loader-logo', src: logoUri(), alt: 'منجز طبي' }),
         ),
       )}
     </View>
@@ -210,8 +179,6 @@ function EcgLine() {
 function NativeAppSplash() {
   const ring = useRef(new Animated.Value(0)).current;
   const logoRise = useRef(new Animated.Value(0)).current;
-  const word = useRef(new Animated.Value(0)).current;
-  const bar = useRef(new Animated.Value(0)).current;
   const ecgDraw = useRef(new Animated.Value(0)).current;
   const ecgPulse = useRef(new Animated.Value(0.55)).current;
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -226,8 +193,6 @@ function NativeAppSplash() {
   useEffect(() => {
     if (reduceMotion) {
       logoRise.setValue(1);
-      word.setValue(1);
-      bar.setValue(1);
       ecgDraw.setValue(1);
       ecgPulse.setValue(1);
       return;
@@ -274,19 +239,6 @@ function NativeAppSplash() {
         easing: Easing.bezier(0.16, 1, 0.3, 1),
         useNativeDriver: true,
       }),
-      Animated.timing(word, {
-        toValue: 1,
-        duration: 600,
-        delay: 550,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(bar, {
-        toValue: 1,
-        duration: 1500,
-        easing: Easing.bezier(0.22, 1, 0.36, 1),
-        useNativeDriver: false,
-      }),
       Animated.timing(ecgDraw, {
         toValue: 1,
         duration: 1600,
@@ -303,10 +255,10 @@ function NativeAppSplash() {
       breathe.stop();
       pulse.stop();
     };
-  }, [bar, ecgDraw, ecgPulse, logoRise, reduceMotion, ring, word]);
+  }, [ecgDraw, ecgPulse, logoRise, reduceMotion, ring]);
 
   return (
-    <View style={styles.root} accessibilityRole="progressbar" accessibilityLabel="جاري تحميل يعقوب">
+    <View style={styles.root} accessibilityRole="progressbar" accessibilityLabel="جاري تحميل منجز طبي">
       <StatusBar style="light" />
       <View style={styles.glow} />
       <View style={styles.inner}>
@@ -341,54 +293,31 @@ function NativeAppSplash() {
               <EcgLine />
             </View>
           </Animated.View>
-          <Animated.View
-            style={[
-              styles.logoCard,
-              {
-                opacity: logoRise,
-                transform: [
-                  {
-                    translateY: logoRise.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [12, 0],
-                    }),
-                  },
-                  {
-                    scale: logoRise.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.92, 1],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            <Image source={logo as number} style={styles.logo} resizeMode="contain" accessibilityLabel="يعقوب" />
-          </Animated.View>
         </View>
-        <Animated.Text
+        <Animated.View
           style={[
-            styles.word,
+            styles.logoCard,
             {
-              opacity: word.interpolate({ inputRange: [0, 1], outputRange: [0, 0.78] }),
+              opacity: logoRise,
+              transform: [
+                {
+                  translateY: logoRise.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [12, 0],
+                  }),
+                },
+                {
+                  scale: logoRise.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.92, 1],
+                  }),
+                },
+              ],
             },
           ]}
         >
-          YACOUB
-        </Animated.Text>
-        <View style={styles.track}>
-          <Animated.View
-            style={[
-              styles.bar,
-              {
-                width: bar.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
-                }),
-              },
-            ]}
-          />
-        </View>
+          <Image source={logo as number} style={styles.logo} resizeMode="contain" accessibilityLabel="منجز طبي" />
+        </Animated.View>
       </View>
     </View>
   );
@@ -482,7 +411,7 @@ const styles = StyleSheet.create({
   },
   logoCard: {
     zIndex: 1,
-    width: 118,
+    width: 148,
     borderRadius: 22,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,
@@ -499,26 +428,7 @@ const styles = StyleSheet.create({
     }),
   },
   logo: {
-    width: 94,
-    height: 35,
-  },
-  word: {
-    color: '#ecfdf5',
-    fontFamily: 'Cairo-Bold',
-    fontWeight: '800',
-    fontSize: 13,
-    letterSpacing: 2.3,
-  },
-  track: {
-    width: '100%',
-    height: 3,
-    overflow: 'hidden',
-    borderRadius: 99,
-    backgroundColor: 'rgba(204, 251, 241, 0.16)',
-  },
-  bar: {
-    height: 3,
-    borderRadius: 99,
-    backgroundColor: '#14b8a6',
+    width: 124,
+    height: 68,
   },
 });

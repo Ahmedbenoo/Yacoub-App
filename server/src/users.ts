@@ -9,6 +9,24 @@ import { deliverAppWhatsApp } from './whatsapp.js';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_DAYS = 30;
+const OTP_RESEND_MS = 45_000;
+const OTP_HOUR_LIMIT = 5;
+const otpSendTimes = new Map<string, number[]>();
+
+function assertOtpRateLimit(phone: string): void {
+  const now = Date.now();
+  const hour = 60 * 60 * 1000;
+  const times = (otpSendTimes.get(phone) ?? []).filter((at) => now - at < hour);
+  const last = times[times.length - 1];
+  if (last && now - last < OTP_RESEND_MS) {
+    throw httpError(429, 'OTP_RATE_LIMIT', 'استنى شوية قبل ما تطلب رمز تاني');
+  }
+  if (times.length >= OTP_HOUR_LIMIT) {
+    throw httpError(429, 'OTP_RATE_LIMIT', 'طلبت الرمز كتير. حاول بعد ساعة');
+  }
+  times.push(now);
+  otpSendTimes.set(phone, times);
+}
 
 export type PublicUser = {
   id: string;
@@ -293,11 +311,15 @@ function isUniqueViolation(error: unknown): boolean {
 async function findByIdentifier(identifier: string): Promise<UserRow | undefined> {
   const trimmed = identifier.trim();
   const phone = trimmed.includes('@') ? '' : normalizePhone(trimmed);
+  const last10 = trimmed.includes('@') ? '' : trimmed.replace(/\D/g, '').slice(-10);
   const result = await db.query<UserRow>(
     `SELECT * FROM users
-     WHERE lower(email) = lower($1) OR phone = $1 OR ($2 <> '' AND phone = $2)
+     WHERE lower(email) = lower($1)
+        OR phone = $1
+        OR ($2 <> '' AND phone = $2)
+        OR ($3 <> '' AND right(regexp_replace(coalesce(phone, ''), '\\D', '', 'g'), 10) = $3)
      LIMIT 1`,
-    [trimmed, phone],
+    [trimmed, phone, last10],
   );
   return result.rows[0];
 }
@@ -619,6 +641,7 @@ export async function requestLoginOtp(phoneInput: string, intent: 'login' | 'sig
     throw httpError(404, 'PHONE_NOT_FOUND', 'مفيش حساب على الرقم ده. اعمل حساب الأول.');
   }
 
+  assertOtpRateLimit(phone);
   const otp = String(randomInt(100000, 1000000));
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
   await db.query('DELETE FROM login_otps WHERE phone = $1', [phone]);
@@ -626,7 +649,7 @@ export async function requestLoginOtp(phoneInput: string, intent: 'login' | 'sig
     `INSERT INTO login_otps (id, phone, otp_hash, expires_at) VALUES ($1, $2, $3, $4)`,
     [randomUUID(), phone, hashToken(otp), expiresAt],
   );
-  const sent = await deliverAppWhatsApp(`رمز الدخول في يعقوب: ${otp}`, phone);
+  const sent = await deliverAppWhatsApp(`رمز الدخول في منجز طبي: ${otp}`, phone);
   if (!sent) {
     await db.query('DELETE FROM login_otps WHERE phone = $1', [phone]);
     throw httpError(503, 'OTP_NOT_SENT', 'تعذر إرسال الرمز على واتساب');
@@ -779,6 +802,7 @@ async function storeResetOtp(phone: string): Promise<void> {
   const user = await findByIdentifier(phone);
   if (!user?.email || !user.phone) return;
 
+  assertOtpRateLimit(user.phone);
   const otp = String(randomInt(100000, 1000000));
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
   await db.query('DELETE FROM password_resets WHERE lower(email) = lower($1)', [user.email]);
@@ -787,7 +811,7 @@ async function storeResetOtp(phone: string): Promise<void> {
      VALUES ($1, $2, $3, $4)`,
     [randomUUID(), user.email.toLowerCase(), hashToken(otp), expiresAt],
   );
-  const sent = await deliverAppWhatsApp(`رمز التحقق في يعقوب: ${otp}`, user.phone);
+  const sent = await deliverAppWhatsApp(`رمز التحقق في منجز طبي: ${otp}`, user.phone);
   if (!sent) throw httpError(503, 'OTP_NOT_SENT', 'تعذر إرسال الرمز على واتساب');
 }
 

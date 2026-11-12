@@ -13,6 +13,7 @@ export function NavBrand({ className }: NavBrandProps) {
       align="start"
       className={cn(className)}
       maxVisibleHeight={TAB_TOP_BAR_METRICS.logoVisibleHeight}
+      boxWidth={TAB_TOP_BAR_METRICS.logoVisibleWidth}
     />
   );
 }

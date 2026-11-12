@@ -15,7 +15,7 @@ import { Card } from '@/shared/components/ui/Card';
 import { Text } from '@/shared/components/ui/Text';
 import { FormInput } from '@/shared/components/form/FormInput';
 import { Logo } from '@/shared/components/brand/Logo';
-import { useSpecialtyOptions } from '@/features/admin/hooks';
+import { useHomeVisitSpecialtyOptions } from '@/features/admin/hooks';
 import { FormSelect } from '@/shared/components/form/FormSelect';
 import {
   loginOtpSchema,
@@ -145,7 +145,7 @@ function AccountTypeList({ onSelect }: { onSelect: (kind: AccountKind) => void }
 function DoctorRegisterForm() {
   const { t } = useTranslation('auth');
   const registerDoctor = useRegisterDoctorMutation();
-  const specialtyOptions = useSpecialtyOptions();
+  const specialtyOptions = useHomeVisitSpecialtyOptions();
   const { control, handleSubmit } = useForm<RegisterDoctorFormData>({
     resolver: zodResolver(registerDoctorSchema),
     defaultValues: {

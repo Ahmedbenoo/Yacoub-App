@@ -34,6 +34,10 @@ yarn-error.*
 .env
 .env*.local
 
+# WhatsApp Web session (never commit)
+server/.wwebjs_auth/
+server/.wwebjs_cache/
+
 # local export and inspect scratch
 .expo-tmp-export/
 .tmp-apk-inspect/

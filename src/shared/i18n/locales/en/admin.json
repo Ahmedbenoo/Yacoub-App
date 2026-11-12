@@ -2,6 +2,7 @@
   "tabs": {
     "dashboard": "Dashboard",
     "doctors": "Doctors",
+    "team": "Team",
     "patients": "Patients",
     "appointments": "Appointments",
     "more": "More"
@@ -117,6 +118,10 @@
     "doctorCreated": "Doctor created",
     "doctorLinked": "Doctor linked to this clinic with their existing account",
     "secretaryCreated": "Secretary created",
+    "secretaryLinked": "Secretary is already on the team",
+    "secretaryUpdated": "Secretary profile updated",
+    "secretaryDeleted": "Secretary removed from the team",
+    "deleteFailed": "Delete failed",
     "clinicCreated": "Clinic added",
     "patientUpdated": "Patient updated",
     "patientCreated": "Patient created",
@@ -129,15 +134,40 @@
     "deactivateFailed": "Deactivation failed",
     "reactivateFailed": "Reactivation failed"
   },
+  "staff": {
+    "title": "Team",
+    "addMember": "Add member",
+    "addMemberTitle": "Choose a role",
+    "roleDoctor": "Doctor",
+    "searchPlaceholder": "Search doctors or secretaries…",
+    "doctors": "Doctors",
+    "secretaries": "Secretaries",
+    "roleSecretary": "Secretary",
+    "error": "Could not load the team",
+    "empty": {
+      "title": "No team members yet",
+      "description": "Add a doctor or a secretary from this page"
+    }
+  },
   "secretary": {
     "createTitle": "Add secretary",
     "createAction": "Create account",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "editTitle": "Edit secretary",
+    "deleteTitle": "Remove secretary",
+    "deleteMessage": "{{name}} will be removed from the team and will no longer access this clinic as a secretary.",
+    "deleteConfirm": "Remove"
   },
   "staffAccess": {
-    "hint": "The username is the phone number. The app creates a random password and sends it on WhatsApp with the clinic name.",
+    "hint": "The username is the phone number. Set a password, then share the welcome message on WhatsApp.",
+    "usernameHint": "This will be the username",
+    "username": "Username",
+    "readyTitle": "Account ready",
+    "shareHint": "Share the welcome message on WhatsApp with the username and password.",
+    "shareWhatsApp": "Share on WhatsApp",
+    "shareFailed": "Could not open WhatsApp",
     "sentTitle": "WhatsApp sent",
-    "sentToast": "Login details were sent on WhatsApp",
+    "sentToast": "Account created",
     "done": "Done"
   },
   "clinic": {

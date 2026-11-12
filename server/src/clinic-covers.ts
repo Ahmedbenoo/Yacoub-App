@@ -7,6 +7,18 @@ const COVERS = [
   'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?auto=format&fit=crop&w=900&q=80',
 ];
 
+export function isDemoClinicId(id: string): boolean {
+  return (
+    id.startsWith('clinic-spec-') ||
+    id.startsWith('clinic-test-') ||
+    id.startsWith('clinic-00')
+  );
+}
+
+export function isStockCoverUrl(url: string): boolean {
+  return url.includes('images.unsplash.com');
+}
+
 function hashId(id: string): number {
   return [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0);
 }

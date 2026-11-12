@@ -311,7 +311,7 @@ export const mockDoctorsService = {
       firstName: payload.firstName,
       lastName: payload.lastName,
       phone: payload.phone,
-      password: payload.password?.trim() || '',
+      password: payload.password.trim(),
       role: UserRole.DOCTOR,
       clinicId,
     });

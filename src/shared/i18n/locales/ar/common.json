@@ -1,5 +1,5 @@
 {
-  "appName": "Yacoub",
+  "appName": "منجز طبي",
   "tagline": "نظام إدارة العيادات",
   "loading": "جاري التحميل...",
   "retry": "حاول مرة أخرى",
@@ -31,6 +31,7 @@
     "description": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
   },
   "settings": {
+    "subscription": "الاشتراك",
     "pushNotifications": "الإشعارات",
     "pushEnabled": "مفعّلة",
     "pushDisabled": "معطّلة",
@@ -39,9 +40,16 @@
     "enablePushHint": "اضغط للسماح بتنبيهات المواعيد",
     "pushStatus": "الحالة",
     "language": "اللغة",
+    "languageSubtitle": "العربية والإنجليزية",
     "languageEn": "English",
     "languageAr": "العربية",
     "theme": "المظهر",
+    "themeSubtitle": "فاتح أو داكن أو النظام",
+    "rolesTitle": "الأدوار",
+    "rolesSubtitle": "طبيب أو مدير العيادة",
+    "branchesTitle": "الفروع",
+    "branchesSubtitle": "اختيار الفرع النشط",
+    "notificationsSubtitle": "التنبيهات وفئات الإشعارات",
     "themeLight": "فاتح",
     "themeDark": "داكن",
     "themeSystem": "النظام",

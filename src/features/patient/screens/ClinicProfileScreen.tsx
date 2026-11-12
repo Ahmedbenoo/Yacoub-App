@@ -226,10 +226,10 @@ export function ClinicProfileScreen() {
         </View>
 
         <View className="gap-2.5">
-          {clinic.openingHours ? (
-            <StatCell icon="clock" label={t('clinicProfile.hours')} value={clinic.openingHours} />
+          {clinic.openingHours?.trim() ? (
+            <StatCell icon="clock" label={t('clinicProfile.hours')} value={clinic.openingHours.trim()} />
           ) : null}
-          {clinic.consultationFee != null ? (
+          {clinic.consultationFee ? (
             <StatCell
               icon="clinic"
               label={t('clinicProfile.fee')}

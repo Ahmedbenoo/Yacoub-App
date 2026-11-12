@@ -1,5 +1,5 @@
 {
-  "appName": "Yacoub",
+  "appName": "Munjiz Tibbi",
   "tagline": "Clinic Management System",
   "loading": "Loading...",
   "retry": "Try Again",
@@ -31,6 +31,7 @@
     "description": "An unexpected error occurred. Please try again."
   },
   "settings": {
+    "subscription": "Subscription",
     "pushNotifications": "Push notifications",
     "pushEnabled": "Enabled",
     "pushDisabled": "Disabled",
@@ -39,9 +40,16 @@
     "enablePushHint": "Tap to allow appointment alerts",
     "pushStatus": "Status",
     "language": "Language",
+    "languageSubtitle": "Arabic and English",
     "languageEn": "English",
     "languageAr": "Arabic",
     "theme": "Theme",
+    "themeSubtitle": "Light, dark, or system",
+    "rolesTitle": "Roles",
+    "rolesSubtitle": "Doctor or clinic admin",
+    "branchesTitle": "Branches",
+    "branchesSubtitle": "Choose the active branch",
+    "notificationsSubtitle": "Alerts and notification categories",
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",

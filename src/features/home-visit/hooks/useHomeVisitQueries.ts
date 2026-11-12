@@ -29,10 +29,16 @@ export function useHomeVisitSettingQuery() {
 
 export function useEnableHomeVisitsMutation() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation('homeVisit');
   return useMutation({
     mutationFn: () => homeVisitService.enable(),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.homeVisits.setting });
+      Toast.show({ type: 'success', text1: t('toast.enabled') });
+    },
+    onError: (error) => {
+      const apiError = normalizeApiError(error);
+      Toast.show({ type: 'error', text1: t('toast.failed'), text2: apiError.message });
     },
   });
 }

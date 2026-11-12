@@ -1,5 +1,6 @@
 import 'dotenv/config';
 
+import { timingSafeEqual } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -119,8 +120,18 @@ import {
 } from './obgyn.js';
 import { createReview, listReviews, reviewForAppointment } from './reviews.js';
 import { registerDoctorAccount, registerOwnerAccount } from './registration.js';
-import { createDoctor, createSecretary, setDoctorActive, updateDoctor } from './staff.js';
+import {
+  createDoctor,
+  createSecretary,
+  getSecretary,
+  listSecretaries,
+  removeSecretary,
+  setDoctorActive,
+  updateDoctor,
+  updateSecretary,
+} from './staff.js';
 import { ensurePlatformAdmin, opsRouter } from './ops.js';
+import { getWhatsAppRuntimeStatus, startWhatsAppProvider } from './whatsapp/provider.js';
 
 const loginBody = z.object({
   identifier: z.string().min(3),
@@ -175,14 +186,17 @@ const refreshBody = z.object({
 });
 
 const clinicPatchBody = z.object({
-  openingHours: z.string().min(2).optional(),
-  consultationFee: z.number().int().nonnegative().optional(),
+  openingHours: z.string().optional(),
+  consultationFee: z.number().int().nonnegative().nullable().optional(),
   locationUrl: z.string().optional(),
   photoUrl: z.string().optional(),
   coverUrl: z.string().optional(),
   replacePhotoIndex: z.number().int().nonnegative().optional(),
   replacePhotoUrl: z.string().optional(),
   logoUrl: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  specialty: z.string().optional(),
 });
 
 const clinicSearchQuery = z.object({
@@ -401,17 +415,41 @@ app.use(
   }),
 );
 app.get('/favicon.ico', (_req, res) => {
-  res.sendFile(path.join(opsDir, 'logo-yacoub.png'));
+  res.sendFile(path.join(opsDir, 'favicon.png'));
 });
 
 app.get('/api/v1', (_req, res) => {
   res.json({
     success: true,
     data: {
-      name: 'Yacoub API',
+      name: 'Munjiz Tibbi API',
       message: 'السيرفر شغال. الدخول من POST /api/v1/auth/login — لوحة المنصة على /ops',
     },
   });
+});
+
+function isLoopback(req: express.Request): boolean {
+  const ip = req.socket.remoteAddress ?? '';
+  return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+}
+
+function allowInternalWhatsAppStatus(req: express.Request): boolean {
+  const expected = (process.env.WHATSAPP_STATUS_TOKEN || '').trim();
+  const provided = (req.header('x-internal-token') || '').trim();
+  if (expected) {
+    const left = Buffer.from(expected);
+    const right = Buffer.from(provided);
+    return left.length === right.length && left.length > 0 && timingSafeEqual(left, right);
+  }
+  return isLoopback(req);
+}
+
+app.get('/api/v1/internal/whatsapp/status', (req, res) => {
+  if (!allowInternalWhatsAppStatus(req)) {
+    res.status(404).json({ code: 'NOT_FOUND', message: 'Not found' });
+    return;
+  }
+  res.json({ success: true, data: getWhatsAppRuntimeStatus() });
 });
 
 app.post('/api/v1/auth/login', async (req, res) => {
@@ -484,21 +522,21 @@ app.post('/api/v1/auth/register', async (req, res) => {
 const registerOwnerBody = z.object({
   firstName: z.string().min(2),
   lastName: z.string().min(2),
-  email: z.string().email(),
+  email: z.string().email().optional(),
   phone: z.string().min(8),
-  gender: z.enum(['male', 'female']),
+  gender: z.enum(['male', 'female']).optional(),
   password: z.string().min(8),
   placeKind: z.enum(['clinic', 'center']),
   placeName: z.string().min(2),
   clinicName: z.string().optional(),
-  clinicPhone: z.string().min(3),
-  street: z.string().min(2),
-  city: z.string().min(2),
+  clinicPhone: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
   locationUrl: z.string().optional(),
-  specialty: z.string().min(2),
-  openingHours: z.string().min(2),
-  consultationFee: z.number().nonnegative(),
-  practices: z.boolean(),
+  specialty: z.string().optional(),
+  openingHours: z.string().optional(),
+  consultationFee: z.number().nonnegative().optional(),
+  practices: z.boolean().optional(),
 });
 
 app.post('/api/v1/auth/register-owner', async (req, res) => {
@@ -521,7 +559,7 @@ const registerDoctorAccountBody = z.object({
   phone: z.string().min(8),
   gender: z.enum(['male', 'female']),
   password: z.string().min(8),
-  specialty: z.string().min(2),
+  specialty: z.enum(['General Medicine', 'Urology', 'Internal Medicine', 'Physiotherapy']),
 });
 
 app.post('/api/v1/auth/register-doctor', async (req, res) => {
@@ -1510,6 +1548,7 @@ const staffDoctorBody = z.object({
   firstName: z.string().min(2),
   lastName: z.string().min(2),
   phone: z.string().min(8),
+  password: z.string().min(8),
   specialty: z.string().min(2),
   branchName: z.string().min(1),
   languages: z.array(z.string()).default([]),
@@ -1530,6 +1569,7 @@ const secretaryBody = z.object({
   firstName: z.string().min(2),
   lastName: z.string().min(2),
   phone: z.string().min(8),
+  password: z.string().min(8),
 });
 
 app.post('/api/v1/admin/doctors', async (req, res) => {
@@ -1583,6 +1623,16 @@ app.patch('/api/v1/admin/doctors/:id/reactivate', async (req, res) => {
   }
 });
 
+app.get('/api/v1/admin/secretaries', async (req, res) => {
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    res.json({ success: true, data: await listSecretaries(user.id) });
+  } catch (error) {
+    sendError(res, error, 'Could not load secretaries');
+  }
+});
+
 app.post('/api/v1/admin/secretaries', async (req, res) => {
   const parsed = secretaryBody.safeParse(req.body);
   if (!parsed.success) {
@@ -1595,6 +1645,48 @@ app.post('/api/v1/admin/secretaries', async (req, res) => {
     res.status(201).json({ success: true, data: await createSecretary(user.id, clinicFromRequest(req), parsed.data) });
   } catch (error) {
     sendError(res, error, 'Could not add the secretary');
+  }
+});
+
+const updateSecretaryBody = z.object({
+  firstName: z.string().min(2).optional(),
+  lastName: z.string().min(2).optional(),
+  phone: z.string().min(8).optional(),
+  avatarUrl: z.string().optional(),
+});
+
+app.get('/api/v1/admin/secretaries/:id', async (req, res) => {
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    res.json({ success: true, data: await getSecretary(user.id, req.params.id) });
+  } catch (error) {
+    sendError(res, error, 'Could not load the secretary');
+  }
+});
+
+app.patch('/api/v1/admin/secretaries/:id', async (req, res) => {
+  const parsed = updateSecretaryBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Secretary details are invalid' });
+    return;
+  }
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    res.json({ success: true, data: await updateSecretary(user.id, req.params.id, parsed.data) });
+  } catch (error) {
+    sendError(res, error, 'Could not update the secretary');
+  }
+});
+
+app.delete('/api/v1/admin/secretaries/:id', async (req, res) => {
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    res.json({ success: true, data: await removeSecretary(user.id, req.params.id) });
+  } catch (error) {
+    sendError(res, error, 'Could not remove the secretary');
   }
 });
 
@@ -2131,9 +2223,10 @@ const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
 await ensurePlatformAdmin();
+await startWhatsAppProvider();
 
 app.listen(port, () => {
-  console.log(`Yacoub API listening on http://localhost:${port}/api/v1`);
+  console.log(`Munjiz Tibbi API listening on http://localhost:${port}/api/v1`);
   console.log(`Website: http://localhost:${port}/`);
   console.log(`Platform dashboard: http://localhost:${port}/ops`);
 });

@@ -14,6 +14,10 @@ export default function NurseLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="request/[id]" />
+      <Stack.Screen name="notification-settings" />
+      <Stack.Screen name="roles" />
+      <Stack.Screen name="language" />
+      <Stack.Screen name="theme" />
       <Stack.Screen name="edit-profile" />
       <Stack.Screen name="change-password" />
     </Stack>

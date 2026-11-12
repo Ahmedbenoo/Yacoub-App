@@ -61,3 +61,30 @@ export const CLINIC_SPECIALTIES: readonly ClinicSpecialty[] = [
 export function findClinicSpecialty(value: string): ClinicSpecialty | undefined {
   return CLINIC_SPECIALTIES.find((specialty) => specialty.id === value || specialty.nameEn === value);
 }
+
+/** The 10 specialties currently in the product. */
+export const CORE_SPECIALTY_IDS = [
+  'generalMedicine',
+  'urology',
+  'internalMedicine',
+  'physiotherapy',
+  'generalSurgery',
+  'dentistry',
+  'obstetricsGynecology',
+  'neonatology',
+  'pediatrics',
+  'nutrition',
+] as const;
+
+/** Doctor home-visit registration: these can be selected now. */
+export const HOME_VISIT_SPECIALTY_IDS = [
+  'generalMedicine',
+  'urology',
+  'internalMedicine',
+  'physiotherapy',
+] as const;
+
+export function isHomeVisitSpecialty(value: string): boolean {
+  const match = findClinicSpecialty(value);
+  return Boolean(match && (HOME_VISIT_SPECIALTY_IDS as readonly string[]).includes(match.id));
+}

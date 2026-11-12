@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Yacoub",
+    "name": "منجز طبي",
     "slug": "clinify",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "doctorsapp",
@@ -48,9 +48,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#023c37",
-          "image": "./assets/images/icon.png",
+          "image": "./assets/images/logo-munjiz.png",
           "resizeMode": "contain",
-          "imageWidth": 180
+          "imageWidth": 280
         }
       ],
       [
@@ -63,7 +63,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "يسمح Yacoub بالوصول للصور عشان تقدر تغيّر صورتك الشخصية.",
+          "photosPermission": "يسمح منجز طبي بالوصول للصور عشان تقدر تغيّر صورتك الشخصية.",
           "cameraPermission": false,
           "microphonePermission": false
         }
