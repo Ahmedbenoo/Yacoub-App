@@ -390,6 +390,29 @@ CREATE TABLE IF NOT EXISTS device_tokens (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS patient_documents (
+  id text PRIMARY KEY,
+  patient_id text NOT NULL REFERENCES patients(id),
+  patient_user_id text NOT NULL,
+  kind text NOT NULL,
+  image_url text NOT NULL,
+  note text,
+  visit_id text,
+  doctor_id text,
+  appointment_id text,
+  lab_request_id text,
+  doctor_reply text,
+  doctor_replied_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE patient_documents ADD COLUMN IF NOT EXISTS visit_id text;
+ALTER TABLE patient_documents ADD COLUMN IF NOT EXISTS doctor_id text;
+ALTER TABLE patient_documents ADD COLUMN IF NOT EXISTS appointment_id text;
+ALTER TABLE patient_documents ADD COLUMN IF NOT EXISTS lab_request_id text;
+ALTER TABLE patient_documents ADD COLUMN IF NOT EXISTS doctor_reply text;
+ALTER TABLE patient_documents ADD COLUMN IF NOT EXISTS doctor_replied_at timestamptz;
+
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_platform_admin boolean NOT NULL DEFAULT false;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked boolean NOT NULL DEFAULT false;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS platform_role text;

@@ -56,6 +56,9 @@ import {
   recordLabResult,
   staffLabResult,
   staffPrescription,
+  myVisitLinks,
+  replyToPatientDocument,
+  uploadMyDocument,
   visitDetail,
 } from './records.js';
 import {
@@ -209,6 +212,20 @@ const clinicSearchQuery = z.object({
 function requestBase(req: express.Request): string {
   return `${req.protocol}://${req.get('host')}`;
 }
+
+const medicalDocumentBody = z.object({
+  kind: z.enum(['prescription', 'lab', 'radiology']),
+  image: z.string().min(20),
+  note: z.string().max(280).optional(),
+  visitId: z.string().min(1).optional(),
+  appointmentId: z.string().min(1).optional(),
+  labRequestId: z.string().min(1).optional(),
+  doctorId: z.string().min(1).optional(),
+});
+
+const documentReplyBody = z.object({
+  message: z.string().min(1).max(500),
+});
 
 const doctorQuery = z.object({
   page: z.coerce.number().int().positive().optional(),
@@ -422,7 +439,7 @@ app.get('/api/v1', (_req, res) => {
   res.json({
     success: true,
     data: {
-      name: 'Munjiz Tibbi API',
+      name: 'Munjiz Tibi API',
       message: 'السيرفر شغال. الدخول من POST /api/v1/auth/login — لوحة المنصة على /ops',
     },
   });
@@ -858,9 +875,52 @@ app.get('/api/v1/patients/me/history', async (req, res) => {
   try {
     const user = await requireUser(req, res);
     if (!user) return;
-    res.json({ success: true, data: await myHistory(user.id) });
+    res.json({ success: true, data: await myHistory(user.id, requestBase(req)) });
   } catch (error) {
     sendError(res, error, 'Could not load the health record');
+  }
+});
+
+app.get('/api/v1/patients/me/visit-links', async (req, res) => {
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    res.json({ success: true, data: await myVisitLinks(user.id) });
+  } catch (error) {
+    sendError(res, error, 'Could not load visits');
+  }
+});
+
+app.post('/api/v1/patients/me/documents', async (req, res) => {
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    const parsed = medicalDocumentBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Choose a type and a photo' } });
+      return;
+    }
+    res.json({ success: true, data: await uploadMyDocument(user.id, parsed.data, requestBase(req)) });
+  } catch (error) {
+    sendError(res, error, 'Could not upload the document');
+  }
+});
+
+app.post('/api/v1/patients/:patientId/documents/:id/reply', async (req, res) => {
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    const parsed = documentReplyBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Write a reply' } });
+      return;
+    }
+    res.json({
+      success: true,
+      data: await replyToPatientDocument(user.id, req.params.id, parsed.data.message, requestBase(req)),
+    });
+  } catch (error) {
+    sendError(res, error, 'Could not save the reply');
   }
 });
 
@@ -908,7 +968,7 @@ app.get('/api/v1/patients/me/visits/:id', async (req, res) => {
   try {
     const user = await requireUser(req, res);
     if (!user) return;
-    res.json({ success: true, data: await visitDetail(user.id, req.params.id) });
+    res.json({ success: true, data: await visitDetail(user.id, req.params.id, requestBase(req)) });
   } catch (error) {
     sendError(res, error, 'Visit not found');
   }
@@ -1041,7 +1101,7 @@ app.get('/api/v1/patients/:id/history', async (req, res) => {
   try {
     const user = await requireUser(req, res);
     if (!user) return;
-    res.json({ success: true, data: await historyForPatient(user.id, req.params.id) });
+    res.json({ success: true, data: await historyForPatient(user.id, req.params.id, requestBase(req)) });
   } catch (error) {
     sendError(res, error, 'Could not load the health record');
   }
@@ -1403,7 +1463,7 @@ app.get('/api/v1/clinical/visits/:id', async (req, res) => {
   try {
     const user = await requireUser(req, res);
     if (!user) return;
-    res.json({ success: true, data: await visitDetail(user.id, req.params.id) });
+    res.json({ success: true, data: await visitDetail(user.id, req.params.id, requestBase(req)) });
   } catch (error) {
     sendError(res, error, 'Visit not found');
   }
@@ -2226,7 +2286,7 @@ await ensurePlatformAdmin();
 await startWhatsAppProvider();
 
 app.listen(port, () => {
-  console.log(`Munjiz Tibbi API listening on http://localhost:${port}/api/v1`);
+  console.log(`Munjiz Tibi API listening on http://localhost:${port}/api/v1`);
   console.log(`Website: http://localhost:${port}/`);
   console.log(`Platform dashboard: http://localhost:${port}/ops`);
 });
