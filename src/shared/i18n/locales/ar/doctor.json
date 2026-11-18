@@ -38,9 +38,14 @@
   "history": {
     "types": {
       "visit": "زيارة",
-      "prescription": "وصفة طبية",
-      "lab": "طلب مختبر"
-    }
+      "prescription": "روشتة",
+      "lab": "تحليل",
+      "radiology": "أشعة"
+    },
+    "uploadedByPatient": "مرفوع من المريض",
+    "linkedTo": "كشف د. {{doctor}}",
+    "today": "اليوم",
+    "yesterday": "أمس"
   },
   "visit": {
     "title": "زيارة المريض",
@@ -61,6 +66,8 @@
     "temperature": "درجة الحرارة (°م)",
     "weight": "الوزن (كجم)",
     "saveNotes": "حفظ الملاحظات",
+    "healthProfile": "الملف الصحي",
+    "saveHealthProfile": "حفظ الملف الصحي",
     "prescriptions": "الوصفات الطبية",
     "medName": "اسم الدواء",
     "dosage": "الجرعة",
@@ -196,6 +203,7 @@
     "prescriptionUpdated": "تم تحديث الروشتة",
     "prescriptionDeleted": "تم حذف الروشتة",
     "requestSubmitted": "تم إرسال الطلب",
-    "availabilityUpdated": "تم تحديث الجدول"
+    "availabilityUpdated": "تم تحديث الجدول",
+    "healthProfileSaved": "تم حفظ الملف الصحي"
   }
 }

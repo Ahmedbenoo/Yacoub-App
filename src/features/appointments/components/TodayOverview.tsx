@@ -10,7 +10,7 @@ import { EmptyState } from '@/shared/components/feedback/EmptyState';
 import { SkeletonCard } from '@/shared/components/feedback/Skeleton';
 import { getAppointmentHref } from '@/shared/navigation/routes';
 import { useAuthStore } from '@/shared/stores';
-import { UserRole } from '@/shared/types/enums';
+import { AppointmentStatus, UserRole } from '@/shared/types/enums';
 
 interface TodayOverviewProps {
   appointmentsRoute: string;
@@ -29,6 +29,12 @@ export function TodayOverview({ appointmentsRoute, viewerRole }: TodayOverviewPr
   };
 
   const { data, isLoading } = useAppointmentsQuery(filters, Boolean(user));
+  const appointments = (data?.data ?? []).filter(
+    (appointment) =>
+      appointment.status !== AppointmentStatus.CANCELLED &&
+      appointment.status !== AppointmentStatus.COMPLETED &&
+      appointment.status !== AppointmentStatus.NO_SHOW,
+  );
 
   return (
     <View className="gap-4">
@@ -45,7 +51,7 @@ export function TodayOverview({ appointmentsRoute, viewerRole }: TodayOverviewPr
         </View>
       )}
 
-      {!isLoading && data?.data.length === 0 && (
+      {!isLoading && appointments.length === 0 && (
         <EmptyState
           title={t('empty.title')}
           description={t('empty.description')}
@@ -58,7 +64,7 @@ export function TodayOverview({ appointmentsRoute, viewerRole }: TodayOverviewPr
       )}
 
       {!isLoading &&
-        data?.data.map((appointment) => (
+        appointments.map((appointment) => (
           <AppointmentCard
             key={appointment.id}
             appointment={appointment}

@@ -72,7 +72,7 @@
         "body": "Your appointment with Dr. {{doctorName}} is confirmed for tomorrow"
       },
       "welcome": {
-        "title": "Welcome to Munjiz Tibbi",
+        "title": "Welcome to Munjiz Tebi",
         "body": "Manage your appointments and medical records in one place"
       },
       "weeklyReport": {
@@ -102,6 +102,14 @@
       "appointmentAwaiting": {
         "title": "The patient replied",
         "body": "The time is back with the secretary to confirm"
+      },
+      "patientDocumentUploaded": {
+        "title": "Photo from {{patientName}}",
+        "body": "{{patientName}} uploaded a lab or scan for you to review and reply"
+      },
+      "doctorDocumentReply": {
+        "title": "Reply from Dr. {{doctorName}}",
+        "body": "The doctor reviewed your photo and replied in your medical record"
       }
     }
   },

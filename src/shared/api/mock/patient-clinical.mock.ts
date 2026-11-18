@@ -3,7 +3,11 @@ import { getMockClinicById } from '@/shared/api/mock/clinics.mock';
 import { mockVisitsService } from '@/shared/api/mock/doctor.mock';
 import { getMockDoctorById } from '@/shared/api/mock/doctors.mock';
 import { mockLabRequests } from '@/shared/api/mock/lab-requests.mock';
-import { getPatientIdsForUser, getPatientIdByUserId } from '@/shared/api/mock/patients.mock';
+import {
+  getPatientIdsForUser,
+  getPatientIdByUserId,
+  listMockDocumentsForVisit,
+} from '@/shared/api/mock/patients.mock';
 import { mockPrescriptions } from '@/shared/api/mock/prescriptions.mock';
 import { sleep } from '@/shared/lib/utils';
 import { useAuthStore } from '@/shared/stores/auth-store';
@@ -57,6 +61,13 @@ function buildPatientVisitDetail(visit: Awaited<ReturnType<typeof mockVisitsServ
     linkedLabResultIds: mockLabRequests
       .filter((item) => item.visitId === visit.id && item.patientId === visit.patientId)
       .map((item) => item.id),
+    linkedDocuments: listMockDocumentsForVisit(visit.id).map((item) => ({
+      id: item.resourceId ?? item.id,
+      kind: item.type === 'prescription' || item.type === 'radiology' ? item.type : 'lab',
+      imageUrl: item.imageUrl ?? '',
+      note: item.title,
+      date: item.date,
+    })),
   };
 }
 

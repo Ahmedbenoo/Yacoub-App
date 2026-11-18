@@ -15,7 +15,7 @@ import { cn } from '@/shared/lib/utils';
 import { TAB_TOP_BAR_METRICS } from '@/shared/navigation/tab-top-bar-metrics';
 import { useAuthStore, useLocaleStore, useThemeStore } from '@/shared/stores';
 import { useNotificationPreferencesStore } from '@/shared/stores/notification-preferences-store';
-import { ThemeMode } from '@/shared/types/enums';
+import { Locale, ThemeMode } from '@/shared/types/enums';
 
 interface TabTopBarProps {
   notificationsRoute?: string;
@@ -53,6 +53,8 @@ export function TabTopBar({ notificationsRoute, profileRoute }: TabTopBarProps) 
   const colorScheme = useResolvedColorScheme();
   const isDark = colorScheme === 'dark';
   const isRtl = useLocaleStore((s) => s.isRtl);
+  const locale = useLocaleStore((s) => s.locale);
+  const setLocale = useLocaleStore((s) => s.setLocale);
   const setThemeMode = useThemeStore((s) => s.setMode);
   const user = useAuthStore((s) => s.user);
   const isCategoryEnabled = useNotificationPreferencesStore((s) => s.isCategoryEnabled);
@@ -72,8 +74,8 @@ export function TabTopBar({ notificationsRoute, profileRoute }: TabTopBarProps) 
       onPress={() => router.push((user ? profileRoute : '/(auth)/login') as never)}
       className="items-center justify-center rounded-full active:opacity-80"
       style={{
-        width: TAB_TOP_BAR_METRICS.avatarSize,
-        height: TAB_TOP_BAR_METRICS.avatarSize,
+        width: TAB_TOP_BAR_METRICS.iconButtonSize,
+        height: TAB_TOP_BAR_METRICS.iconButtonSize,
       }}
       accessibilityRole="button"
       accessibilityLabel={t('nav.profile')}
@@ -84,10 +86,10 @@ export function TabTopBar({ notificationsRoute, profileRoute }: TabTopBarProps) 
           lastName={user.lastName}
           size="sm"
           imageUrl={user.avatarUrl}
-          className="h-7 w-7"
+          className="h-8 w-8"
         />
       ) : (
-        <Icon name="profile" size={TAB_TOP_BAR_METRICS.iconSize} color={iconColor} />
+        <Icon name="person" size={Math.round(TAB_TOP_BAR_METRICS.iconSize * 1.1)} color={iconColor} />
       )}
     </Pressable>
   ) : null;
@@ -132,6 +134,16 @@ export function TabTopBar({ notificationsRoute, profileRoute }: TabTopBarProps) 
     </NavIconButton>
   );
 
+  const toggleLanguage = () => {
+    void setLocale(locale === Locale.AR ? Locale.EN : Locale.AR);
+  };
+
+  const languageButton = (
+    <NavIconButton onPress={toggleLanguage} accessibilityLabel={t('nav.language')}>
+      <Icon name="language" size={TAB_TOP_BAR_METRICS.iconSize} color={iconColor} />
+    </NavIconButton>
+  );
+
   return (
     <View
       className={cn(
@@ -162,11 +174,13 @@ export function TabTopBar({ notificationsRoute, profileRoute }: TabTopBarProps) 
             <>
               {profileButton}
               {notificationButton}
+              {languageButton}
               {themeButton}
             </>
           ) : (
             <>
               {themeButton}
+              {languageButton}
               {notificationButton}
               {profileButton}
             </>

@@ -20,9 +20,9 @@ import { getAppointmentHref } from '@/shared/navigation/routes';
 import { useAuthStore } from '@/shared/stores';
 import { useResolvedColorScheme } from '@/shared/hooks/useTheme';
 import { AppointmentStatus, UserRole } from '@/shared/types/enums';
-import type { AppointmentFilters } from '@/shared/types/models/appointment';
+import type { Appointment, AppointmentFilters } from '@/shared/types/models/appointment';
 
-type ScopeTab = 'today' | 'upcoming' | 'past' | 'noshow';
+type ScopeTab = 'all' | 'today' | 'upcoming' | 'past';
 type PatientSection = 'clinic' | 'nursing';
 type StatusFilter = 'all' | AppointmentStatus;
 
@@ -49,6 +49,7 @@ const PAST_STATUS_FILTERS: StatusFilter[] = [
   'all',
   AppointmentStatus.COMPLETED,
   AppointmentStatus.CANCELLED,
+  AppointmentStatus.NO_SHOW,
 ];
 
 function getStatusFiltersForTab(tab: ScopeTab): StatusFilter[] {
@@ -56,6 +57,24 @@ function getStatusFiltersForTab(tab: ScopeTab): StatusFilter[] {
   if (tab === 'today') return TODAY_STATUS_FILTERS;
   if (tab === 'past') return PAST_STATUS_FILTERS;
   return [];
+}
+
+function sortAppointments(appointments: Appointment[], tab: ScopeTab): Appointment[] {
+  const copy = [...appointments];
+  const now = Date.now();
+  copy.sort((left, right) => {
+    const leftTime = new Date(left.scheduledAt).getTime();
+    const rightTime = new Date(right.scheduledAt).getTime();
+    if (tab === 'past') return rightTime - leftTime;
+    if (tab === 'all') {
+      const leftPast = leftTime < now;
+      const rightPast = rightTime < now;
+      if (leftPast !== rightPast) return leftPast ? 1 : -1;
+      return leftPast ? rightTime - leftTime : leftTime - rightTime;
+    }
+    return leftTime - rightTime;
+  });
+  return copy;
 }
 
 function readParam(value: string | string[] | undefined) {
@@ -100,7 +119,9 @@ export function AppointmentsListScreen({
   const scopeParam = readParam(params.scope);
   const focusParam = readParam(params.focus);
   const [section, setSection] = useState<PatientSection>('clinic');
-  const [activeTab, setActiveTab] = useState<ScopeTab>(scopeParam === 'today' ? 'today' : 'upcoming');
+  const [activeTab, setActiveTab] = useState<ScopeTab>(
+    scopeParam === 'today' ? 'today' : scopeParam === 'completed' ? 'past' : 'all',
+  );
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(
     scopeParam === 'scheduled' ? AppointmentStatus.SCHEDULED : 'all',
   );
@@ -126,22 +147,22 @@ export function AppointmentsListScreen({
     }
   }, [focusParam, scopeParam]);
 
-  const statusFilters = getStatusFiltersForTab(activeTab);
+  const statusFilters = getStatusFiltersForTab(activeTab).filter(
+    (filter) => viewerRole !== UserRole.PATIENT || filter !== AppointmentStatus.IN_PROGRESS,
+  );
   const isPatient = viewerRole === UserRole.PATIENT;
   const showNursing = isPatient && section === 'nursing';
   const showScopedStatusFilter = showStatusFilter && !showNursing && statusFilters.length > 0;
 
   const filters: AppointmentFilters = useMemo(() => {
     const base: AppointmentFilters = {
-      scope: activeTab === 'noshow' ? 'past' : activeTab,
+      scope: activeTab,
+      limit: 50,
       doctorId: viewerRole === UserRole.DOCTOR ? user?.id : undefined,
       patientId: viewerRole === UserRole.PATIENT ? user?.id : undefined,
     };
-    if (activeTab === 'noshow') {
-      base.status = AppointmentStatus.NO_SHOW;
-    }
 
-    if (showStatusFilter && activeTab !== 'noshow' && statusFilter !== 'all') {
+    if (showStatusFilter && statusFilter !== 'all') {
       base.status = statusFilter;
     }
 
@@ -209,21 +230,32 @@ export function AppointmentsListScreen({
       ) : null}
 
       {showNursing ? null : (
-        <View className="mb-4">
-          <SegmentedControl
-            options={[
+        <Row className="mb-4 flex-wrap gap-2">
+          {(
+            [
+              { value: 'all', label: t('filters.all') },
               { value: 'today', label: t('today') },
               { value: 'upcoming', label: t('tabs.upcoming') },
               { value: 'past', label: t('tabs.past') },
-              ...(showStatusFilter ? [{ value: 'noshow' as const, label: t('tabs.noShow') }] : []),
-            ]}
-            value={activeTab}
-            onChange={(tab) => {
-              if (tab !== activeTab) setStatusFilter('all');
-              setActiveTab(tab);
-            }}
-          />
-        </View>
+            ] as const
+          ).map((tab) => (
+            <Pressable
+              key={tab.value}
+              onPress={() => {
+                if (tab.value !== activeTab) setStatusFilter('all');
+                setActiveTab(tab.value);
+              }}
+              className={cn(
+                'rounded-full px-3 py-2',
+                activeTab === tab.value ? 'bg-primary-600' : themeBg(isDark, 'bg-slate-100', 'bg-slate-700'),
+              )}
+            >
+              <Text variant="caption" className={cn(activeTab === tab.value ? 'text-white' : undefined)}>
+                {tab.label}
+              </Text>
+            </Pressable>
+          ))}
+        </Row>
       )}
 
       {showNursing ? <PatientNursingTab userId={user?.id} /> : null}
@@ -252,7 +284,7 @@ export function AppointmentsListScreen({
 
       {showNursing ? null : (
         <AppointmentList
-          appointments={data?.data ?? []}
+          appointments={sortAppointments(data?.data ?? [], activeTab)}
           viewerRole={viewerRole}
           isLoading={isLoading}
           isError={isError}

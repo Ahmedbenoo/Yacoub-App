@@ -3,6 +3,7 @@ export {
   useAppointmentDetailQuery,
   useCancelAppointmentMutation,
   useConfirmAppointmentMutation,
+  usePatientAppointmentsBadgeCount,
   useRescheduleAppointmentMutation,
 } from './useAppointmentQueries';
 export { useNotificationsQuery, useUnreadNotificationsCount } from './useNotificationQueries';

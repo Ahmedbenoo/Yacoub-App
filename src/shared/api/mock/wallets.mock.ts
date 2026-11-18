@@ -2,16 +2,21 @@ import { sleep } from '@/shared/lib/utils';
 
 export const WALLET_TRANSFER_NUMBER = '01001234567';
 
+export type WalletTopUpMethod = 'instapay' | 'wallet';
+
 interface WalletAccount {
   userId: string;
   balance: number;
 }
 
-interface TopUpRequest {
+export interface TopUpRequest {
   id: string;
   userId: string;
   name: string;
   amount: number;
+  method: WalletTopUpMethod;
+  senderNumber: string;
+  receiptUri?: string;
   status: 'pending' | 'credited';
   createdAt: string;
 }
@@ -33,16 +38,32 @@ export const mockWalletService = {
     return accountFor(userId).balance;
   },
 
-  async requestTopUp(userId: string, name: string, amount: number): Promise<TopUpRequest> {
+  async requestTopUp(input: {
+    userId: string;
+    name: string;
+    amount: number;
+    method: WalletTopUpMethod;
+    senderNumber: string;
+    receiptUri?: string;
+  }): Promise<TopUpRequest> {
     await sleep(300);
-    if (!Number.isFinite(amount) || amount <= 0) {
+    if (!Number.isFinite(input.amount) || input.amount <= 0) {
       throw { code: 'INVALID_AMOUNT', message: 'المبلغ لازم يكون اكبر من صفر' };
+    }
+    if (!input.senderNumber.trim()) {
+      throw { code: 'INVALID_SENDER', message: 'اكتب الرقم اللي حولت منه' };
+    }
+    if (!input.receiptUri) {
+      throw { code: 'MISSING_RECEIPT', message: 'ارفع صورة التحويل' };
     }
     const request: TopUpRequest = {
       id: `topup-${Date.now()}`,
-      userId,
-      name,
-      amount,
+      userId: input.userId,
+      name: input.name,
+      amount: input.amount,
+      method: input.method,
+      senderNumber: input.senderNumber.trim(),
+      receiptUri: input.receiptUri,
       status: 'pending',
       createdAt: new Date().toISOString(),
     };

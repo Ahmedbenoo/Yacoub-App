@@ -153,6 +153,7 @@ export function SettingsPanel({ showAvatar = true, showAccountCard = true, class
   const deleteAccount = useDeleteAccountMutation();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const activeRole = useAuthStore((s) => s.activeRole);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const showDoctorAdminToggle = canToggleDoctorAndAdmin(user?.roles, activeRole);
   const otherRoles =
@@ -163,10 +164,8 @@ export function SettingsPanel({ showAvatar = true, showAccountCard = true, class
     ) ?? [];
   const showRolesRow = activeRole !== UserRole.ADMIN && (showDoctorAdminToggle || otherRoles.length > 0);
   const showClinicRow =
-    activeRole !== UserRole.ADMIN &&
-    activeRole !== UserRole.PATIENT &&
-    activeRole !== UserRole.NURSE &&
-    activeRole !== UserRole.NURSING_ADMIN;
+    isAuthenticated &&
+    (activeRole === UserRole.DOCTOR || activeRole === UserRole.SECRETARY);
   const showSharedSettings = activeRole !== UserRole.ADMIN;
 
   return (
@@ -180,6 +179,17 @@ export function SettingsPanel({ showAvatar = true, showAccountCard = true, class
       )}
 
       {activeRole === UserRole.DOCTOR ? <DoctorHomeVisitNavRow /> : null}
+
+      {isAuthenticated && (activeRole === UserRole.PATIENT || activeRole === UserRole.NURSE) ? (
+        <SettingsNavRow
+          title={tc('settings.walletTitle')}
+          subtitle={tc('settings.walletSubtitle')}
+          icon="wallet"
+          href={
+            activeRole === UserRole.NURSE ? '/(nurse)/wallet' : '/(patient)/wallet'
+          }
+        />
+      ) : null}
 
       {showRolesRow ? (
         <SettingsNavRow

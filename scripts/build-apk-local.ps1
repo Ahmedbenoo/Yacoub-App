@@ -58,7 +58,7 @@ if (Test-Path $generatedJs) {
 Get-ChildItem $metroTmp -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
 Set-Location "$shortRoot\android"
-& .\gradlew.bat assembleRelease --no-daemon
+& .\gradlew.bat assembleRelease --no-daemon "-PreactNativeArchitectures=arm64-v8a"
 if ($LASTEXITCODE -ne 0) {
   throw "Gradle assembleRelease failed with exit code $LASTEXITCODE"
 }

@@ -6,6 +6,7 @@ import { appointmentsService } from '@/features/appointments/services/appointmen
 import { normalizeApiError } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import { useAuthStore } from '@/shared/stores';
+import { AppointmentStatus } from '@/shared/types/enums';
 import type { AppointmentFilters, CreateAppointmentPayload, RescheduleAppointmentPayload } from '@/shared/types/models/appointment';
 
 export function useAppointmentsQuery(filters: AppointmentFilters = {}, enabled = true) {
@@ -18,7 +19,9 @@ export function useAppointmentsQuery(filters: AppointmentFilters = {}, enabled =
   return useQuery({
     queryKey: queryKeys.appointments.list(scopedFilters as Record<string, unknown>),
     queryFn: () => appointmentsService.list(scopedFilters),
-    enabled: enabled && Boolean(activeClinicId),
+    enabled:
+      enabled &&
+      (Boolean(activeClinicId) || Boolean(scopedFilters.patientId) || Boolean(scopedFilters.doctorId)),
     staleTime: 1000 * 60 * 2,
   });
 }
@@ -112,6 +115,35 @@ export function useRescheduleAppointmentMutation() {
       Toast.show({ type: 'error', text1: t('rescheduleFailed'), text2: apiError.message });
     },
   });
+}
+
+export function usePatientAppointmentsBadgeCount(): number {
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const enabled = isAuthenticated && Boolean(user?.id);
+
+  const todayQuery = useAppointmentsQuery(
+    { scope: 'today', patientId: user?.id },
+    enabled,
+  );
+  const awaitingQuery = useAppointmentsQuery(
+    { status: AppointmentStatus.SCHEDULED, patientId: user?.id },
+    enabled,
+  );
+
+  const hidden = new Set([
+    AppointmentStatus.CANCELLED,
+    AppointmentStatus.COMPLETED,
+    AppointmentStatus.NO_SHOW,
+  ]);
+  const ids = new Set<string>();
+  for (const appointment of todayQuery.data?.data ?? []) {
+    if (!hidden.has(appointment.status)) ids.add(appointment.id);
+  }
+  for (const appointment of awaitingQuery.data?.data ?? []) {
+    if (!hidden.has(appointment.status)) ids.add(appointment.id);
+  }
+  return ids.size;
 }
 
 export function useBookAppointmentMutation() {

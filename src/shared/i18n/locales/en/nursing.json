@@ -2,7 +2,7 @@
   "title": "Home nursing",
   "requestAction": "Request home nursing",
   "requestTitle": "Home nursing request",
-  "requestHint": "A quick visit is one task at a fixed price. Shift care stays with the patient for longer. Prices are a guide in EGP and include basic supplies.",
+  "requestHint": "Home nursing is easier with Munjiz. Choose the visit type (quick visit, extended care), pick the service, and leave the rest to us.",
   "myRequests": "My requests",
   "emptyTitle": "No requests",
   "emptyDescription": "Home nursing requests will show up here.",
@@ -21,6 +21,14 @@
   "datePlaceholder": "YYYY-MM-DD",
   "time": "Time",
   "timePlaceholder": "HH:mm",
+  "hour": "Hour",
+  "minute": "Minute",
+  "continueRequest": "Complete request",
+  "completeTitle": "Complete request",
+  "useCurrentLocation": "Use my current location",
+  "currentLocationLabel": "Current location",
+  "locating": "Getting your location…",
+  "locationFailed": "Could not get your location. Turn location on and try again.",
   "submit": "Send request",
   "price": "Price",
   "pricePlaceholder": "Amount in EGP",
@@ -50,7 +58,7 @@
   "loginLink": "Register as a nurse",
   "services": {
     "injection": {
-      "name": "Injection (intramuscular / subcutaneous)",
+      "name": "Injection",
       "description": "Medication, insulin, or vitamin injections."
     },
     "cannulaIv": {

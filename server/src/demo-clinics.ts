@@ -65,7 +65,6 @@ const PATIENTS: { first: string; last: string; gender: Gender; birth: string }[]
   { first: 'عمر', last: 'فاروق', gender: 'male', birth: '1979-09-30' },
 ];
 
-const BLOOD = ['A+', 'O+', 'B+', 'AB+', 'A-', 'O+'];
 const DIAGNOSES = ['متابعة دورية', 'التهاب بسيط', 'ارتفاع ضغط', 'نقص فيتامين', 'ألم ومتابعة'];
 const MEDS = ['باراسيتامول 500', 'أوجمنتين 1 جم', 'فيتامين د', 'أوميبرازول 20', 'بروفين 400'];
 
@@ -277,7 +276,7 @@ async function addPatient(input: {
   lastName: string;
   gender: Gender;
   birth: string;
-  blood: string;
+  blood?: string;
   passwordHash: string;
 }): Promise<void> {
   await addUser({
@@ -303,7 +302,7 @@ async function addPatient(input: {
       phone(input.localPhone),
       input.birth,
       input.gender,
-      input.blood,
+      input.blood?.trim() || null,
     ],
   );
 }
@@ -534,7 +533,7 @@ export async function seedDemoClinics(options?: { force?: boolean }): Promise<vo
         lastName: personRow.last,
         gender: personRow.gender,
         birth: personRow.birth,
-        blood: BLOOD[p % BLOOD.length],
+        blood: undefined,
         passwordHash,
       });
       await addRecord({

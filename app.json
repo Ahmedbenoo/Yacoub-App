@@ -63,8 +63,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "يسمح منجز طبي بالوصول للصور عشان تقدر تغيّر صورتك الشخصية.",
-          "cameraPermission": false,
+          "photosPermission": "منجز طبي محتاج الصور عشان ترفع روشتة أو تحليل أو أشعة، وتقدر تغيّر صورتك الشخصية.",
+          "cameraPermission": "منجز طبي محتاج الكاميرا عشان ترفع صورة روشتة أو تحليل أو أشعة.",
           "microphonePermission": false
         }
       ]

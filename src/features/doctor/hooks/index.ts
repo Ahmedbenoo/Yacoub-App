@@ -2,6 +2,7 @@ export {
   usePatientsQuery,
   usePatientDetailQuery,
   usePatientHistoryQuery,
+  useUpdateHealthProfileMutation,
 } from '@/features/patients/hooks/usePatientQueries';
 export {
   useVisitQuery,

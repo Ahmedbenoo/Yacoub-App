@@ -229,6 +229,7 @@ export function getClinicalRecordHref(
   entry: MedicalHistoryEntry,
 ): Href | null {
   if (!entry.resourceId) return null;
+  if (entry.source === 'patient' || entry.imageUrl) return null;
 
   if (role === UserRole.SECRETARY) {
     return entry.type === 'prescription' ? getSecretaryPrescriptionHref(entry.resourceId) : null;
@@ -240,6 +241,7 @@ export function getClinicalRecordHref(
     case 'prescription':
       return getPrescriptionHref(role, entry.resourceId);
     case 'lab':
+    case 'radiology':
       return getLabResultHref(role, entry.resourceId);
     default:
       return null;
@@ -248,7 +250,7 @@ export function getClinicalRecordHref(
 
 export function getPatientSearchHref(options?: {
   specialty?: string;
-  tab?: 'clinics' | 'doctors';
+  tab?: 'clinics' | 'doctors' | 'labs' | 'radiology';
 }): Href {
   const params: Record<string, string> = {};
   if (options?.specialty) params.specialty = options.specialty;
@@ -307,12 +309,15 @@ export function getPatientLabResultHref(labResultId: string): Href {
 export function getPatientRecordHref(entry: MedicalHistoryEntry): Href | null {
   if (!entry.resourceId) return null;
 
+  if (entry.source === 'patient' || entry.imageUrl) return null;
+
   switch (entry.type) {
     case 'visit':
       return getPatientVisitHref(entry.resourceId);
     case 'prescription':
       return getPatientPrescriptionHref(entry.resourceId);
     case 'lab':
+    case 'radiology':
       return getPatientLabResultHref(entry.resourceId);
     default:
       return null;

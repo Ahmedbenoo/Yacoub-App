@@ -4,6 +4,8 @@ import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { MedicalRecordsList } from '@/features/patient/components/MedicalRecordsList';
+import { UploadMedicalDocumentSheet } from '@/features/patient/components/UploadMedicalDocumentSheet';
+import { UploadRecordsCard } from '@/features/patient/components/UploadRecordsCard';
 import { useMyMedicalHistoryQuery, useMyPatientProfileQuery } from '@/features/patients/hooks/usePatientRecordsQueries';
 import { Screen } from '@/shared/components/layout/Screen';
 import { Avatar } from '@/shared/components/ui/Avatar';
@@ -19,9 +21,9 @@ import { useAuthStore } from '@/shared/stores';
 import { useResolvedColorScheme } from '@/shared/hooks/useTheme';
 import { themeBg } from '@/shared/lib/utils';
 import { getPatientHealthProfileHref } from '@/shared/navigation/routes';
-import type { MedicalRecordFilter } from '@/shared/types/models/patient';
+import type { MedicalDocumentKind, MedicalRecordFilter } from '@/shared/types/models/patient';
 
-const FILTERS: MedicalRecordFilter[] = ['all', 'prescription', 'lab', 'visit'];
+const FILTERS: MedicalRecordFilter[] = ['all', 'visit', 'prescription', 'lab', 'radiology'];
 
 export function MedicalRecordsScreen() {
   const { t } = useTranslation('patient');
@@ -29,6 +31,13 @@ export function MedicalRecordsScreen() {
   const isDark = useResolvedColorScheme() === 'dark';
   const { forwardIconName } = useLayoutDirection();
   const [filter, setFilter] = useState<MedicalRecordFilter>('all');
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadKind, setUploadKind] = useState<MedicalDocumentKind>('prescription');
+
+  const openUpload = (kind: MedicalDocumentKind) => {
+    setUploadKind(kind);
+    setUploadOpen(true);
+  };
 
   const { data: profile, isLoading: profileLoading } = useMyPatientProfileQuery();
   const { data: history, isLoading: historyLoading, isError, refetch } = useMyMedicalHistoryQuery();
@@ -72,6 +81,8 @@ export function MedicalRecordsScreen() {
         {t('records.title')}
       </Text>
 
+      <UploadRecordsCard onPick={openUpload} />
+
       {profile && (
         <Card elevated className="mb-4 overflow-hidden p-0">
           <Pressable
@@ -114,6 +125,8 @@ export function MedicalRecordsScreen() {
         <EmptyState
           title={t('records.empty.title')}
           description={t('records.empty.description')}
+          actionLabel={t('records.upload.action')}
+          onAction={() => openUpload('prescription')}
           icon={
             <View className="h-16 w-16 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/20">
               <Icon name="records" size={32} color="#0D9488" />
@@ -123,6 +136,11 @@ export function MedicalRecordsScreen() {
       ) : (
         <MedicalRecordsList entries={filteredHistory} />
       )}
+      <UploadMedicalDocumentSheet
+        visible={uploadOpen}
+        initialKind={uploadKind}
+        onClose={() => setUploadOpen(false)}
+      />
     </Screen>
   );
 }

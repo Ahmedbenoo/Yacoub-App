@@ -29,6 +29,7 @@ export interface RoleTabBarProps {
           size: number;
         }) => React.ReactNode;
         tabBarAccessibilityLabel?: string;
+        tabBarBadge?: number | string;
       };
     }
   >;
@@ -111,6 +112,16 @@ export function RoleTabBar({
           color,
           size: TAB_BAR_METRICS.iconSize,
         });
+        const rawBadge = options.tabBarBadge;
+        const badgeCount =
+          typeof rawBadge === 'number'
+            ? rawBadge
+            : typeof rawBadge === 'string'
+              ? Number.parseInt(rawBadge, 10)
+              : 0;
+        const showBadge = typeof rawBadge === 'string' ? rawBadge.length > 0 : badgeCount > 0;
+        const badgeLabel =
+          typeof rawBadge === 'string' ? rawBadge : badgeCount > 9 ? '9+' : String(badgeCount);
 
         return (
           <Pressable
@@ -127,7 +138,37 @@ export function RoleTabBar({
               minHeight: TAB_BAR_METRICS.contentHeight,
             }}
           >
-            {icon}
+            <View>
+              {icon}
+              {showBadge ? (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -8,
+                    minWidth: 16,
+                    height: 16,
+                    paddingHorizontal: 4,
+                    borderRadius: 8,
+                    backgroundColor: '#F97316',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontSize: 9,
+                      lineHeight: 12,
+                      fontWeight: '700',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {badgeLabel}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
             <Text
               style={{
                 marginTop: TAB_BAR_METRICS.labelMarginTop,

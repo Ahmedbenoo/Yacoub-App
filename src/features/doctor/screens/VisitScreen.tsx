@@ -9,11 +9,13 @@ import {
   useCompleteVisitMutation,
   useCreateLabRequestMutation,
   useCreatePrescriptionMutation,
+  usePatientDetailQuery,
   useDeletePrescriptionMutation,
   useIssuePrescriptionMutation,
   useLabRequestsQuery,
   usePrescriptionsQuery,
   useUpdatePrescriptionMutation,
+  useUpdateHealthProfileMutation,
   useUpdateVisitMutation,
   useVisitQuery,
   mapVisitFormToPayload,
@@ -28,6 +30,13 @@ import {
 } from '@/features/doctor/schemas/doctor.schemas';
 import { ObgynVisitSection } from '@/features/obgyn/components/ObgynVisitSection';
 import { isObstetricsGynecology } from '@/features/obgyn/lib/specialty';
+import {
+  emptyHealthProfileForm,
+  HealthProfileFields,
+  healthProfileFromForm,
+  healthProfileToForm,
+  type HealthProfileFormValues,
+} from '@/features/patients/components/HealthProfileFields';
 import { useDoctorDetailQuery } from '@/features/patient/hooks/useDoctorsQueries';
 import { Header } from '@/shared/components/layout/Header';
 import { Screen } from '@/shared/components/layout/Screen';
@@ -63,6 +72,8 @@ export function VisitScreen() {
   const { data: visit, isLoading, isError, refetch } = useVisitQuery(id ?? '');
   const { data: prescriptions } = usePrescriptionsQuery(id ?? '');
   const { data: labRequests } = useLabRequestsQuery(id ?? '');
+  const { data: patient } = usePatientDetailQuery(visit?.patientId ?? '');
+  const updateHealth = useUpdateHealthProfileMutation(visit?.patientId ?? '');
   const doctor = useDoctorDetailQuery(visit?.doctorId ?? '');
   const isObgyn = isObstetricsGynecology(doctor.data?.specialty);
 
@@ -101,6 +112,10 @@ export function VisitScreen() {
     defaultValues: { type: 'lab', testName: '', priority: 'routine', notes: '' },
   });
 
+  const healthForm = useForm<HealthProfileFormValues>({
+    defaultValues: emptyHealthProfileForm,
+  });
+
   useEffect(() => {
     if (!visit) return;
     notesForm.reset({
@@ -114,6 +129,11 @@ export function VisitScreen() {
       weight: visit.vitals?.weight?.toString() ?? '',
     });
   }, [visit, notesForm]);
+
+  useEffect(() => {
+    if (!patient) return;
+    healthForm.reset(healthProfileToForm(patient));
+  }, [patient, healthForm]);
 
   if (isLoading) {
     return (
@@ -189,6 +209,21 @@ export function VisitScreen() {
           <Text variant="titleSm">
             {isCompleted ? t('visit.completed') : t('visit.inProgress')}
           </Text>
+        </Card>
+
+        <Card className="gap-3">
+          <Text variant="titleSm">{t('visit.healthProfile')}</Text>
+          <HealthProfileFields control={healthForm.control} editable={!isCompleted} />
+          {!isCompleted && (
+            <Button
+              title={t('visit.saveHealthProfile')}
+              onPress={healthForm.handleSubmit((data) =>
+                updateHealth.mutate(healthProfileFromForm(data)),
+              )}
+              loading={updateHealth.isPending}
+              fullWidth
+            />
+          )}
         </Card>
 
         <Card className="gap-3">

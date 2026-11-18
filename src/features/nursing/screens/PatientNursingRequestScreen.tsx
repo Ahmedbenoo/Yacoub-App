@@ -1,70 +1,46 @@
+import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 
-import { useCreateNursingRequestMutation } from '@/features/nursing/hooks/useNursingQueries';
-import {
-  homeNursingRequestSchema,
-  type HomeNursingRequestForm,
-} from '@/features/nursing/schemas/nursing.schemas';
 import {
   formatNursingPriceRange,
-  isNursingServiceId,
   nursingServicesByKind,
   quoteNursingServices,
   type NursingService,
 } from '@/shared/catalog/nursing-services';
-import { DateCalendarField } from '@/shared/components/form/DateCalendarField';
-import { FormInput } from '@/shared/components/form/FormInput';
 import { Header } from '@/shared/components/layout/Header';
 import { Screen } from '@/shared/components/layout/Screen';
 import { Button } from '@/shared/components/ui/Button';
+import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
 import { Text } from '@/shared/components/ui/Text';
 import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
 import { useAuthStore } from '@/shared/stores';
 
 export function PatientNursingRequestScreen() {
   const { t } = useTranslation('nursing');
-  const { t: tv } = useTranslation('validation');
   const { rowStyle } = useLayoutDirection();
   const user = useAuthStore((s) => s.user);
-  const createRequest = useCreateNursingRequestMutation();
-  const { control, handleSubmit, watch, setValue, formState } = useForm<HomeNursingRequestForm>({
-    resolver: zodResolver(homeNursingRequestSchema),
-    defaultValues: { serviceIds: [], address: '', date: '', time: '' },
-  });
-
-  const selectedIds = watch('serviceIds');
+  const [selectedIds, setSelectedIds] = useState<NursingService['id'][]>([]);
+  const [serviceKind, setServiceKind] = useState<'visit' | 'shift'>('visit');
   const quote = quoteNursingServices(selectedIds);
 
   const toggle = (serviceId: NursingService['id']) => {
-    const next = selectedIds.includes(serviceId)
-      ? selectedIds.filter((id) => id !== serviceId)
-      : [...selectedIds, serviceId];
-    setValue('serviceIds', next, { shouldValidate: true });
+    setSelectedIds((current) =>
+      current.includes(serviceId) ? current.filter((id) => id !== serviceId) : [...current, serviceId],
+    );
   };
 
-  const onSubmit = (data: HomeNursingRequestForm) => {
+  const goComplete = () => {
     if (!user) {
       router.push('/(auth)/login');
       return;
     }
-    const serviceIds = data.serviceIds.filter(isNursingServiceId);
-    if (!serviceIds.length) return;
-    createRequest.mutate(
-      {
-        patientUserId: user.id,
-        patientName: `${user.firstName} ${user.lastName}`.trim(),
-        patientPhone: user.phone,
-        serviceId: serviceIds[0],
-        serviceIds,
-        address: data.address,
-        scheduledAt: `${data.date} ${data.time}`,
-      },
-      { onSuccess: () => router.replace('/(patient)/nursing' as never) },
-    );
+    if (!selectedIds.length) return;
+    router.push({
+      pathname: '/(patient)/nursing/complete',
+      params: { services: selectedIds.join(',') },
+    } as never);
   };
 
   return (
@@ -75,25 +51,22 @@ export function PatientNursingRequestScreen() {
           {t('requestHint')}
         </Text>
         <Text variant="bodySm">{t('chooseService')}</Text>
+        <SegmentedControl
+          value={serviceKind}
+          onChange={setServiceKind}
+          options={[
+            { value: 'visit', label: t('visitsTitle') },
+            { value: 'shift', label: t('shiftsTitle') },
+          ]}
+        />
+        <Text variant="caption" muted>
+          {serviceKind === 'visit' ? t('visitsHint') : t('shiftsHint')}
+        </Text>
         <ServiceGroup
-          title={t('visitsTitle')}
-          hint={t('visitsHint')}
-          services={nursingServicesByKind('visit')}
+          services={nursingServicesByKind(serviceKind)}
           selectedIds={selectedIds}
           onToggle={toggle}
         />
-        <ServiceGroup
-          title={t('shiftsTitle')}
-          hint={t('shiftsHint')}
-          services={nursingServicesByKind('shift')}
-          selectedIds={selectedIds}
-          onToggle={toggle}
-        />
-        {formState.errors.serviceIds?.message ? (
-          <Text variant="caption" className="text-status-error">
-            {t('servicePlaceholder')}
-          </Text>
-        ) : null}
         {quote ? (
           <View style={[rowStyle, { alignItems: 'center', justifyContent: 'space-between' }]} className="rounded-2xl bg-primary-600 px-4 py-3">
             <Text variant="label" className="text-white">
@@ -104,32 +77,10 @@ export function PatientNursingRequestScreen() {
             </Text>
           </View>
         ) : null}
-        <View className="gap-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
-          <FormInput control={control} name="address" label={t('address')} />
-          <Controller
-            control={control}
-            name="date"
-            render={({ field, fieldState }) => (
-              <DateCalendarField
-                label={t('date')}
-                value={field.value}
-                onChange={field.onChange}
-                error={fieldState.error?.message ? tv(fieldState.error.message) : undefined}
-              />
-            )}
-          />
-          <FormInput
-            control={control}
-            name="time"
-            label={t('time')}
-            placeholder={t('timePlaceholder')}
-            autoCapitalize="none"
-          />
-        </View>
         <Button
-          title={t('submit')}
-          onPress={handleSubmit(onSubmit)}
-          loading={createRequest.isPending}
+          title={t('continueRequest')}
+          onPress={goComplete}
+          disabled={!selectedIds.length}
           fullWidth
           size="lg"
         />
@@ -139,14 +90,10 @@ export function PatientNursingRequestScreen() {
 }
 
 function ServiceGroup({
-  title,
-  hint,
   services,
   selectedIds,
   onToggle,
 }: {
-  title: string;
-  hint: string;
   services: NursingService[];
   selectedIds: string[];
   onToggle: (serviceId: NursingService['id']) => void;
@@ -155,51 +102,27 @@ function ServiceGroup({
   const { rowStyle } = useLayoutDirection();
 
   return (
-    <View className="gap-2">
-      <View style={[rowStyle, { alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }]}>
-        <Text variant="titleSm">{title}</Text>
-        <Text variant="caption" muted>
-          {hint}
-        </Text>
-      </View>
+    <View style={[rowStyle, { flexWrap: 'wrap', gap: 8 }]}>
       {services.map((service) => {
         const selected = selectedIds.includes(service.id);
         return (
-          <Pressable key={service.id} accessibilityRole="checkbox" accessibilityState={{ checked: selected }} onPress={() => onToggle(service.id)}>
+          <Pressable
+            key={service.id}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: selected }}
+            onPress={() => onToggle(service.id)}
+            style={{ flexGrow: 1, flexBasis: '47%', minWidth: '47%', maxWidth: '48%' }}
+          >
             <View
-              style={[rowStyle, { alignItems: 'flex-start', gap: 12 }]}
-              className={`rounded-2xl border px-3 py-3 ${
+              className={`h-full items-center justify-center rounded-2xl border px-3 py-3 ${
                 selected
                   ? 'border-primary-600 bg-teal-50 dark:bg-teal-950/40'
                   : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800'
               }`}
             >
-              <View
-                className={`mt-0.5 h-[22px] w-[22px] items-center justify-center rounded-md border ${
-                  selected ? 'border-primary-600 bg-primary-600' : 'border-slate-300 bg-white dark:border-slate-500 dark:bg-slate-900'
-                }`}
-              >
-                {selected ? (
-                  <Text variant="caption" className="text-white">
-                    ✓
-                  </Text>
-                ) : null}
-              </View>
-              <View className="min-w-0 flex-1 gap-1">
-                <View style={[rowStyle, { alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }]}>
-                  <Text variant="label" className="min-w-0 flex-1">
-                    {t(`services.${service.id}.name`)}
-                  </Text>
-                  <View className={`rounded-full px-2.5 py-1 ${selected ? 'bg-white dark:bg-slate-900' : 'bg-teal-50 dark:bg-teal-950/50'}`}>
-                    <Text variant="caption" className="text-primary-700">
-                      {formatNursingPriceRange(service.priceMin, service.priceMax)} {t('currency')}
-                    </Text>
-                  </View>
-                </View>
-                <Text variant="caption" muted>
-                  {t(`services.${service.id}.description`)}
-                </Text>
-              </View>
+              <Text variant="label" className="text-center" numberOfLines={2}>
+                {t(`services.${service.id}.name`)}
+              </Text>
             </View>
           </Pressable>
         );

@@ -14,21 +14,6 @@ function logoUri(): string {
   return '';
 }
 
-const ECG_BOX = 152;
-const ECG_VIEWBOX = 120;
-const ECG_SCALE = ECG_BOX / ECG_VIEWBOX;
-const ECG_POINTS = [
-  [8, 64],
-  [28, 64],
-  [36, 64],
-  [44, 28],
-  [54, 92],
-  [64, 52],
-  [70, 64],
-  [112, 64],
-].map(([x, y]) => [x * ECG_SCALE, y * ECG_SCALE] as const);
-const ECG_STROKE = 2.2 * ECG_SCALE;
-
 const WEB_LOADER_CSS = `
 .app-web-loader {
   position: absolute;
@@ -47,11 +32,12 @@ const WEB_LOADER_CSS = `
   justify-items: center;
   gap: 22px;
   width: min(280px, 78vw);
+  margin-top: 48px;
 }
 .app-web-loader .loader-mark {
   position: relative;
-  width: 168px;
-  height: 168px;
+  width: 220px;
+  height: 220px;
   display: grid;
   place-items: center;
 }
@@ -90,12 +76,37 @@ const WEB_LOADER_CSS = `
 .app-web-loader .loader-logo {
   position: relative;
   z-index: 1;
-  width: 148px;
+  width: 176px;
+  height: auto;
+  margin-top: 36px;
   background: #fff;
   border-radius: 22px;
   padding: 10px 12px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
   animation: yacoub-loader-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.app-web-loader .loader-word {
+  color: #ecfdf5;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  font-size: 13px;
+  opacity: 0;
+  animation: yacoub-loader-fade 0.6s ease 0.55s forwards;
+}
+.app-web-loader .loader-bar {
+  width: 100%;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(204, 251, 241, 0.16);
+  overflow: hidden;
+}
+.app-web-loader .loader-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #14b8a6, #ccfbf1);
+  animation: yacoub-loader-fill 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 @keyframes yacoub-loader-draw { to { stroke-dashoffset: 0; } }
 @keyframes yacoub-loader-pulse {
@@ -110,12 +121,22 @@ const WEB_LOADER_CSS = `
   from { transform: translateY(12px) scale(0.92); opacity: 0; }
   to { transform: none; opacity: 1; }
 }
+@keyframes yacoub-loader-fade { to { opacity: 0.78; } }
+@keyframes yacoub-loader-fill {
+  0% { width: 0; }
+  70% { width: 100%; }
+  100% { width: 100%; }
+}
 @media (prefers-reduced-motion: reduce) {
   .app-web-loader .loader-ecg path,
   .app-web-loader .loader-ring::after,
-  .app-web-loader .loader-logo { animation: none; }
+  .app-web-loader .loader-logo,
+  .app-web-loader .loader-word,
+  .app-web-loader .loader-bar i { animation: none; }
   .app-web-loader .loader-ecg path { stroke-dashoffset: 0; }
-  .app-web-loader .loader-logo { opacity: 1; }
+  .app-web-loader .loader-bar i { width: 100%; }
+  .app-web-loader .loader-logo,
+  .app-web-loader .loader-word { opacity: 1; }
 }
 `;
 
@@ -139,48 +160,20 @@ function WebAppSplash() {
               { className: 'loader-ecg', viewBox: '0 0 120 120', 'aria-hidden': 'true' },
               createElement('path', { d: 'M8 64 H28 L36 64 L44 28 L54 92 L64 52 L70 64 H112' }),
             ),
+            createElement('img', { className: 'loader-logo', src: logoUri(), alt: 'منجز طبي' }),
           ),
-          createElement('img', { className: 'loader-logo', src: logoUri(), alt: 'منجز طبي' }),
+          createElement('div', { className: 'loader-word' }, 'MUNJEZ MEDICAL'),
+          createElement('div', { className: 'loader-bar', 'aria-hidden': 'true' }, createElement('i')),
         ),
       )}
     </View>
   );
 }
 
-function EcgLine() {
-  return (
-    <View style={styles.ecgCanvas} pointerEvents="none">
-      {ECG_POINTS.slice(1).map((point, index) => {
-        const [x1, y1] = ECG_POINTS[index];
-        const [x2, y2] = point;
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-        return (
-          <View
-            key={`${x1}-${y1}-${x2}-${y2}`}
-            style={[
-              styles.ecgSegment,
-              {
-                width: length,
-                left: (x1 + x2) / 2 - length / 2,
-                top: (y1 + y2) / 2 - ECG_STROKE / 2,
-                transform: [{ rotate: `${angle}deg` }],
-              },
-            ]}
-          />
-        );
-      })}
-    </View>
-  );
-}
-
 function NativeAppSplash() {
-  const ring = useRef(new Animated.Value(0)).current;
   const logoRise = useRef(new Animated.Value(0)).current;
-  const ecgDraw = useRef(new Animated.Value(0)).current;
-  const ecgPulse = useRef(new Animated.Value(0.55)).current;
+  const breathe = useRef(new Animated.Value(0)).current;
+  const fill = useRef(new Animated.Value(0)).current;
   const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
@@ -193,20 +186,25 @@ function NativeAppSplash() {
   useEffect(() => {
     if (reduceMotion) {
       logoRise.setValue(1);
-      ecgDraw.setValue(1);
-      ecgPulse.setValue(1);
+      fill.setValue(1);
       return;
     }
 
-    const breathe = Animated.loop(
+    const rise = Animated.timing(logoRise, {
+      toValue: 1,
+      duration: 900,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+      useNativeDriver: true,
+    });
+    const pulse = Animated.loop(
       Animated.sequence([
-        Animated.timing(ring, {
+        Animated.timing(breathe, {
           toValue: 1,
           duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(ring, {
+        Animated.timing(breathe, {
           toValue: 0,
           duration: 1200,
           easing: Easing.inOut(Easing.ease),
@@ -214,48 +212,31 @@ function NativeAppSplash() {
         }),
       ]),
     );
-
-    const pulse = Animated.loop(
+    const bar = Animated.loop(
       Animated.sequence([
-        Animated.timing(ecgPulse, {
+        Animated.timing(fill, {
           toValue: 1,
-          duration: 900,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          duration: 1500,
+          easing: Easing.bezier(0.22, 1, 0.36, 1),
+          useNativeDriver: false,
         }),
-        Animated.timing(ecgPulse, {
-          toValue: 0.55,
-          duration: 900,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+        Animated.timing(fill, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: false,
         }),
       ]),
     );
 
-    Animated.parallel([
-      Animated.timing(logoRise, {
-        toValue: 1,
-        duration: 900,
-        easing: Easing.bezier(0.16, 1, 0.3, 1),
-        useNativeDriver: true,
-      }),
-      Animated.timing(ecgDraw, {
-        toValue: 1,
-        duration: 1600,
-        delay: 200,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: false,
-      }),
-    ]).start(({ finished }) => {
-      if (finished) pulse.start();
-    });
-
-    breathe.start();
+    rise.start();
+    pulse.start();
+    bar.start();
     return () => {
-      breathe.stop();
+      rise.stop();
       pulse.stop();
+      bar.stop();
     };
-  }, [ecgDraw, ecgPulse, logoRise, reduceMotion, ring]);
+  }, [breathe, fill, logoRise, reduceMotion]);
 
   return (
     <View style={styles.root} accessibilityRole="progressbar" accessibilityLabel="جاري تحميل منجز طبي">
@@ -268,10 +249,10 @@ function NativeAppSplash() {
             style={[
               styles.ringOuter,
               {
-                opacity: ring.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }),
+                opacity: breathe.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }),
                 transform: [
                   {
-                    scale: ring.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] }),
+                    scale: breathe.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] }),
                   },
                 ],
               },
@@ -279,45 +260,42 @@ function NativeAppSplash() {
           />
           <Animated.View
             style={[
-              styles.ecgClip,
+              styles.logoWrap,
               {
-                opacity: ecgPulse,
-                width: ecgDraw.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, ECG_BOX],
-                }),
+                opacity: logoRise,
+                transform: [
+                  {
+                    translateY: logoRise.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [12, 0],
+                    }),
+                  },
+                  {
+                    scale: logoRise.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.92, 1],
+                    }),
+                  },
+                ],
               },
             ]}
           >
-            <View style={styles.ecgTilt}>
-              <EcgLine />
-            </View>
+            <Image source={logo as number} style={styles.logo} resizeMode="contain" accessibilityLabel="منجز طبي" />
           </Animated.View>
         </View>
-        <Animated.View
-          style={[
-            styles.logoCard,
-            {
-              opacity: logoRise,
-              transform: [
-                {
-                  translateY: logoRise.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [12, 0],
-                  }),
-                },
-                {
-                  scale: logoRise.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.92, 1],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <Image source={logo as number} style={styles.logo} resizeMode="contain" accessibilityLabel="منجز طبي" />
-        </Animated.View>
+        <Animated.Text style={[styles.word, { opacity: logoRise }]}>MUNJEZ MEDICAL</Animated.Text>
+        <View style={styles.bar}>
+          <Animated.View
+            style={[
+              styles.barFill,
+              {
+                width: reduceMotion
+                  ? '100%'
+                  : fill.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+              },
+            ]}
+          />
+        </View>
       </View>
     </View>
   );
@@ -354,66 +332,37 @@ const styles = StyleSheet.create({
     maxWidth: '78%',
     alignItems: 'center',
     gap: 22,
+    marginTop: 48,
   },
   mark: {
-    width: 168,
-    height: 168,
+    width: 220,
+    height: 220,
     alignItems: 'center',
     justifyContent: 'center',
   },
   ring: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 84,
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
     borderWidth: 1,
     borderColor: 'rgba(94, 234, 212, 0.18)',
   },
   ringOuter: {
     position: 'absolute',
-    top: -10,
-    right: -10,
-    bottom: -10,
-    left: -10,
-    borderRadius: 94,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
     borderWidth: 1,
     borderColor: 'rgba(94, 234, 212, 0.08)',
   },
-  ecgClip: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    height: ECG_BOX,
-    overflow: 'hidden',
-  },
-  ecgTilt: {
-    width: ECG_BOX,
-    height: ECG_BOX,
-    transform: [{ rotate: '-8deg' }],
-  },
-  ecgCanvas: {
-    width: ECG_BOX,
-    height: ECG_BOX,
-  },
-  ecgSegment: {
-    position: 'absolute',
-    height: ECG_STROKE,
-    borderRadius: 99,
-    backgroundColor: '#5eead4',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#5eead4',
-        shadowOpacity: 0.55,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 0 },
-      },
-      android: { elevation: 2 },
-      default: {},
-    }),
-  },
-  logoCard: {
+  logoWrap: {
     zIndex: 1,
-    width: 148,
-    borderRadius: 22,
+    width: 176,
+    marginTop: 36,
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
+    borderRadius: 22,
     paddingHorizontal: 12,
     paddingVertical: 10,
     ...Platform.select({
@@ -428,7 +377,26 @@ const styles = StyleSheet.create({
     }),
   },
   logo: {
-    width: 124,
-    height: 68,
+    width: 152,
+    height: 84,
+  },
+  word: {
+    color: 'rgba(236, 253, 245, 0.78)',
+    fontWeight: '800',
+    letterSpacing: 2.3,
+    fontSize: 13,
+  },
+  bar: {
+    width: '100%',
+    height: 3,
+    borderRadius: 99,
+    backgroundColor: 'rgba(204, 251, 241, 0.16)',
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: 99,
+    backgroundColor: '#5eead4',
+    alignSelf: 'flex-start',
   },
 });

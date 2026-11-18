@@ -36,12 +36,18 @@
     "accountDescription": "الحساب بياخد دقيقة، وبعدها تقدر تحجز وتتابع مواعيدك.",
     "createAccount": "إنشاء حساب",
     "signIn": "عندك حساب؟ ادخل",
-    "pathNursingTitle": "اطلب تمريض منزلي",
+    "pathNursingTitle": "تمريض منزلي",
     "pathNursingDescription": "الممرض يجي لحد البيت",
     "pathNursingBadge": "لحد البيت",
-    "pathHomeDoctorTitle": "اطلب دكتور الآن",
+    "pathHomeDoctorTitle": "كشف منزلي",
     "pathHomeDoctorDescription": "كشف خاص في عنوانك",
     "pathHomeDoctorBadge": "كشف فوري",
+    "pathLabsTitle": "معامل التحاليل",
+    "pathLabsDescription": "احجز تحاليلك من أقرب معمل",
+    "pathLabsBadge": "تحاليل",
+    "pathRadiologyTitle": "مراكز الأشعة",
+    "pathRadiologyDescription": "أشعة ورنين وموجات صوتية",
+    "pathRadiologyBadge": "أشعة",
     "searchCardTitle": "دور على عياده",
     "searchCardDescription": "ابحث عن اطباء وعيادات واحجز فى ثوانى",
     "pathDoctorTitle": "دور على دكتور",
@@ -111,14 +117,22 @@
   "searchHub": {
     "title": "بحث",
     "clinics": "العيادات",
-    "doctors": "الأطباء"
+    "doctors": "الأطباء",
+    "labs": "المعامل",
+    "radiology": "الأشعة"
   },
   "clinicSearch": {
     "placeholder": "البحث عن عيادة بالاسم أو المدينة…",
+    "labsPlaceholder": "البحث عن معمل…",
+    "radiologyPlaceholder": "البحث عن مركز أشعة…",
     "error": "تعذر تحميل العيادات",
     "empty": {
       "title": "لا توجد عيادات",
-      "description": "جرّب كلمة بحث مختلفة"
+      "description": "جرّب كلمة بحث مختلفة",
+      "labsTitle": "لا توجد معامل",
+      "labsDescription": "جرّب كلمة بحث مختلفة",
+      "radiologyTitle": "لا توجد مراكز أشعة",
+      "radiologyDescription": "جرّب كلمة بحث مختلفة"
     }
   },
   "clinicProfile": {
@@ -183,13 +197,56 @@
     "error": "تعذر تحميل السجل الطبي",
     "filters": {
       "all": "الكل",
-      "prescription": "الوصفات",
-      "lab": "نتائج المختبر",
-      "visit": "الزيارات"
+      "prescription": "روشتات",
+      "lab": "تحاليل",
+      "visit": "زيارات",
+      "radiology": "أشعة"
     },
+    "groups": {
+      "today": "اليوم",
+      "yesterday": "أمس"
+    },
+    "uploadedByYou": "مرفوع منك",
+    "closePreview": "إغلاق",
+    "upload": {
+      "action": "رفع مستند",
+      "cardTitle": "رفع صورة روشتة أو تحليل",
+      "cardSubtitle": "اختار النوع تحت، وبعدين صور أو اختار من المعرض.",
+      "title": "رفع روشتة أو تحليل",
+      "subtitle": "اختار النوع والصورة، وبعدين اختار كشف الدكتور اللي طلب التحليل أو الأشعة.",
+      "camera": "كاميرا",
+      "gallery": "المعرض",
+      "note": "ملاحظة (اختياري)",
+      "notePlaceholder": "مثلاً اسم المعمل أو التاريخ",
+      "submit": "حفظ في السجل",
+      "sendToDoctor": "ابعت للدكتور",
+      "cancel": "إلغاء",
+      "needPhoto": "اختار صورة الأول",
+      "success": "اتبعتت للدكتور، هيشوفها ويرد عليك في السجل",
+      "linkVisit": "اختار الدكتور",
+      "linkVisitHint": "اختار اسم الدكتور اللي طلب منك التحليل أو الأشعة. الصورة هتوصله وهو يرد عليك.",
+      "noLink": "حفظ في السجل من غير دكتور",
+      "emptyVisits": "مفيش دكتور يظهر هنا. لازم تكون حجزت أو كشفت عنده الأول.",
+      "needVisit": "اختار الدكتور الأول",
+      "sendFailed": "الإرسال اتأخر أو فشل. جرب صورة أوضح وأصغر.",
+      "apiMissing": "الرفع لسه مش شغال على السيرفر الحالي. السيرفر محتاج يتحدث.",
+      "doctorName": "د. {{doctor}}",
+      "unknownDoctor": "الدكتور",
+      "lastVisit": "آخر مرة: {{date}}",
+      "visitOption": "د. {{doctor}} · {{date}}",
+      "appointmentOption": "حجز مع د. {{doctor}} · {{date}}",
+      "labOption": "{{test}} — د. {{doctor}} · {{date}}"
+    },
+    "linkedTo": "كشف د. {{doctor}}",
+    "openVisit": "فتح الكشف",
+    "doctorReply": "رد الدكتور",
+    "replyLabel": "ردك للمريض",
+    "replyPlaceholder": "مثلاً التحليل طبيعي، أو تعالى الكشف",
+    "sendReply": "إرسال الرد",
+    "replySent": "الرد اتبعت للمريض",
     "empty": {
       "title": "لا يوجد سجل بعد",
-      "description": "ستظهر زياراتك ووصفاتك ونتائج المختبر هنا"
+      "description": "زيارات العيادة والروشتات والتحاليل والأشعة هتظهر هنا. تقدر ترفع صورة كمان."
     }
   },
   "prescription": {
@@ -244,6 +301,7 @@
     "openPrescriptionsHint": "كل وصفة في كارت بتاريخها وتفاصيلها",
     "openLabResults": "نتائج المختبر",
     "openLabResultsHint": "كل نتيجة في كارت بتاريخها وتفاصيلها",
+    "uploadedFiles": "صور مرفوعة على الكشف ده",
     "error": "تعذر تحميل الزيارة"
   },
   "labResult": {
@@ -270,16 +328,22 @@
   "history": {
     "types": {
       "visit": "زيارة",
-      "prescription": "وصفة طبية",
-      "lab": "طلب مختبر"
+      "prescription": "روشتة",
+      "lab": "تحليل",
+      "radiology": "أشعة"
     }
   },
   "profile": {
     "phone": "الهاتف",
     "bloodType": "فصيلة الدم",
+    "bloodTypeUnset": "مش محددة",
     "allergies": "الحساسية",
     "conditions": "الأمراض المزمنة",
-    "none": "لا يوجد"
+    "none": "لا يوجد",
+    "listHint": "افصل بينها بفاصلة",
+    "healthHint": "تقدر تملاهم دلوقتي، أو تستنى الدكتور يحطهم في الكشف",
+    "save": "حفظ الملف الصحي",
+    "saved": "تم حفظ الملف الصحي"
   },
   "obgyn": {
     "title": "متابعة الحمل",

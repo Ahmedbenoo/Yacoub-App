@@ -36,12 +36,18 @@
     "accountDescription": "It takes a minute. Then you can book and track your appointments.",
     "createAccount": "Create account",
     "signIn": "Already have an account? Sign in",
-    "pathNursingTitle": "Request home nursing",
+    "pathNursingTitle": "Home nursing",
     "pathNursingDescription": "A nurse comes to your home",
     "pathNursingBadge": "At home",
-    "pathHomeDoctorTitle": "Request a doctor now",
+    "pathHomeDoctorTitle": "Home visit",
     "pathHomeDoctorDescription": "A private exam at your address",
     "pathHomeDoctorBadge": "Same day",
+    "pathLabsTitle": "Lab centers",
+    "pathLabsDescription": "Book tests at a nearby lab",
+    "pathLabsBadge": "Labs",
+    "pathRadiologyTitle": "Radiology centers",
+    "pathRadiologyDescription": "X-ray, MRI, and ultrasound",
+    "pathRadiologyBadge": "Imaging",
     "searchCardTitle": "Find a clinic",
     "searchCardDescription": "Search doctors and clinics and book in seconds",
     "pathDoctorTitle": "Find a doctor",
@@ -111,14 +117,22 @@
   "searchHub": {
     "title": "Search",
     "clinics": "Clinics",
-    "doctors": "Doctors"
+    "doctors": "Doctors",
+    "labs": "Labs",
+    "radiology": "Imaging"
   },
   "clinicSearch": {
     "placeholder": "Search clinics by name or city…",
+    "labsPlaceholder": "Search labs…",
+    "radiologyPlaceholder": "Search imaging centers…",
     "error": "Could not load clinics",
     "empty": {
       "title": "No clinics found",
-      "description": "Try a different search term"
+      "description": "Try a different search term",
+      "labsTitle": "No labs found",
+      "labsDescription": "Try a different search term",
+      "radiologyTitle": "No imaging centers found",
+      "radiologyDescription": "Try a different search term"
     }
   },
   "clinicProfile": {
@@ -184,12 +198,55 @@
     "filters": {
       "all": "All",
       "prescription": "Prescriptions",
-      "lab": "Lab results",
-      "visit": "Visits"
+      "lab": "Labs",
+      "visit": "Visits",
+      "radiology": "Imaging"
     },
+    "groups": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "uploadedByYou": "Uploaded by you",
+    "closePreview": "Close",
+    "upload": {
+      "action": "Upload",
+      "cardTitle": "Upload a prescription or test photo",
+      "cardSubtitle": "Pick the type below, then take a photo or choose from the gallery.",
+      "title": "Upload a record",
+      "subtitle": "Pick the type and photo, then the visit of the doctor who asked for this test.",
+      "camera": "Camera",
+      "gallery": "Gallery",
+      "note": "Note (optional)",
+      "notePlaceholder": "Lab name or date, for example",
+      "submit": "Save to records",
+      "sendToDoctor": "Send to doctor",
+      "cancel": "Cancel",
+      "needPhoto": "Add a photo first",
+      "success": "Sent to the doctor. They can review it and reply in your record",
+      "linkVisit": "Choose the doctor",
+      "linkVisitHint": "Pick the doctor who asked for this lab or scan. They will get the photo and can reply.",
+      "noLink": "Save to records without a doctor",
+      "emptyVisits": "No doctor here yet. You need a booking or visit with them first.",
+      "needVisit": "Pick a doctor first",
+      "sendFailed": "Sending timed out or failed. Try a smaller, clearer photo.",
+      "apiMissing": "Upload is not available on this server yet. The API needs an update.",
+      "doctorName": "Dr. {{doctor}}",
+      "unknownDoctor": "Doctor",
+      "lastVisit": "Last visit: {{date}}",
+      "visitOption": "Dr. {{doctor}} · {{date}}",
+      "appointmentOption": "Appointment with Dr. {{doctor}} · {{date}}",
+      "labOption": "{{test}} — Dr. {{doctor}} · {{date}}"
+    },
+    "linkedTo": "Visit with Dr. {{doctor}}",
+    "openVisit": "Open visit",
+    "doctorReply": "Doctor's reply",
+    "replyLabel": "Reply to the patient",
+    "replyPlaceholder": "e.g. results look fine, or come in for a visit",
+    "sendReply": "Send reply",
+    "replySent": "Reply sent to the patient",
     "empty": {
       "title": "No records yet",
-      "description": "Your visits, prescriptions, and lab results will appear here"
+      "description": "Clinic visits, prescriptions, labs, and scans will show here. You can also upload a photo."
     }
   },
   "prescription": {
@@ -244,6 +301,7 @@
     "openPrescriptionsHint": "Each prescription on its own card, with the date and details",
     "openLabResults": "Lab results",
     "openLabResultsHint": "Each result on its own card, with the date and details",
+    "uploadedFiles": "Photos attached to this visit",
     "error": "Could not load visit"
   },
   "labResult": {
@@ -271,15 +329,21 @@
     "types": {
       "visit": "Visit",
       "prescription": "Prescription",
-      "lab": "Lab request"
+      "lab": "Lab",
+      "radiology": "Imaging"
     }
   },
   "profile": {
     "phone": "Phone",
     "bloodType": "Blood type",
+    "bloodTypeUnset": "Not set",
     "allergies": "Allergies",
     "conditions": "Chronic conditions",
-    "none": "None"
+    "none": "None",
+    "listHint": "Separate items with a comma",
+    "healthHint": "You can fill these now, or wait for the doctor to add them during a visit",
+    "save": "Save health profile",
+    "saved": "Health profile saved"
   },
   "obgyn": {
     "title": "Pregnancy follow-up",

@@ -92,8 +92,13 @@ export function DashboardStats({ role }: DashboardStatsProps) {
 
   const { data: todayData } = useAppointmentsQuery(todayFilters, Boolean(user));
   const { data: awaitingData } = useAppointmentsQuery(awaitingFilters, Boolean(user));
-  const todayCount = todayData?.data.length ?? 0;
-  const awaitingCount = awaitingData?.data.length ?? 0;
+  const inactive = new Set([
+    AppointmentStatus.CANCELLED,
+    AppointmentStatus.COMPLETED,
+    AppointmentStatus.NO_SHOW,
+  ]);
+  const todayCount = (todayData?.data ?? []).filter((item) => !inactive.has(item.status)).length;
+  const awaitingCount = (awaitingData?.data ?? []).filter((item) => !inactive.has(item.status)).length;
 
   const openAppointments = (scope: 'today' | 'scheduled') => {
     const pathname =

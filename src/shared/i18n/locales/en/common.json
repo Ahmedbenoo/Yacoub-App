@@ -1,5 +1,5 @@
 {
-  "appName": "Munjiz Tibbi",
+  "appName": "Munjiz Tebi",
   "tagline": "Clinic Management System",
   "loading": "Loading...",
   "retry": "Try Again",
@@ -14,6 +14,8 @@
   "done": "Done",
   "hour": "Hour",
   "minute": "Minute",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
   "showPassword": "Show password",
   "hidePassword": "Hide password",
   "comingSoon": "Coming Soon",
@@ -50,6 +52,8 @@
     "branchesTitle": "Branches",
     "branchesSubtitle": "Choose the active branch",
     "notificationsSubtitle": "Alerts and notification categories",
+    "walletTitle": "Wallet",
+    "walletSubtitle": "Balance and top-up requests",
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
@@ -80,7 +84,9 @@
   "nav": {
     "notifications": "Notifications",
     "theme": "Toggle theme",
-    "profile": "Profile"
+    "language": "Toggle language",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "patientAgeGender": "{{age}} yrs · {{gender}}",
   "doctorTitle": "Dr. {{name}}",

@@ -29,15 +29,59 @@ export interface PatientFilters {
   includeInactive?: boolean;
 }
 
+export interface UpdateHealthProfilePayload {
+  bloodType?: string;
+  allergies: string[];
+  chronicConditions: string[];
+}
+
+export type MedicalRecordType = 'visit' | 'prescription' | 'lab' | 'radiology';
+export type MedicalRecordSource = 'clinic' | 'patient';
+export type MedicalDocumentKind = 'prescription' | 'lab' | 'radiology';
+
 export interface MedicalHistoryEntry {
   id: string;
   patientId: string;
-  type: 'visit' | 'prescription' | 'lab';
+  type: MedicalRecordType;
   title: string;
   description: string;
   date: string;
   resourceId?: string;
   doctorId?: string;
+  visitId?: string;
+  source?: MedicalRecordSource;
+  imageUrl?: string;
+  doctorReply?: string;
 }
 
-export type MedicalRecordFilter = 'all' | 'prescription' | 'lab' | 'visit';
+export type MedicalRecordFilter = 'all' | MedicalRecordType;
+
+export interface PatientVisitLink {
+  id: string;
+  kind: 'visit' | 'appointment' | 'lab';
+  visitId?: string;
+  appointmentId?: string;
+  labRequestId?: string;
+  doctorId: string;
+  doctorName: string;
+  date: string;
+  testName?: string;
+}
+
+export interface LinkedPatientDocument {
+  id: string;
+  kind: MedicalDocumentKind;
+  imageUrl: string;
+  note?: string;
+  date: string;
+}
+
+export interface UploadMedicalDocumentPayload {
+  kind: MedicalDocumentKind;
+  image: string;
+  note?: string;
+  visitId?: string;
+  appointmentId?: string;
+  labRequestId?: string;
+  doctorId?: string;
+}

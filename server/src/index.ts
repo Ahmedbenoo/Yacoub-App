@@ -34,6 +34,7 @@ import {
   getPatient,
   listPatients,
   setPatientActive,
+  updateHealthProfile,
   updatePatient,
 } from './patients.js';
 import { clinicReport, clinicReports, clinicStats } from './reports.js';
@@ -277,6 +278,12 @@ const updatePatientBody = z.object({
   email: z.string().optional(),
   allergies: z.array(z.string()),
   chronicConditions: z.array(z.string()),
+});
+
+const healthProfileBody = z.object({
+  bloodType: z.string().optional(),
+  allergies: z.array(z.string()).default([]),
+  chronicConditions: z.array(z.string()).default([]),
 });
 
 function clinicFromRequest(req: express.Request, queryClinicId?: string): string {
@@ -868,6 +875,36 @@ app.get('/api/v1/patients/me', async (req, res) => {
     res.json({ success: true, data: await getMyPatient(user.id) });
   } catch (error) {
     sendError(res, error, 'Patient not found');
+  }
+});
+
+app.patch('/api/v1/patients/me/health-profile', async (req, res) => {
+  const parsed = healthProfileBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Health profile details are invalid' });
+    return;
+  }
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    res.json({ success: true, data: await updateHealthProfile(user.id, 'me', parsed.data) });
+  } catch (error) {
+    sendError(res, error, 'Could not update the health profile');
+  }
+});
+
+app.patch('/api/v1/patients/:id/health-profile', async (req, res) => {
+  const parsed = healthProfileBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Health profile details are invalid' });
+    return;
+  }
+  try {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    res.json({ success: true, data: await updateHealthProfile(user.id, req.params.id, parsed.data) });
+  } catch (error) {
+    sendError(res, error, 'Could not update the health profile');
   }
 });
 

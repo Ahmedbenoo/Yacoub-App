@@ -42,6 +42,8 @@ export const endpoints = {
   patients: {
     list: '/patients',
     me: '/patients/me',
+    myHealthProfile: '/patients/me/health-profile',
+    healthProfile: (id: string) => `/patients/${id}/health-profile`,
     detail: (id: string) => `/patients/${id}`,
     history: (id: string) => `/patients/${id}/history`,
     myPrescriptions: '/patients/me/prescriptions',
@@ -49,6 +51,9 @@ export const endpoints = {
     myLabResults: '/patients/me/lab-results',
     labResultDetail: (id: string) => `/patients/me/lab-results/${id}`,
     visitDetail: (id: string) => `/patients/me/visits/${id}`,
+    visitLinks: '/patients/me/visit-links',
+    uploadDocument: '/patients/me/documents',
+    replyDocument: (patientId: string, id: string) => `/patients/${patientId}/documents/${id}/reply`,
   },
   visits: {
     list: '/visits',

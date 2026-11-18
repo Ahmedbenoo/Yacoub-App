@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { usePatientAppointmentsBadgeCount } from '@/features/appointments/hooks';
 import { RoleTabsShell } from '@/shared/components/layout/RoleTabsShell';
 import { RoleTabBar, type RoleTabBarProps } from '@/shared/navigation/RoleTabBar';
 import { createTabBarIcon, useTabBarScreenOptions } from '@/shared/navigation/tab-bar-options';
@@ -8,6 +9,7 @@ import { createTabBarIcon, useTabBarScreenOptions } from '@/shared/navigation/ta
 export default function PatientTabsLayout() {
   const { t } = useTranslation('patient');
   const screenOptions = useTabBarScreenOptions();
+  const appointmentsBadge = usePatientAppointmentsBadgeCount();
 
   return (
     <RoleTabsShell
@@ -34,7 +36,11 @@ export default function PatientTabsLayout() {
         />
         <Tabs.Screen
           name="appointments"
-          options={{ title: t('tabs.appointments'), tabBarIcon: createTabBarIcon('calendar') }}
+          options={{
+            title: t('tabs.appointments'),
+            tabBarIcon: createTabBarIcon('calendar'),
+            tabBarBadge: appointmentsBadge > 0 ? appointmentsBadge : undefined,
+          }}
         />
         <Tabs.Screen
           name="records"

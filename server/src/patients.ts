@@ -69,9 +69,8 @@ const SEED_PATIENTS: SeedPatient[] = [
     phone: '+201000000001',
     dateOfBirth: '1995-06-08',
     gender: 'male',
-    bloodType: 'A+',
-    allergies: ['Penicillin'],
-    chronicConditions: ['Hypertension'],
+    allergies: [],
+    chronicConditions: [],
     lastVisitDaysAgo: 2,
   },
   {
@@ -84,9 +83,8 @@ const SEED_PATIENTS: SeedPatient[] = [
     phone: '+201000000002',
     dateOfBirth: '1988-09-23',
     gender: 'male',
-    bloodType: 'O+',
     allergies: [],
-    chronicConditions: ['Type 2 Diabetes'],
+    chronicConditions: [],
     lastVisitDaysAgo: 10,
   },
   {
@@ -99,8 +97,7 @@ const SEED_PATIENTS: SeedPatient[] = [
     phone: '+201000000003',
     dateOfBirth: '1998-01-05',
     gender: 'female',
-    bloodType: 'B+',
-    allergies: ['Latex'],
+    allergies: [],
     chronicConditions: [],
     lastVisitDaysAgo: 30,
   },
@@ -114,9 +111,8 @@ const SEED_PATIENTS: SeedPatient[] = [
     phone: '+201000000004',
     dateOfBirth: '1990-06-18',
     gender: 'female',
-    bloodType: 'AB+',
     allergies: [],
-    chronicConditions: ['Asthma'],
+    chronicConditions: [],
     lastVisitDaysAgo: 4,
   },
   {
@@ -378,6 +374,47 @@ export async function updatePatient(
     [row.id, input.phone?.trim() || null, input.email?.trim() || row.email, JSON.stringify(input.allergies), JSON.stringify(input.chronicConditions)],
   );
   return getPatient(userId, row.id);
+}
+
+export async function updateHealthProfile(
+  actorId: string,
+  patientId: string | 'me',
+  input: { bloodType?: string; allergies: string[]; chronicConditions: string[] },
+): Promise<PublicPatient> {
+  const self = patientId === 'me';
+  const row = self ? (await db.query<PatientRow>('SELECT * FROM patients WHERE user_id = $1 ORDER BY created_at LIMIT 1', [actorId])).rows[0] : await patientById(patientId);
+  if (!row) throw httpError(404, 'NOT_FOUND', 'Patient not found');
+
+  if (self) {
+    if (row.user_id !== actorId) throw httpError(403, 'FORBIDDEN', 'You cannot edit this health profile');
+  } else {
+    const roles = await rolesAtClinic(actorId, row.clinic_id);
+    if (!isStaff(roles) && row.user_id !== actorId) {
+      throw httpError(403, 'FORBIDDEN', 'You cannot edit this health profile');
+    }
+  }
+
+  const bloodType = input.bloodType?.trim() || null;
+  const allergies = JSON.stringify(input.allergies.map((item) => item.trim()).filter(Boolean));
+  const chronicConditions = JSON.stringify(input.chronicConditions.map((item) => item.trim()).filter(Boolean));
+
+  if (self && row.user_id) {
+    await db.query(
+      `UPDATE patients
+       SET blood_type = $2, allergies = $3, chronic_conditions = $4, updated_at = now()
+       WHERE user_id = $1`,
+      [row.user_id, bloodType, allergies, chronicConditions],
+    );
+  } else {
+    await db.query(
+      `UPDATE patients
+       SET blood_type = $2, allergies = $3, chronic_conditions = $4, updated_at = now()
+       WHERE id = $1`,
+      [row.id, bloodType, allergies, chronicConditions],
+    );
+  }
+
+  return self ? getMyPatient(actorId) : getPatient(actorId, row.id);
 }
 
 export async function setPatientActive(userId: string, id: string, isActive: boolean): Promise<PublicPatient> {

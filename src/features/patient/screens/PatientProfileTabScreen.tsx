@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 
 import { useMyChildrenQuery } from '@/features/obgyn/hooks/useObgynQueries';
 import { useMyPatientProfileQuery } from '@/features/patients/hooks/usePatientRecordsQueries';
-import { WalletPanel } from '@/features/wallet/components/WalletPanel';
 import { Screen } from '@/shared/components/layout/Screen';
 import { SettingsPanel } from '@/shared/components/layout/SettingsPanel';
 import { Button } from '@/shared/components/ui/Button';
@@ -66,7 +65,6 @@ export function PatientProfileTabScreen() {
         </Card>
       )}
 
-      {isAuthenticated ? <WalletPanel mode="self" /> : null}
       {(children.data ?? []).length > 0 ? (
         <Card className="mb-4 gap-2">
           <Text variant="label">{t('obgyn.children')}</Text>

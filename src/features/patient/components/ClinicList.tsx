@@ -18,6 +18,8 @@ interface ClinicListProps {
   onRetry?: () => void;
   hrefForClinic?: (clinic: Clinic) => Href;
   onPressClinic?: (clinic: Clinic) => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }
 
 export function ClinicList({
@@ -29,6 +31,8 @@ export function ClinicList({
   onRetry,
   hrefForClinic,
   onPressClinic,
+  emptyTitle,
+  emptyDescription,
 }: ClinicListProps) {
   const { t } = useTranslation('patient');
   const { t: tc } = useTranslation('common');
@@ -49,8 +53,8 @@ export function ClinicList({
   if (clinics.length === 0) {
     return (
       <EmptyState
-        title={t('clinicSearch.empty.title')}
-        description={t('clinicSearch.empty.description')}
+        title={emptyTitle ?? t('clinicSearch.empty.title')}
+        description={emptyDescription ?? t('clinicSearch.empty.description')}
         icon={
           <View className="h-16 w-16 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/20">
             <Icon name="clinic" size={32} color="#0D9488" />

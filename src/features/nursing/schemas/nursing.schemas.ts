@@ -2,12 +2,17 @@ import { z } from 'zod';
 
 import { isValidPhone } from '@/shared/lib/phone';
 
-export const homeNursingRequestSchema = z.object({
+export const homeNursingServicesSchema = z.object({
   serviceIds: z.array(z.string().min(1)).min(1, 'specialtyRequired'),
+});
+
+export const homeNursingDetailsSchema = z.object({
   address: z.string().min(4, 'addressRequired'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'dateRequired'),
   time: z.string().regex(/^\d{2}:\d{2}$/, 'timeRequired'),
 });
+
+export const homeNursingRequestSchema = homeNursingServicesSchema.merge(homeNursingDetailsSchema);
 
 export const nurseRegisterSchema = z
   .object({
@@ -25,4 +30,5 @@ export const nurseRegisterSchema = z
   });
 
 export type HomeNursingRequestForm = z.infer<typeof homeNursingRequestSchema>;
+export type HomeNursingDetailsForm = z.infer<typeof homeNursingDetailsSchema>;
 export type NurseRegisterForm = z.infer<typeof nurseRegisterSchema>;

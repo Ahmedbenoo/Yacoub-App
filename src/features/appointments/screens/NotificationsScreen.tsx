@@ -1,5 +1,5 @@
 import { Pressable } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { NotificationList } from '@/features/appointments/components/NotificationList';
@@ -10,7 +10,7 @@ import {
 import { Header } from '@/shared/components/layout/Header';
 import { Screen } from '@/shared/components/layout/Screen';
 import { Text } from '@/shared/components/ui/Text';
-import { getAppointmentHref } from '@/shared/navigation/routes';
+import { getAppointmentHref, getDoctorPatientHref } from '@/shared/navigation/routes';
 import type { Notification } from '@/shared/types/models/notification';
 import { UserRole } from '@/shared/types/enums';
 
@@ -28,6 +28,16 @@ export function NotificationsScreen({ viewerRole }: NotificationsScreenProps) {
     const nursingRequestId = notification.data?.nursingRequestId;
     if (viewerRole === UserRole.PATIENT && typeof nursingRequestId === 'string') {
       router.push(`/(patient)/nursing/${nursingRequestId}` as never);
+      return;
+    }
+
+    const patientId = notification.data?.patientId;
+    if (viewerRole === UserRole.DOCTOR && typeof patientId === 'string') {
+      router.push(getDoctorPatientHref(patientId));
+      return;
+    }
+    if (viewerRole === UserRole.PATIENT && notification.messageKey === 'doctorDocumentReply') {
+      router.push('/(patient)/(tabs)/records' as Href);
       return;
     }
 

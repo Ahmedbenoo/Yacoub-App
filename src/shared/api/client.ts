@@ -88,10 +88,16 @@ apiClient.interceptors.response.use(
       notifySessionExpired();
     }
 
+    const payload = error.response?.data as { code?: string; message?: string; error?: { code?: string; message?: string } } | undefined;
+    const status = error.response?.status;
     const apiError: ApiError = {
-      code: error.response?.data?.code ?? 'UNKNOWN_ERROR',
-      message: error.response?.data?.message ?? error.message ?? 'An unexpected error occurred',
-      details: error.response?.data?.details,
+      code: payload?.error?.code ?? payload?.code ?? (status === 404 ? 'NOT_FOUND' : 'UNKNOWN_ERROR'),
+      message:
+        payload?.error?.message ??
+        payload?.message ??
+        (status === 404 ? 'Upload is not available on this server yet' : error.message) ??
+        'An unexpected error occurred',
+      details: (payload as { details?: unknown } | undefined)?.details,
     };
 
     return Promise.reject(apiError);

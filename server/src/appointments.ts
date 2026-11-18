@@ -268,7 +268,13 @@ export async function listAppointments(
     rows = rows.filter((row) => row.status === filters.status);
   }
   if (filters.scope === 'today') {
-    rows = rows.filter((row) => isSameDay(asDate(row.scheduled_at), now));
+    rows = rows.filter(
+      (row) =>
+        isSameDay(asDate(row.scheduled_at), now) &&
+        row.status !== 'cancelled' &&
+        row.status !== 'completed' &&
+        row.status !== 'no_show',
+    );
   } else if (filters.scope === 'upcoming') {
     rows = rows.filter(
       (row) => asDate(row.scheduled_at) >= now && row.status !== 'cancelled' && row.status !== 'completed',

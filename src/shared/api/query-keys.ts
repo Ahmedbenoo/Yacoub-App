@@ -20,6 +20,7 @@ export const queryKeys = {
     labResults: (userId: string) => [...queryKeys.patients.all, 'lab-results', userId] as const,
     labResultDetail: (id: string) => [...queryKeys.patients.all, 'lab-result', id] as const,
     visitDetail: (id: string) => [...queryKeys.patients.all, 'visit', id] as const,
+    visitLinks: () => [...queryKeys.patients.all, 'visit-links'] as const,
   },
   visits: {
     all: ['visits'] as const,

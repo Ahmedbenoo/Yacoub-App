@@ -10,6 +10,8 @@ const logoOnDark = require('../../../../assets/images/logo-munjiz.png');
 
 /** Source asset is 1024×558. */
 const LOGO_ASPECT = 1024 / 558;
+/** Keep height; grow the logo box and graphic by 10% of width. */
+const LOGO_WIDTH_SCALE = 1.1;
 
 type LogoSize = 'sm' | 'nav' | 'md' | 'lg' | 'xl';
 
@@ -47,8 +49,10 @@ export function Logo({
   const isRtl = useLocaleStore((s) => s.isRtl);
   const isDark = useResolvedColorScheme() === 'dark';
   const fallbackHeight = maxVisibleHeight ?? sizeMap[size].height;
-  const width = fillWidth ? undefined : boxWidth ?? fallbackHeight * LOGO_ASPECT;
-  const height = width ? width / LOGO_ASPECT : fallbackHeight;
+  const width = fillWidth
+    ? undefined
+    : boxWidth ?? fallbackHeight * LOGO_ASPECT * LOGO_WIDTH_SCALE;
+  const height = fallbackHeight;
   const alignItems =
     align === 'center' ? 'center' : isRtl ? 'flex-end' : 'flex-start';
 
@@ -70,7 +74,7 @@ export function Logo({
           height: fillWidth ? fallbackHeight : height,
           backgroundColor: 'transparent',
         }}
-        resizeMode="contain"
+        resizeMode="cover"
       />
     </View>
   );

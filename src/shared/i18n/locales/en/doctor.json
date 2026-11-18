@@ -39,8 +39,13 @@
     "types": {
       "visit": "Visit",
       "prescription": "Prescription",
-      "lab": "Lab request"
-    }
+      "lab": "Lab",
+      "radiology": "Imaging"
+    },
+    "uploadedByPatient": "Uploaded by patient",
+    "linkedTo": "Visit with Dr. {{doctor}}",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "visit": {
     "title": "Patient visit",
@@ -61,6 +66,8 @@
     "temperature": "Temperature (°C)",
     "weight": "Weight (kg)",
     "saveNotes": "Save notes",
+    "healthProfile": "Health profile",
+    "saveHealthProfile": "Save health profile",
     "prescriptions": "Prescriptions",
     "medName": "Medication name",
     "dosage": "Dosage",
@@ -196,6 +203,7 @@
     "prescriptionUpdated": "Prescription updated",
     "prescriptionDeleted": "Prescription deleted",
     "requestSubmitted": "Request submitted",
-    "availabilityUpdated": "Availability updated"
+    "availabilityUpdated": "Availability updated",
+    "healthProfileSaved": "Health profile saved"
   }
 }

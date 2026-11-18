@@ -133,6 +133,28 @@ export function VisitDetailScreen() {
           </View>
         ) : null}
 
+        {(visit.linkedDocuments ?? []).length > 0 ? (
+          <Card className="gap-3">
+            <Text variant="label">{t('visit.uploadedFiles')}</Text>
+            {(visit.linkedDocuments ?? []).map((file) => (
+              <View key={file.id} className="gap-2">
+                {file.imageUrl ? (
+                  <Image
+                    source={{ uri: file.imageUrl }}
+                    style={{ height: 160, width: '100%' }}
+                    resizeMode="contain"
+                  />
+                ) : null}
+                {file.note ? (
+                  <Text variant="bodySm" muted>
+                    {file.note}
+                  </Text>
+                ) : null}
+              </View>
+            ))}
+          </Card>
+        ) : null}
+
         {(visit.linkedPrescriptionIds.length > 0 || visit.linkedLabResultIds.length > 0) && (
           <Card className="gap-3">
             <Text variant="label">{t('visit.relatedRecords')}</Text>

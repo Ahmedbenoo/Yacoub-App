@@ -1,18 +1,26 @@
 import { normalizePhone } from '@/shared/lib/phone';
 import { sleep } from '@/shared/lib/utils';
-import { Gender, UserRole } from '@/shared/types/enums';
+import { AppointmentStatus, Gender, LabRequestStatus, LabRequestType, UserRole } from '@/shared/types/enums';
 import type { PaginatedResponse } from '@/shared/types/models';
 import {
   getPrescriptionDisplayDate,
   isIssuedVisiblePrescription,
 } from '@/shared/types/models/prescription';
-import type { MedicalHistoryEntry, PatientFilters, PatientProfile } from '@/shared/types/models/patient';
+import type {
+  MedicalHistoryEntry,
+  PatientFilters,
+  PatientProfile,
+  PatientVisitLink,
+  UploadMedicalDocumentPayload,
+} from '@/shared/types/models/patient';
 import type { Prescription } from '@/shared/types/models/prescription';
 
 import { useAuthStore } from '@/shared/stores/auth-store';
 
+import { listAppointmentsForPatient } from './appointments.mock';
 import { MOCK_CLINIC_IDS } from './constants';
 import { cloneSeed, resetArray } from './clone';
+import { getMockDoctorById } from './doctors.mock';
 import { getMockClinicScope } from './helpers';
 import { mockLabRequests } from './lab-requests.mock';
 import { mockPrescriptions } from './prescriptions.mock';
@@ -31,9 +39,8 @@ const SEED_PATIENTS: PatientProfile[] = [
     phone: '+201000000001',
     dateOfBirth: '1995-06-08',
     gender: Gender.MALE,
-    bloodType: 'A+',
-    allergies: ['Penicillin'],
-    chronicConditions: ['Hypertension'],
+    allergies: [],
+    chronicConditions: [],
     lastVisitAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
@@ -48,9 +55,8 @@ const SEED_PATIENTS: PatientProfile[] = [
     phone: '+201000000002',
     dateOfBirth: '1988-09-23',
     gender: Gender.MALE,
-    bloodType: 'O+',
     allergies: [],
-    chronicConditions: ['Type 2 Diabetes'],
+    chronicConditions: [],
     lastVisitAt: new Date(Date.now() - 10 * 86400000).toISOString(),
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
@@ -65,8 +71,7 @@ const SEED_PATIENTS: PatientProfile[] = [
     phone: '+201000000003',
     dateOfBirth: '1998-01-05',
     gender: Gender.FEMALE,
-    bloodType: 'B+',
-    allergies: ['Latex'],
+    allergies: [],
     chronicConditions: [],
     lastVisitAt: new Date(Date.now() - 30 * 86400000).toISOString(),
     createdAt: '2025-01-01T00:00:00.000Z',
@@ -82,9 +87,8 @@ const SEED_PATIENTS: PatientProfile[] = [
     phone: '+201000000004',
     dateOfBirth: '1990-06-18',
     gender: Gender.FEMALE,
-    bloodType: 'AB+',
     allergies: [],
-    chronicConditions: ['Asthma'],
+    chronicConditions: [],
     lastVisitAt: new Date(Date.now() - 4 * 86400000).toISOString(),
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
@@ -105,6 +109,7 @@ const SEED_PATIENTS: PatientProfile[] = [
 ];
 
 const mockPatients: PatientProfile[] = cloneSeed(SEED_PATIENTS);
+const mockDocuments: MedicalHistoryEntry[] = [];
 
 export function insertMockPatient(patient: PatientProfile) {
   if (!mockPatients.some((item) => item.id === patient.id)) {
@@ -114,6 +119,11 @@ export function insertMockPatient(patient: PatientProfile) {
 
 export function resetMockPatients() {
   resetArray(mockPatients, SEED_PATIENTS);
+  mockDocuments.length = 0;
+}
+
+export function listMockDocumentsForVisit(visitId: string): MedicalHistoryEntry[] {
+  return mockDocuments.filter((item) => item.visitId === visitId);
 }
 
 export function linkPatientFilesByPhone(userId: string, phone: string): boolean {
@@ -200,6 +210,7 @@ function toPrescriptionHistoryEntry(prescription: Prescription): MedicalHistoryE
     date: getPrescriptionDisplayDate(prescription),
     resourceId: prescription.id,
     doctorId: prescription.doctorId,
+    source: 'clinic',
   };
 }
 
@@ -264,18 +275,20 @@ export const mockPatientsService = {
         date: visit.completedAt ?? visit.startedAt,
         resourceId: visit.id,
         doctorId: visit.doctorId,
+        source: 'clinic',
       }));
     const labEntries: MedicalHistoryEntry[] = mockLabRequests
       .filter((item) => item.patientId === resolvedId)
       .map((item) => ({
         id: `hist-lab-${item.id}`,
         patientId: item.patientId,
-        type: 'lab' as const,
+        type: item.type === LabRequestType.IMAGING ? ('radiology' as const) : ('lab' as const),
         title: item.testName,
         description: item.resultSummary ?? item.notes ?? '',
         date: item.completedAt ?? item.requestedAt,
         resourceId: item.id,
         doctorId: item.doctorId,
+        source: 'clinic',
       }));
     const prescriptionEntries = mockPrescriptions
       .filter((item) => item.patientId === resolvedId && isIssuedVisiblePrescription(item))
@@ -284,7 +297,138 @@ export const mockPatientsService = {
     if (role === UserRole.DOCTOR && userId) {
       entries = entries.filter((entry) => entry.doctorId === userId);
     }
-    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const file = mockPatients.find((item) => item.id === resolvedId);
+    const uploaded = mockDocuments.filter((item) => {
+      if (item.patientId === resolvedId || item.patientId === patientId) return true;
+      const owner = mockPatients.find((patient) => patient.id === item.patientId);
+      return Boolean(file?.userId && owner?.userId === file.userId);
+    });
+    return [...entries, ...uploaded].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  },
+
+  async listVisitLinks(userId: string): Promise<PatientVisitLink[]> {
+    await sleep(200);
+    const files = mockPatients.filter((item) => item.userId === userId || item.id === userId);
+    const ids = new Set(files.flatMap((item) => [item.id, item.userId]));
+    const doctorName = (doctorId: string) => {
+      const doctor = getMockDoctorById(doctorId);
+      return doctor ? `${doctor.firstName} ${doctor.lastName}` : '';
+    };
+    const labs: PatientVisitLink[] = mockLabRequests
+      .filter((item) => ids.has(item.patientId) && item.status !== LabRequestStatus.CANCELLED)
+      .map((item) => ({
+        id: item.id,
+        kind: 'lab' as const,
+        labRequestId: item.id,
+        visitId: item.visitId,
+        doctorId: item.doctorId,
+        doctorName: doctorName(item.doctorId) || item.doctorName.replace(/^Dr\.\s*/, ''),
+        date: item.requestedAt,
+        testName: item.testName,
+      }));
+    const usedVisits = new Set(labs.map((item) => item.visitId));
+    const visits = mockVisits
+      .filter((visit) => ids.has(visit.patientId) && !usedVisits.has(visit.id))
+      .map((visit) => ({
+        id: visit.id,
+        kind: 'visit' as const,
+        visitId: visit.id,
+        appointmentId: visit.appointmentId,
+        doctorId: visit.doctorId,
+        doctorName: doctorName(visit.doctorId),
+        date: visit.completedAt ?? visit.startedAt,
+      }));
+    const usedAppointments = new Set(visits.map((item) => item.appointmentId).filter(Boolean));
+    const appointments = files
+      .flatMap((file) => [
+        ...listAppointmentsForPatient(file.id),
+        ...listAppointmentsForPatient(file.userId),
+      ])
+      .filter(
+        (item, index, list) =>
+          list.findIndex((row) => row.id === item.id) === index &&
+          item.status !== AppointmentStatus.CANCELLED &&
+          item.status !== AppointmentStatus.NO_SHOW &&
+          !usedAppointments.has(item.id),
+      )
+      .map((item) => ({
+        id: item.id,
+        kind: 'appointment' as const,
+        appointmentId: item.id,
+        doctorId: item.doctorId,
+        doctorName: item.doctor
+          ? `${item.doctor.firstName} ${item.doctor.lastName}`
+          : doctorName(item.doctorId),
+        date: item.scheduledAt,
+      }));
+    return [...labs, ...visits, ...appointments].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  },
+
+  async uploadDocument(userId: string, payload: UploadMedicalDocumentPayload): Promise<MedicalHistoryEntry> {
+    await sleep(400);
+    const patient = mockPatients.find((item) => item.userId === userId || item.id === userId);
+    if (!patient) throw { code: 'NOT_FOUND', message: 'Patient not found' };
+    const titles = {
+      prescription: 'Prescription photo',
+      lab: 'Lab result photo',
+      radiology: 'Scan photo',
+    } as const;
+    let visitId = payload.visitId;
+    let doctorId: string | undefined;
+    let doctorName = '';
+    if (visitId) {
+      const visit = mockVisits.find((item) => item.id === visitId);
+      if (visit) {
+        doctorId = visit.doctorId;
+        doctorName = getMockDoctorById(visit.doctorId)
+          ? `${getMockDoctorById(visit.doctorId)!.firstName} ${getMockDoctorById(visit.doctorId)!.lastName}`
+          : '';
+      }
+    } else if (payload.labRequestId) {
+      const lab = mockLabRequests.find((item) => item.id === payload.labRequestId);
+      if (lab) {
+        doctorId = lab.doctorId;
+        doctorName = lab.doctorName.replace(/^Dr\.\s*/, '');
+        visitId = lab.visitId;
+      }
+    } else if (payload.appointmentId) {
+      const files = [patient.id, patient.userId];
+      const appointment = files
+        .flatMap((id) => listAppointmentsForPatient(id))
+        .find((item) => item.id === payload.appointmentId);
+      if (appointment) {
+        doctorId = appointment.doctorId;
+        doctorName = appointment.doctor
+          ? `${appointment.doctor.firstName} ${appointment.doctor.lastName}`
+          : '';
+        visitId = mockVisits.find((item) => item.appointmentId === appointment.id)?.id;
+      }
+    }
+    const entry: MedicalHistoryEntry = {
+      id: `hist-doc-${Date.now()}`,
+      patientId: patient.id,
+      type: payload.kind,
+      title: payload.note?.trim() || titles[payload.kind],
+      description: doctorName,
+      date: new Date().toISOString(),
+      resourceId: `doc-${Date.now()}`,
+      doctorId,
+      visitId,
+      source: 'patient',
+      imageUrl: payload.image,
+    };
+    mockDocuments.unshift(entry);
+    return entry;
+  },
+
+  async replyDocument(_patientId: string, documentId: string, message: string): Promise<MedicalHistoryEntry> {
+    await sleep(300);
+    const entry = mockDocuments.find((item) => item.resourceId === documentId || item.id === documentId);
+    if (!entry) throw { code: 'NOT_FOUND', message: 'Document not found' };
+    entry.doctorReply = message.trim();
+    return entry;
   },
 
   async getMe(userId: string): Promise<PatientProfile> {
@@ -293,6 +437,25 @@ export const mockPatientsService = {
     if (existing) return existing;
 
     throw { code: 'NOT_FOUND', message: 'Patient not found' };
+  },
+
+  async updateHealthProfile(
+    id: string,
+    payload: import('@/shared/types/models/patient').UpdateHealthProfilePayload,
+  ): Promise<PatientProfile> {
+    await sleep(300);
+    const index = mockPatients.findIndex((p) => p.id === id || p.userId === id);
+    if (index === -1) throw { code: 'NOT_FOUND', message: 'Patient not found' };
+
+    mockPatients[index] = {
+      ...mockPatients[index],
+      bloodType: payload.bloodType?.trim() || undefined,
+      allergies: payload.allergies,
+      chronicConditions: payload.chronicConditions,
+      updatedAt: new Date().toISOString(),
+    };
+
+    return mockPatients[index];
   },
 
   async update(id: string, payload: import('@/shared/types/models/admin').UpdatePatientPayload): Promise<PatientProfile> {

@@ -16,6 +16,7 @@ export type AppIconName =
   | 'chevronRight'
   | 'chevronLeft'
   | 'chevronDown'
+  | 'chevronUp'
   | 'back'
   | 'calendarEmpty'
   | 'person'
@@ -29,13 +30,17 @@ export type AppIconName =
   | 'phone'
   | 'language'
   | 'eye'
-  | 'eyeOff';
+  | 'eyeOff'
+  | 'lab'
+  | 'radiology'
+  | 'wallet'
+  | 'instapay';
 
 const ICON_MAP = {
   dashboard: { ios: 'square.grid.2x2.fill', android: 'dashboard', web: 'dashboard' },
   calendar: { ios: 'calendar', android: 'calendar_today', web: 'calendar_today' },
   patients: { ios: 'person.2.fill', android: 'people', web: 'people' },
-  profile: { ios: 'person.crop.circle.fill', android: 'person', web: 'person' },
+  profile: { ios: 'person.crop.circle.fill', android: 'account_circle', web: 'account_circle' },
   home: { ios: 'house.fill', android: 'home', web: 'home' },
   search: { ios: 'magnifyingglass', android: 'search', web: 'search' },
   records: { ios: 'doc.text.fill', android: 'description', web: 'description' },
@@ -47,12 +52,13 @@ const ICON_MAP = {
   chevronRight: { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
   chevronLeft: { ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' },
   chevronDown: { ios: 'chevron.down', android: 'expand_more', web: 'expand_more' },
+  chevronUp: { ios: 'chevron.up', android: 'expand_less', web: 'expand_less' },
   back: { ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' },
   calendarEmpty: { ios: 'calendar.badge.exclamationmark', android: 'event_busy', web: 'event_busy' },
   person: { ios: 'person.fill', android: 'person', web: 'person' },
   clinic: { ios: 'building.2.fill', android: 'local_hospital', web: 'local_hospital' },
   sun: { ios: 'sun.max.fill', android: 'light_mode', web: 'light_mode' },
-  moon: { ios: 'moon.fill', android: 'dark_mode', web: 'dark_mode' },
+  moon: { ios: 'moon.fill', android: 'nights_stay', web: 'nights_stay' },
   camera: { ios: 'camera.fill', android: 'photo_camera', web: 'photo_camera' },
   star: { ios: 'star.fill', android: 'star', web: 'star' },
   starOutline: { ios: 'star', android: 'star_border', web: 'star_border' },
@@ -61,6 +67,10 @@ const ICON_MAP = {
   language: { ios: 'globe', android: 'language', web: 'language' },
   eye: { ios: 'eye.fill', android: 'visibility', web: 'visibility' },
   eyeOff: { ios: 'eye.slash.fill', android: 'visibility_off', web: 'visibility_off' },
+  lab: { ios: 'flask.fill', android: 'science', web: 'science' },
+  radiology: { ios: 'waveform.path.ecg', android: 'radiology', web: 'radiology' },
+  wallet: { ios: 'wallet.pass.fill', android: 'account_balance_wallet', web: 'account_balance_wallet' },
+  instapay: { ios: 'bolt.fill', android: 'flash_on', web: 'flash_on' },
 } as const;
 
 interface IconProps {

@@ -1,4 +1,5 @@
 import { VisitStatus } from '../enums';
+import type { LinkedPatientDocument } from './patient';
 
 export interface Vitals {
   bloodPressure?: string;
@@ -43,4 +44,5 @@ export interface PatientVisitDetail extends Visit {
   doctorName: string;
   linkedPrescriptionIds: string[];
   linkedLabResultIds: string[];
+  linkedDocuments?: LinkedPatientDocument[];
 }

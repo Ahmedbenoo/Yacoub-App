@@ -10,7 +10,10 @@ export default function NurseTabsLayout() {
   const screenOptions = useTabBarScreenOptions();
 
   return (
-    <RoleTabsShell notificationsRoute="/(nurse)/(tabs)/orders" profileRoute="/(nurse)/(tabs)/profile">
+    <RoleTabsShell
+      notificationsRoute="/(nurse)/(tabs)/orders"
+      profileRoute="/(nurse)/(tabs)/profile"
+    >
       <Tabs
         screenOptions={screenOptions}
         tabBar={(props) => (

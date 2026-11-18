@@ -14,6 +14,8 @@
   "done": "تم",
   "hour": "ساعة",
   "minute": "دقيقة",
+  "today": "اليوم",
+  "tomorrow": "بكره",
   "showPassword": "إظهار كلمة المرور",
   "hidePassword": "إخفاء كلمة المرور",
   "comingSoon": "قريباً",
@@ -50,6 +52,8 @@
     "branchesTitle": "الفروع",
     "branchesSubtitle": "اختيار الفرع النشط",
     "notificationsSubtitle": "التنبيهات وفئات الإشعارات",
+    "walletTitle": "المحفظة",
+    "walletSubtitle": "الرصيد وطلب الشحن",
     "themeLight": "فاتح",
     "themeDark": "داكن",
     "themeSystem": "النظام",
@@ -80,7 +84,9 @@
   "nav": {
     "notifications": "الإشعارات",
     "theme": "تبديل المظهر",
-    "profile": "الملف الشخصي"
+    "language": "تبديل اللغة",
+    "profile": "الملف الشخصي",
+    "wallet": "المحفظة"
   },
   "patientAgeGender": "{{age}} سنة · {{gender}}",
   "doctorTitle": "د. {{name}}",

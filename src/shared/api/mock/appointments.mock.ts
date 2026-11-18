@@ -201,7 +201,13 @@ function filterAppointments(items: Appointment[], filters: AppointmentFilters = 
   }
 
   if (filters.scope === 'today') {
-    result = result.filter((item) => isSameDay(new Date(item.scheduledAt), now));
+    result = result.filter(
+      (item) =>
+        isSameDay(new Date(item.scheduledAt), now) &&
+        ![AppointmentStatus.CANCELLED, AppointmentStatus.COMPLETED, AppointmentStatus.NO_SHOW].includes(
+          item.status,
+        ),
+    );
   } else if (filters.scope === 'upcoming') {
     result = result.filter(
       (item) =>
