@@ -159,7 +159,7 @@ const SEED_USERS: SeedUser[] = [
   },
   {
     id: 'user-nursing-admin-001',
-    email: 'nursing-admin@clinsync.com',
+    email: 'nursing-admin@clinic.com',
     phone: '+201000000201',
     firstName: 'إدارة',
     lastName: 'التمريض',
@@ -168,7 +168,7 @@ const SEED_USERS: SeedUser[] = [
   },
   {
     id: 'user-nurse-001',
-    email: 'nurse@clinsync.com',
+    email: 'nurse@clinic.com',
     phone: '+201000000202',
     firstName: 'منى',
     lastName: 'حسن',
@@ -253,6 +253,17 @@ export async function seedAdmin(): Promise<void> {
       );
     }
   }
+
+  await db.query(`UPDATE users SET email = $2, password_hash = $3 WHERE id = $1`, [
+    'user-nursing-admin-001',
+    'nursing-admin@clinic.com',
+    passwordHash,
+  ]);
+  await db.query(`UPDATE users SET email = $2, password_hash = $3 WHERE id = $1`, [
+    'user-nurse-001',
+    'nurse@clinic.com',
+    passwordHash,
+  ]);
 }
 
 async function membershipsFor(userId: string): Promise<MembershipRow[]> {

@@ -133,12 +133,12 @@ const SEED_CREDENTIALS: MockCredential[] = [
     },
   },
   {
-    email: 'nursing-admin@clinsync.com',
+    email: 'nursing-admin@clinic.com',
     phone: '+201000000201',
     password: 'password123',
     user: {
       id: 'user-nursing-admin-001',
-      email: 'nursing-admin@clinsync.com',
+      email: 'nursing-admin@clinic.com',
       phone: '+201000000201',
       firstName: 'إدارة',
       lastName: 'التمريض',
@@ -149,12 +149,12 @@ const SEED_CREDENTIALS: MockCredential[] = [
     },
   },
   {
-    email: 'nurse@clinsync.com',
+    email: 'nurse@clinic.com',
     phone: '+201000000202',
     password: 'password123',
     user: {
       id: 'user-nurse-001',
-      email: 'nurse@clinsync.com',
+      email: 'nurse@clinic.com',
       phone: '+201000000202',
       firstName: 'منى',
       lastName: 'حسن',

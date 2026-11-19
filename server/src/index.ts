@@ -78,6 +78,7 @@ import {
   updateProfile,
   userFromAccessToken,
   verifyOtp,
+  seedAdmin,
   sessionForUser,
 } from './users.js';
 import { activeVisit, completeVisit, getVisit, listVisits, startVisit, updateVisit } from './visits.js';
@@ -2320,6 +2321,7 @@ const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
 await ensurePlatformAdmin();
+await seedAdmin();
 await startWhatsAppProvider();
 
 app.listen(port, () => {
