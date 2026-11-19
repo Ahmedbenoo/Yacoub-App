@@ -17,6 +17,7 @@ export interface DoctorProfile {
   languages: string[];
   sharePercent?: number;
   isActive?: boolean;
+  offersHomeVisits?: boolean;
 }
 
 export interface DoctorFilters {

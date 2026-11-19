@@ -10,7 +10,14 @@ import { useClinicsSearchQuery } from '@/features/catalog/clinics/hooks/useClini
 import { useDoctorsQuery } from '@/features/catalog/doctors/hooks/useDoctorsQueries';
 import { SkeletonCard } from '@/shared/components/feedback/Skeleton';
 import { SectionHeader } from '@/shared/components/layout/SectionHeader';
-import { getPatientClinicHref, getPatientDoctorHref, getPatientSearchHref } from '@/shared/navigation/routes';
+import { HOME_VISIT_CATALOG_DOCTORS, isHomeVisitDoctor } from '@/features/patient/lib/home-visit-doctors';
+import { findClinicSpecialty } from '@/shared/catalog/clinic-specialties';
+import { getPatientClinicHref, getPatientHomeVisitNewHref, getPatientSearchHref } from '@/shared/navigation/routes';
+
+function isClinicDoctorSpecialty(specialty: string | undefined) {
+  const id = specialty ? findClinicSpecialty(specialty)?.id : undefined;
+  return id !== 'clinicalPathology' && id !== 'radiology';
+}
 
 function HomeCardRail({ children }: { children: ReactNode }) {
   const [railWidth, setRailWidth] = useState(0);
@@ -35,11 +42,20 @@ function HomeCardRail({ children }: { children: ReactNode }) {
 
 export function PatientHomeCatalogRails() {
   const { t } = useTranslation('patient');
-  const doctorsQuery = useDoctorsQuery();
+  const doctorsQuery = useDoctorsQuery({ limit: 50 });
   const clinicsQuery = useClinicsSearchQuery();
 
-  const doctors = (doctorsQuery.data?.data ?? []).filter((doctor) => doctor.isActive !== false).slice(0, 8);
-  const clinics = (clinicsQuery.data?.data ?? []).slice(0, 8);
+  const registeredHomeVisitDoctors = (doctorsQuery.data?.data ?? []).filter(isHomeVisitDoctor);
+  const doctors = (
+    registeredHomeVisitDoctors.length > 0
+      ? registeredHomeVisitDoctors
+      : doctorsQuery.isLoading
+        ? []
+        : HOME_VISIT_CATALOG_DOCTORS
+  ).slice(0, 8);
+  const clinics = (clinicsQuery.data?.data ?? [])
+    .filter((clinic) => isClinicDoctorSpecialty(clinic.specialty))
+    .slice(0, 8);
 
   return (
     <View className="gap-4">
@@ -81,7 +97,7 @@ export function PatientHomeCatalogRails() {
                 key={doctor.id}
                 doctor={doctor}
                 variant="tile"
-                href={getPatientDoctorHref(doctor.id)}
+                href={getPatientHomeVisitNewHref(doctor.specialty)}
               />
             ))}
           </HomeCardRail>

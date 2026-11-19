@@ -243,7 +243,7 @@ async function addDoctor(input: {
     `INSERT INTO doctors (
        id, user_id, clinic_id, first_name, last_name, email, phone, specialty, branch_id, branch_name,
        languages, gender, years_experience, share_percent, offers_home_visits, rating, review_count
-     ) VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $2, $8, '["Arabic"]', $9, $10, $11, false, $12, $13)`,
+     ) VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $2, $8, '["Arabic"]', $9, $10, $11, $12, $13, $14)`,
     [
       input.id,
       input.clinicId,
@@ -256,6 +256,7 @@ async function addDoctor(input: {
       input.gender,
       input.years,
       SHARE,
+      ['General Medicine', 'Urology', 'Internal Medicine', 'Physiotherapy'].includes(input.specialty),
       4.6 + (input.years % 4) / 10,
       18 + input.years * 3,
     ],

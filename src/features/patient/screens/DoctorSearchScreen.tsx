@@ -3,9 +3,11 @@ import { Pressable, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { getClinicAddressLine, getClinicName, getClinicStreet } from '@/features/clinic/lib/formatters';
 import { ClinicList } from '@/features/patient/components/ClinicList';
 import { DoctorList } from '@/features/patient/components/DoctorList';
 import { SpecialtyShortcuts } from '@/features/patient/components/SpecialtyShortcuts';
+import { isHomeVisitDoctor, listHomeVisitCatalogDoctors } from '@/features/patient/lib/home-visit-doctors';
 import { useClinicsSearchQuery } from '@/features/catalog/clinics/hooks/useClinicsQueries';
 import { useDoctorsQuery, useDoctorSpecialties } from '@/features/catalog/doctors/hooks/useDoctorsQueries';
 import { Row } from '@/shared/components/layout/Row';
@@ -16,8 +18,9 @@ import { Text } from '@/shared/components/ui/Text';
 import { useResolvedColorScheme } from '@/shared/hooks/useTheme';
 import { cn, themeBg } from '@/shared/lib/utils';
 import { branchNameForClinic } from '@/shared/lib/clinic-branches';
-import { findClinicSpecialty } from '@/shared/catalog/clinic-specialties';
-import { getPatientClinicHref, getPatientDoctorHref } from '@/shared/navigation/routes';
+import { CLINIC_SPECIALTIES, HOME_VISIT_SPECIALTY_IDS, findClinicSpecialty, isHomeVisitSpecialty } from '@/shared/catalog/clinic-specialties';
+import { getPatientClinicHref, getPatientHomeVisitNewHref } from '@/shared/navigation/routes';
+import { useLocaleStore } from '@/shared/stores';
 import type { Clinic } from '@/shared/types/models';
 import type { DoctorProfile } from '@/shared/types/models/doctor';
 
@@ -61,6 +64,7 @@ function parseSearchMode(tab?: string, specialty?: string): SearchMode {
 export function DoctorSearchScreen() {
   const { t } = useTranslation('patient');
   const isDark = useResolvedColorScheme() === 'dark';
+  const locale = useLocaleStore((s) => s.locale);
   const params = useLocalSearchParams<{ specialty?: string | string[]; tab?: string | string[] }>();
   const specialtyParam = Array.isArray(params.specialty) ? params.specialty[0] : params.specialty;
   const tabParam = Array.isArray(params.tab) ? params.tab[0] : params.tab;
@@ -78,20 +82,31 @@ export function DoctorSearchScreen() {
 
   const catalogSpecialties = useDoctorSpecialties();
   const specialties = useMemo(() => {
-    const resolved = specialty ? findClinicSpecialty(specialty)?.nameEn ?? specialty : undefined;
-    if (!resolved || catalogSpecialties.includes(resolved) || catalogSpecialties.includes(specialty ?? '')) {
-      return catalogSpecialties;
+    if (mode === 'doctors') {
+      return HOME_VISIT_SPECIALTY_IDS.map(
+        (id) => CLINIC_SPECIALTIES.find((item) => item.id === id)?.nameEn,
+      ).filter((item): item is string => Boolean(item));
     }
-    return [resolved, ...catalogSpecialties];
-  }, [catalogSpecialties, specialty]);
-  const clinicsQuery = useClinicsSearchQuery({ search });
+    const resolved = specialty ? findClinicSpecialty(specialty)?.nameEn ?? specialty : undefined;
+    const base =
+      !resolved || catalogSpecialties.includes(resolved) || catalogSpecialties.includes(specialty ?? '')
+        ? catalogSpecialties
+        : [resolved, ...catalogSpecialties];
+    return base.filter(
+      (item) => !specialtyMatches(item, LABS_SPECIALTY) && !specialtyMatches(item, RADIOLOGY_SPECIALTY),
+    );
+  }, [catalogSpecialties, mode, specialty]);
+  const clinicsQuery = useClinicsSearchQuery({
+    search: mode === 'clinics' ? undefined : search,
+  });
   const doctorsQuery = useDoctorsQuery({
     search: mode === 'doctors' ? search : undefined,
     specialty: mode === 'doctors' ? specialty : undefined,
+    limit: 50,
   });
   const facilitySpecialty =
     mode === 'labs' ? LABS_SPECIALTY : mode === 'radiology' ? RADIOLOGY_SPECIALTY : undefined;
-  const needsDoctorsForClinics = Boolean(facilitySpecialty || (mode === 'clinics' && specialty));
+  const needsDoctorsForClinics = mode === 'clinics' || Boolean(facilitySpecialty);
   const clinics = useMemo(() => {
     const all = clinicsQuery.data?.data ?? [];
     const doctors = doctorsQuery.data?.data ?? [];
@@ -99,13 +114,35 @@ export function DoctorSearchScreen() {
       return all.filter((clinic) => clinicOffersSpecialty(clinic, facilitySpecialty, doctors));
     }
     if (mode !== 'clinics') return all;
+    const query = search.trim().toLowerCase();
     return all.filter((clinic) => {
       if (specialtyMatches(clinic.specialty, LABS_SPECIALTY)) return false;
       if (specialtyMatches(clinic.specialty, RADIOLOGY_SPECIALTY)) return false;
       if (specialty && !clinicOffersSpecialty(clinic, specialty, doctors)) return false;
-      return true;
+      if (!query) return true;
+      const name = getClinicName(clinic, locale).toLowerCase();
+      const street = getClinicStreet(clinic, locale).toLowerCase();
+      const city = getClinicAddressLine(clinic, locale).toLowerCase();
+      if (name.includes(query) || street.includes(query) || city.includes(query)) return true;
+      const branchName = branchNameForClinic(clinic.id);
+      return doctors.some((doctor) => {
+        if (doctor.isActive === false) return false;
+        const atClinic = branchName ? doctor.branchName === branchName : doctor.clinicId === clinic.id;
+        if (!atClinic) return false;
+        const doctorName = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
+        return doctorName.includes(query) || doctor.specialty.toLowerCase().includes(query);
+      });
     });
-  }, [clinicsQuery.data?.data, doctorsQuery.data?.data, facilitySpecialty, mode, specialty]);
+  }, [clinicsQuery.data?.data, doctorsQuery.data?.data, facilitySpecialty, locale, mode, search, specialty]);
+
+  const doctors = useMemo(() => {
+    const all = doctorsQuery.data?.data ?? [];
+    if (mode !== 'doctors') return all;
+    const registered = all.filter((doctor) => isHomeVisitDoctor(doctor));
+    if (registered.length > 0) return registered;
+    if (doctorsQuery.isLoading) return [];
+    return listHomeVisitCatalogDoctors(search, specialty);
+  }, [doctorsQuery.data?.data, doctorsQuery.isLoading, mode, search, specialty]);
 
   const placeholder =
     mode === 'doctors'
@@ -128,7 +165,12 @@ export function DoctorSearchScreen() {
         {SEARCH_TABS.map((option) => (
           <Pressable
             key={option}
-            onPress={() => setMode(option)}
+            onPress={() => {
+              setMode(option);
+              if (option === 'doctors' && specialty && !isHomeVisitSpecialty(specialty)) {
+                setSpecialty(undefined);
+              }
+            }}
             className={cn(
               'min-w-0 flex-1 items-center justify-center rounded-2xl px-1 py-2.5',
               mode === option ? 'bg-primary-600' : themeBg(isDark, 'bg-slate-100', 'bg-slate-800'),
@@ -160,15 +202,15 @@ export function DoctorSearchScreen() {
       <View className="flex-1">
         {mode === 'doctors' ? (
           <DoctorList
-            doctors={doctorsQuery.data?.data ?? []}
+            doctors={doctors}
             specialties={specialties}
             selectedSpecialty={specialty}
             isLoading={doctorsQuery.isLoading}
-            isError={doctorsQuery.isError}
+            isError={false}
             isRefetching={doctorsQuery.isRefetching}
             onRefresh={() => doctorsQuery.refetch()}
             onRetry={() => doctorsQuery.refetch()}
-            hrefForDoctor={(doctor) => getPatientDoctorHref(doctor.id)}
+            hrefForDoctor={(doctor) => getPatientHomeVisitNewHref(doctor.specialty)}
           />
         ) : (
           <ClinicList

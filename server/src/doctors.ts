@@ -23,6 +23,7 @@ type DoctorRow = {
   languages: string;
   share_percent: number | null;
   is_active: boolean;
+  offers_home_visits?: boolean | null;
   slot_minutes: number;
   created_at: string;
   updated_at: string;
@@ -53,6 +54,7 @@ export type PublicDoctor = {
   languages: string[];
   sharePercent?: number;
   isActive?: boolean;
+  offersHomeVisits?: boolean;
 };
 
 export type PublicAvailability = {
@@ -248,6 +250,7 @@ function toPublicDoctor(row: DoctorRow): PublicDoctor {
     languages: readLanguages(row.languages),
     sharePercent: row.share_percent ?? undefined,
     isActive: row.is_active,
+    offersHomeVisits: row.offers_home_visits === true,
   };
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Platform, View } from 'react-native';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useIsRestoring } from '@tanstack/react-query';
@@ -53,6 +53,8 @@ function AppBootstrap({ children }: { children: ReactNode }) {
   const isRtl = useLocaleStore((s) => s.isRtl);
   const isRestoring = useIsRestoring();
   const [ready, setReady] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
+  const handleIntroComplete = useCallback(() => setIntroDone(true), []);
 
   usePushNotificationsSetup();
 
@@ -97,8 +99,8 @@ function AppBootstrap({ children }: { children: ReactNode }) {
     void bootstrap();
   }, [hydrateAuth, hydrateLocale, isRestoring]);
 
-  if (isRestoring || !ready) {
-    return <AppSplash />;
+  if (isRestoring || !ready || !introDone) {
+    return <AppSplash onIntroComplete={handleIntroComplete} />;
   }
 
   return (

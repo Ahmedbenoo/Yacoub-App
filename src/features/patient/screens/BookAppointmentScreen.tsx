@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useBookAppointmentMutation } from '@/features/appointments/hooks/useAppointmentQueries';
 import { BookingAuthCard } from '@/features/auth/components/BookingAuthCard';
 import { BookingSlotPicker } from '@/features/patient/components/BookingSlotPicker';
+import { ClinicVisitPlaceCard } from '@/features/patient/components/ClinicVisitPlaceCard';
 import { useDoctorAvailabilityQuery, useDoctorDetailQuery } from '@/features/catalog/doctors/hooks/useDoctorsQueries';
 import { formatDoctorTitle, formatSpecialty, generateBookingSlots } from '@/features/patient/lib/formatters';
 import { bookingSchema, type BookingFormData } from '@/features/patient/schemas/booking.schemas';
@@ -110,6 +111,8 @@ export function BookAppointmentScreen() {
             </View>
           </View>
         </Card>
+
+        <ClinicVisitPlaceCard clinicId={doctor.clinicId} branchLabel={doctor.branchName} />
 
         <Card className="gap-3">
           <Text variant="titleSm">{t('booking.selectSlot')}</Text>

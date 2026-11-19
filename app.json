@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "منجز طبي",
+    "name": "MUNJEZ MED",
     "slug": "clinify",
     "version": "1.0.3",
     "orientation": "portrait",
@@ -48,9 +48,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#023c37",
-          "image": "./assets/images/logo-munjiz.png",
+          "image": "./assets/images/splash-blank.png",
           "resizeMode": "contain",
-          "imageWidth": 280
+          "imageWidth": 1
         }
       ],
       [
@@ -63,8 +63,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "منجز طبي محتاج الصور عشان ترفع روشتة أو تحليل أو أشعة، وتقدر تغيّر صورتك الشخصية.",
-          "cameraPermission": "منجز طبي محتاج الكاميرا عشان ترفع صورة روشتة أو تحليل أو أشعة.",
+          "photosPermission": "MUNJEZ MED محتاج الصور عشان ترفع روشتة أو تحليل أو أشعة، وتقدر تغيّر صورتك الشخصية.",
+          "cameraPermission": "MUNJEZ MED محتاج الكاميرا عشان ترفع صورة روشتة أو تحليل أو أشعة.",
           "microphonePermission": false
         }
       ]

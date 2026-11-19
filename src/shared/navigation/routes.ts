@@ -266,6 +266,11 @@ export function getPatientDoctorHref(doctorId: string): Href {
   return idHref('/(patient)/doctors/[id]', doctorId);
 }
 
+export function getPatientHomeVisitNewHref(specialty?: string): Href {
+  if (!specialty) return '/(patient)/home-visit/new' as Href;
+  return { pathname: '/(patient)/home-visit/new', params: { specialty } } as Href;
+}
+
 export function getPatientDoctorBookHref(doctorId: string): Href {
   return `/(patient)/doctors/${doctorId}/book` as Href;
 }

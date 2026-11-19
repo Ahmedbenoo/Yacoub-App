@@ -135,7 +135,7 @@ export function PatientPathChoices({ isAuthenticated }: PatientPathChoicesProps)
         <MiniCard
           image={SERVICE_IMAGES.homeVisit}
           title={t('guest.pathHomeDoctorTitle')}
-          onPress={() => goLoginOr('/(patient)/home-visit/new')}
+          onPress={() => router.push(getPatientSearchHref({ tab: 'doctors' }))}
         />
         <MiniCard
           image={SERVICE_IMAGES.nursing}

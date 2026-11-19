@@ -6,9 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { MedicalRecordsList } from '@/features/patient/components/MedicalRecordsList';
 import { UploadMedicalDocumentSheet } from '@/features/patient/components/UploadMedicalDocumentSheet';
 import { UploadRecordsCard } from '@/features/patient/components/UploadRecordsCard';
-import { useMyMedicalHistoryQuery, useMyPatientProfileQuery } from '@/features/patients/hooks/usePatientRecordsQueries';
+import { useMyMedicalHistoryQuery } from '@/features/patients/hooks/usePatientRecordsQueries';
 import { Screen } from '@/shared/components/layout/Screen';
-import { Avatar } from '@/shared/components/ui/Avatar';
 import { Card } from '@/shared/components/ui/Card';
 import { Icon } from '@/shared/components/ui/Icon';
 import { Text } from '@/shared/components/ui/Text';
@@ -39,7 +38,6 @@ export function MedicalRecordsScreen() {
     setUploadOpen(true);
   };
 
-  const { data: profile, isLoading: profileLoading } = useMyPatientProfileQuery();
   const { data: history, isLoading: historyLoading, isError, refetch } = useMyMedicalHistoryQuery();
 
   const filteredHistory = useMemo(() => {
@@ -59,7 +57,7 @@ export function MedicalRecordsScreen() {
     );
   }
 
-  if (profileLoading || historyLoading) {
+  if (historyLoading) {
     return (
       <Screen>
         <Spinner fullScreen />
@@ -83,27 +81,25 @@ export function MedicalRecordsScreen() {
 
       <UploadRecordsCard onPick={openUpload} />
 
-      {profile && (
-        <Card elevated className="mb-4 overflow-hidden p-0">
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('records.subtitle')}
-            className="flex-row items-center gap-3 p-4 active:opacity-80"
-            onPress={() => router.push(getPatientHealthProfileHref())}
-          >
-            <Avatar firstName={profile.firstName} lastName={profile.lastName} size="md" />
-            <View className="flex-1 gap-1">
-              <Text variant="titleSm">
-                {profile.firstName} {profile.lastName}
-              </Text>
-              <Text variant="bodySm" muted>
-                {t('records.subtitle')}
-              </Text>
-            </View>
-            <Icon name={forwardIconName} size={20} color="#94A3B8" />
-          </Pressable>
-        </Card>
-      )}
+      <Card elevated className="mb-4 overflow-hidden p-0">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('records.healthProfileTitle')}
+          className="flex-row items-center gap-3 p-4 active:opacity-80"
+          onPress={() => router.push(getPatientHealthProfileHref())}
+        >
+          <View className="h-11 w-11 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/40">
+            <Icon name="records" size={20} color="#0D9488" />
+          </View>
+          <View className="flex-1 gap-1">
+            <Text variant="titleSm">{t('records.healthProfileTitle')}</Text>
+            <Text variant="bodySm" muted>
+              {t('records.subtitle')}
+            </Text>
+          </View>
+          <Icon name={forwardIconName} size={20} color="#94A3B8" />
+        </Pressable>
+      </Card>
 
       <View className="mb-4 flex-row flex-wrap gap-2">
         {FILTERS.map((option) => (

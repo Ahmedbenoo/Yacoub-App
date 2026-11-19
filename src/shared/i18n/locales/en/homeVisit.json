@@ -23,6 +23,8 @@
   "notes": "Complaint",
   "notesPlaceholder": "Optional",
   "submit": "Send request",
+  "guestAuthTitle": "Sign in to send the request",
+  "guestAuthHint": "Fill in the details here, then sign in with your phone. You stay on this page, and the request is sent after you sign in.",
   "emptyTitle": "No requests",
   "emptyDescription": "Ask a doctor to visit you at home. A doctor in that specialty will see the request.",
   "waitingDoctor": "The request is in. When a doctor accepts it, their name and price show here.",

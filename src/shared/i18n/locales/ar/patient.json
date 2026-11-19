@@ -22,7 +22,7 @@
     "bookNow": "ابدأ البحث عن طبيب",
     "browseClinics": "شوف العيادات",
     "specialtiesTitle": "اختار التخصص",
-    "featuredDoctors": "أطباء متاحين",
+    "featuredDoctors": "أطباء الكشف المنزلي",
     "nearbyClinics": "عيادات قريبة منك",
     "viewAll": "عرض الكل",
     "whyTitle": "ليه تحجز من هنا؟",
@@ -117,12 +117,12 @@
   "searchHub": {
     "title": "بحث",
     "clinics": "العيادات",
-    "doctors": "الأطباء",
+    "doctors": "كشف منزلي",
     "labs": "المعامل",
     "radiology": "الأشعة"
   },
   "clinicSearch": {
-    "placeholder": "البحث عن عيادة بالاسم أو المدينة…",
+    "placeholder": "ابحث باسم العيادة أو الدكتور…",
     "labsPlaceholder": "البحث عن معمل…",
     "radiologyPlaceholder": "البحث عن مركز أشعة…",
     "error": "تعذر تحميل العيادات",
@@ -151,7 +151,7 @@
   },
   "search": {
     "title": "البحث عن طبيب",
-    "placeholder": "البحث بالاسم أو التخصص…",
+    "placeholder": "ابحث عن طبيب كشف منزلي…",
     "allSpecialties": "الكل",
     "doctorTitle": "د. {{name}}",
     "rating": "★ {{rating}}",
@@ -159,7 +159,7 @@
     "inactive": "غير نشط",
     "error": "تعذر تحميل الأطباء",
     "empty": {
-      "title": "لا يوجد أطباء",
+      "title": "لا يوجد أطباء كشف منزلي",
       "description": "جرّب بحثاً أو تخصصاً مختلفاً"
     }
   },
@@ -187,11 +187,15 @@
     "reason": "سبب الزيارة",
     "notes": "ملاحظات إضافية (اختياري)",
     "confirm": "تأكيد الحجز",
-    "bookAppointment": "حجز موعد",
+    "bookAppointment": "حجز موعد في العيادة",
+    "atClinic": "مكان الكشف",
+    "clinicHint": "الحجز كشف في العيادة، مش زيارة منزلية.",
+    "viewClinic": "عرض صفحة العيادة",
     "error": "تعذر تحميل تفاصيل الحجز"
   },
   "records": {
     "title": "السجل الطبي",
+    "healthProfileTitle": "الملف الصحي",
     "subtitle": "سجل صحتك",
     "bloodType": "فصيلة الدم",
     "error": "تعذر تحميل السجل الطبي",

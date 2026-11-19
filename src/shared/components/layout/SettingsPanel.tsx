@@ -238,7 +238,7 @@ export function SettingsPanel({ showAvatar = true, showAccountCard = true, class
       <Pressable
         onPress={() => logoutMutation.mutate()}
         disabled={logoutMutation.isPending}
-        className="items-center justify-center rounded-xl bg-status-error/10 py-4 active:opacity-80"
+        className="mt-8 items-center justify-center rounded-xl bg-status-error/10 py-4 active:opacity-80"
       >
         <Text variant="label" className="text-center text-status-error">
           {logoutMutation.isPending ? t('logoutLoading') : t('logout')}

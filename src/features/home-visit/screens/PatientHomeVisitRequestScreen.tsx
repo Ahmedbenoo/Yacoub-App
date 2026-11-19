@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -8,8 +8,10 @@ import Toast from 'react-native-toast-message';
 
 import { useCreateHomeVisitMutation } from '@/features/home-visit/hooks/useHomeVisitQueries';
 import { homeVisitRequestSchema, type HomeVisitRequestForm } from '@/features/home-visit/schemas/home-visit.schemas';
+import { GuestAccountCard } from '@/features/patient/components/GuestAccountCard';
 import { formatSpecialty } from '@/features/patient/lib/formatters';
-import { CLINIC_SPECIALTIES, HOME_VISIT_SPECIALTY_IDS } from '@/shared/catalog/clinic-specialties';
+import { CLINIC_SPECIALTIES, HOME_VISIT_SPECIALTY_IDS, findClinicSpecialty, isHomeVisitSpecialty } from '@/shared/catalog/clinic-specialties';
+import { getRouteParam } from '@/shared/navigation/routes';
 import { DateCalendarField } from '@/shared/components/form/DateCalendarField';
 import { FormInput } from '@/shared/components/form/FormInput';
 import { TimePickerField } from '@/shared/components/form/TimePickerField';
@@ -20,10 +22,17 @@ import { Text } from '@/shared/components/ui/Text';
 import { formatLocationAddress, getCurrentCoordinates } from '@/shared/lib/current-location';
 import { useLayoutDirection } from '@/shared/hooks/useLayoutDirection';
 import { useAuthStore } from '@/shared/stores';
+import type { User } from '@/shared/types/models';
 
 const HOME_VISIT_SPECIALTIES = HOME_VISIT_SPECIALTY_IDS.map((id) =>
   CLINIC_SPECIALTIES.find((specialty) => specialty.id === id),
 ).filter((specialty): specialty is NonNullable<typeof specialty> => Boolean(specialty));
+
+function resolveHomeVisitSpecialty(value?: string) {
+  const match = value ? findClinicSpecialty(value) : undefined;
+  if (!match || !isHomeVisitSpecialty(match.nameEn)) return '';
+  return match.nameEn;
+}
 
 export function PatientHomeVisitRequestScreen() {
   const { t } = useTranslation('homeVisit');
@@ -32,10 +41,12 @@ export function PatientHomeVisitRequestScreen() {
   const { rowStyle } = useLayoutDirection();
   const user = useAuthStore((s) => s.user);
   const createRequest = useCreateHomeVisitMutation();
+  const params = useLocalSearchParams<{ specialty?: string | string[] }>();
+  const initialSpecialty = resolveHomeVisitSpecialty(getRouteParam(params.specialty));
   const [locating, setLocating] = useState(false);
   const { control, handleSubmit, watch, setValue, formState } = useForm<HomeVisitRequestForm>({
     resolver: zodResolver(homeVisitRequestSchema),
-    defaultValues: { specialty: '', address: '', date: '', time: '', notes: '' },
+    defaultValues: { specialty: initialSpecialty, address: '', date: '', time: '', notes: '' },
   });
   const selectedSpecialty = watch('specialty');
 
@@ -53,16 +64,12 @@ export function PatientHomeVisitRequestScreen() {
     }
   };
 
-  const onSubmit = (data: HomeVisitRequestForm) => {
-    if (!user) {
-      router.push('/(auth)/login');
-      return;
-    }
+  const sendRequest = (patient: User, data: HomeVisitRequestForm) => {
     createRequest.mutate(
       {
-        patientUserId: user.id,
-        patientName: `${user.firstName} ${user.lastName}`.trim(),
-        patientPhone: user.phone,
+        patientUserId: patient.id,
+        patientName: `${patient.firstName} ${patient.lastName}`.trim(),
+        patientPhone: patient.phone,
         specialty: data.specialty,
         address: data.address,
         scheduledAt: `${data.date} ${data.time}`,
@@ -71,6 +78,23 @@ export function PatientHomeVisitRequestScreen() {
       { onSuccess: () => router.replace('/(patient)/home-visit' as never) },
     );
   };
+
+  const onSubmit = (data: HomeVisitRequestForm) => {
+    const patient = user ?? useAuthStore.getState().user;
+    if (!patient) return;
+    sendRequest(patient, data);
+  };
+
+  if (!user) {
+    return (
+      <Screen className="px-5">
+        <Header showBack title={t('requestTitle')} />
+        <View className="py-4">
+          <GuestAccountCard />
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen scroll className="px-5">

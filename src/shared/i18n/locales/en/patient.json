@@ -22,7 +22,7 @@
     "bookNow": "Find a doctor",
     "browseClinics": "Browse clinics",
     "specialtiesTitle": "Choose a specialty",
-    "featuredDoctors": "Doctors you can book now",
+    "featuredDoctors": "Home visit doctors",
     "nearbyClinics": "Clinics near you",
     "viewAll": "See all",
     "whyTitle": "Why book here?",
@@ -117,12 +117,12 @@
   "searchHub": {
     "title": "Search",
     "clinics": "Clinics",
-    "doctors": "Doctors",
+    "doctors": "Home visit",
     "labs": "Labs",
     "radiology": "Imaging"
   },
   "clinicSearch": {
-    "placeholder": "Search clinics by name or city…",
+    "placeholder": "Search by clinic or doctor name…",
     "labsPlaceholder": "Search labs…",
     "radiologyPlaceholder": "Search imaging centers…",
     "error": "Could not load clinics",
@@ -151,7 +151,7 @@
   },
   "search": {
     "title": "Find a Doctor",
-    "placeholder": "Search by name or specialty…",
+    "placeholder": "Search home visit doctors…",
     "allSpecialties": "All",
     "doctorTitle": "Dr. {{name}}",
     "rating": "★ {{rating}}",
@@ -159,7 +159,7 @@
     "inactive": "Inactive",
     "error": "Could not load doctors",
     "empty": {
-      "title": "No doctors found",
+      "title": "No home visit doctors found",
       "description": "Try a different search or specialty filter"
     }
   },
@@ -187,11 +187,15 @@
     "reason": "Reason for visit",
     "notes": "Additional notes (optional)",
     "confirm": "Confirm booking",
-    "bookAppointment": "Book appointment",
+    "bookAppointment": "Book a clinic visit",
+    "atClinic": "Visit location",
+    "clinicHint": "This booking is at the clinic, not a home visit.",
+    "viewClinic": "Open clinic page",
     "error": "Could not load booking details"
   },
   "records": {
     "title": "Medical Records",
+    "healthProfileTitle": "Health profile",
     "subtitle": "Your health history",
     "bloodType": "Blood type",
     "error": "Could not load medical records",

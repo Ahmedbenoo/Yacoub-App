@@ -230,7 +230,7 @@ const documentReplyBody = z.object({
 
 const doctorQuery = z.object({
   page: z.coerce.number().int().positive().optional(),
-  limit: z.coerce.number().int().positive().max(50).optional(),
+  limit: z.coerce.number().int().positive().max(100).optional(),
   search: z.string().optional(),
   specialty: z.string().optional(),
   clinicId: z.string().optional(),
