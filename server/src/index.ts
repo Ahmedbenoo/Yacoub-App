@@ -78,7 +78,7 @@ import {
   updateProfile,
   userFromAccessToken,
   verifyOtp,
-  seedAdmin,
+  ensureStaffDemoLogins,
   sessionForUser,
 } from './users.js';
 import { activeVisit, completeVisit, getVisit, listVisits, startVisit, updateVisit } from './visits.js';
@@ -2321,7 +2321,6 @@ const port = Number(process.env.PORT ?? 3000);
 
 await migrate();
 await ensurePlatformAdmin();
-await seedAdmin();
 await startWhatsAppProvider();
 
 app.listen(port, () => {
@@ -2337,4 +2336,11 @@ try {
   console.log('Demo clinics ready');
 } catch (error) {
   console.error('Demo seed failed', error);
+}
+
+try {
+  await ensureStaffDemoLogins();
+  console.log('Staff demo logins ready');
+} catch (error) {
+  console.error('Staff demo logins failed', error);
 }

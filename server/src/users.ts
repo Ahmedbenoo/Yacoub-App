@@ -291,6 +291,118 @@ export async function seedAdmin(): Promise<void> {
   );
 }
 
+async function pickStaffClinicId(): Promise<string> {
+  const existing = await db.query<{ id: string }>(
+    `SELECT id FROM clinics WHERE coalesce(is_active, true) = true ORDER BY id LIMIT 1`,
+  );
+  if (existing.rows[0]?.id) return existing.rows[0].id;
+  await db.query(
+    `INSERT INTO clinics (id, name, name_ar) VALUES ('clinic-001', 'MUNJEZ MED', 'منجز')
+     ON CONFLICT (id) DO NOTHING`,
+  );
+  return 'clinic-001';
+}
+
+async function upsertStaffUser(input: {
+  id: string;
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  passwordHash: string;
+  clinicId: string;
+}): Promise<string> {
+  const found = await db.query<{ id: string }>(
+    `SELECT id FROM users WHERE id = $1 OR lower(email) = lower($2) OR phone = $3 LIMIT 1`,
+    [input.id, input.email, input.phone],
+  );
+  const userId = found.rows[0]?.id ?? input.id;
+  if (found.rows[0]) {
+    await db.query(
+      `UPDATE users
+       SET email = $2, phone = $3, password_hash = $4, first_name = $5, last_name = $6,
+           is_email_verified = true, is_phone_verified = true, is_blocked = false, updated_at = now()
+       WHERE id = $1`,
+      [userId, input.email, input.phone, input.passwordHash, input.firstName, input.lastName],
+    );
+  } else {
+    await db.query(
+      `INSERT INTO users (
+         id, email, phone, password_hash, first_name, last_name, locale,
+         is_email_verified, is_phone_verified
+       ) VALUES ($1, $2, $3, $4, $5, $6, 'ar', true, true)`,
+      [userId, input.email, input.phone, input.passwordHash, input.firstName, input.lastName],
+    );
+  }
+  await db.query(
+    `INSERT INTO memberships (id, user_id, clinic_id, role)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (user_id, clinic_id, role) DO NOTHING`,
+    [`membership-${userId}-${input.clinicId}-${input.role}`, userId, input.clinicId, input.role],
+  );
+  return userId;
+}
+
+export async function ensureStaffDemoLogins(): Promise<void> {
+  const clinicId = await pickStaffClinicId();
+  const passwordHash = await bcrypt.hash('password123', 10);
+  await upsertStaffUser({
+    id: 'user-nursing-admin-001',
+    email: 'nursing-admin@clinic.com',
+    phone: '+201099000201',
+    firstName: 'إدارة',
+    lastName: 'التمريض',
+    role: 'nursing_admin',
+    passwordHash,
+    clinicId,
+  });
+  await upsertStaffUser({
+    id: 'user-nurse-001',
+    email: 'nurse@clinic.com',
+    phone: '+201099000202',
+    firstName: 'منى',
+    lastName: 'حسن',
+    role: 'nurse',
+    passwordHash,
+    clinicId,
+  });
+  const homeDoctorId = await upsertStaffUser({
+    id: 'user-home-doctor-001',
+    email: 'home-doctor@clinic.com',
+    phone: '+201099000210',
+    firstName: 'أحمد',
+    lastName: 'منصور',
+    role: 'doctor',
+    passwordHash,
+    clinicId,
+  });
+  const doctorRow = await db.query<{ id: string }>(
+    `SELECT id FROM doctors WHERE id = $1 OR user_id = $1 LIMIT 1`,
+    [homeDoctorId],
+  );
+  if (doctorRow.rows[0]) {
+    await db.query(
+      `UPDATE doctors
+       SET clinic_id = $2, first_name = 'أحمد', last_name = 'منصور', email = 'home-doctor@clinic.com',
+           phone = '+201099000210', specialty = 'General Medicine', offers_home_visits = true, is_active = true
+       WHERE id = $1`,
+      [doctorRow.rows[0].id, clinicId],
+    );
+    return;
+  }
+  await db.query(
+    `INSERT INTO doctors (
+       id, user_id, clinic_id, first_name, last_name, email, phone, specialty, bio,
+       rating, review_count, years_experience, branch_id, branch_name, languages, offers_home_visits, is_active
+     ) VALUES (
+       $1, $1, $2, 'أحمد', 'منصور', 'home-doctor@clinic.com', '+201099000210',
+       'General Medicine', 'طبيب كشف منزلي', 4.8, 64, 12, $2, 'كشف منزلي', '["Arabic"]', true, true
+     )`,
+    [homeDoctorId, clinicId],
+  );
+}
+
 async function membershipsFor(userId: string): Promise<MembershipRow[]> {
   const result = await db.query<MembershipRow>(
     'SELECT clinic_id, role FROM memberships WHERE user_id = $1 ORDER BY created_at',
