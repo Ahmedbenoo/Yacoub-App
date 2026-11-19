@@ -53,6 +53,22 @@ const SEED_CREDENTIALS: MockCredential[] = [
     },
   },
   {
+    email: 'home-doctor@clinic.com',
+    phone: '+201000000210',
+    password: 'password123',
+    user: {
+      id: 'user-home-doctor-001',
+      email: 'home-doctor@clinic.com',
+      phone: '+201000000210',
+      firstName: 'أحمد',
+      lastName: 'منصور',
+      roles: [UserRole.DOCTOR],
+      locale: Locale.AR,
+      isEmailVerified: true,
+      isPhoneVerified: true,
+    },
+  },
+  {
     email: 'obgyn@clinic.com',
     phone: '+201000000016',
     password: 'password123',

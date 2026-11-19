@@ -167,6 +167,15 @@ const SEED_USERS: SeedUser[] = [
     memberships: [{ clinicId: 'clinic-001', role: 'nursing_admin' }],
   },
   {
+    id: 'user-home-doctor-001',
+    email: 'home-doctor@clinic.com',
+    phone: '+201000000210',
+    firstName: 'أحمد',
+    lastName: 'منصور',
+    locale: 'ar',
+    memberships: [{ clinicId: 'clinic-001', role: 'doctor' }],
+  },
+  {
     id: 'user-nurse-001',
     email: 'nurse@clinic.com',
     phone: '+201000000202',
@@ -264,6 +273,22 @@ export async function seedAdmin(): Promise<void> {
     'nurse@clinic.com',
     passwordHash,
   ]);
+  await db.query(`UPDATE users SET email = $2, password_hash = $3 WHERE id = $1`, [
+    'user-home-doctor-001',
+    'home-doctor@clinic.com',
+    passwordHash,
+  ]);
+  await db.query(
+    `INSERT INTO doctors (
+       id, user_id, clinic_id, first_name, last_name, email, phone, specialty, bio,
+       rating, review_count, years_experience, branch_id, branch_name, languages, offers_home_visits, is_active
+     ) VALUES (
+       $1, $1, 'clinic-001', 'أحمد', 'منصور', 'home-doctor@clinic.com', '+201000000210',
+       'General Medicine', 'طبيب كشف منزلي', 4.8, 64, 12, 'clinic-001', 'كشف منزلي', '["Arabic"]', true, true
+     )
+     ON CONFLICT (id) DO UPDATE SET offers_home_visits = true, is_active = true, specialty = EXCLUDED.specialty`,
+    ['user-home-doctor-001'],
+  );
 }
 
 async function membershipsFor(userId: string): Promise<MembershipRow[]> {
